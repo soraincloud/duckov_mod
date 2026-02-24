@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>EnderPearl</AssemblyName>
+    <RootNamespace>EnderPearl</RootNamespace>
+
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+
+    <!-- Duckov 安装路径（包含 Duckov.app 的目录）
+         你也可以通过环境变量 DUCKOV_PATH 覆盖：
+         DUCKOV_PATH="/path/to/Escape from Duckov" dotnet build -c Release
+    -->
+    <DuckovPath>$(DUCKOV_PATH)</DuckovPath>
+
+    <!-- 常见 Steam 默认位置（如果你本机不同，请改这里） -->
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' != 'true'">E:\\Program Files (x86)\\Steam\\steamapps\\common\\Escape from Duckov</DuckovPath>
+
+    <SubPath>\Duckov_Data\Managed\</SubPath>
+    <SubPath Condition="'$(IsMac)' == 'true'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+
+    <!-- 构建产物直接复制到 mods/EnderPearl 根目录，便于测试 -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DuckovPath)$(SubPath)TeamSoda.*">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)ItemStatsSystem.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Unity*">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyModDll" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/EnderPearl.dll" />
+  </Target>
+</Project>

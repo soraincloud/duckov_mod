@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/bin/Release/netstandard2.1/EnderPearl.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/bin/Release/netstandard2.1/EnderPearl.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/bin/Release/netstandard2.1/EnderPearl.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.pdb
