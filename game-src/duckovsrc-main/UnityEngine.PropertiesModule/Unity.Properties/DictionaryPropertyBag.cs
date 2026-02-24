@@ -1,0 +1,13 @@
+using System.Collections.Generic;
+
+namespace Unity.Properties;
+
+public class DictionaryPropertyBag<TKey, TValue> : KeyValueCollectionPropertyBag<Dictionary<TKey, TValue>, TKey, TValue>
+{
+	protected override InstantiationKind InstantiationKind => InstantiationKind.PropertyBagOverride;
+
+	protected override Dictionary<TKey, TValue> Instantiate()
+	{
+		return new Dictionary<TKey, TValue>();
+	}
+}

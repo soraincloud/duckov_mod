@@ -1,0 +1,8 @@
+namespace UnityEngine.UIElements;
+
+public enum PanelScreenMatchMode
+{
+	MatchWidthOrHeight,
+	Shrink,
+	Expand
+}

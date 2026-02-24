@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "ri9c5jgOb6g=",
+  "success": true,
+  "projectFilePath": "E:\\MyAddon\\duckov\\src\\Unity.Recorder.Base\\Unity.Recorder.Base.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net40\\1.0.3\\microsoft.netframework.referenceassemblies.net40.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

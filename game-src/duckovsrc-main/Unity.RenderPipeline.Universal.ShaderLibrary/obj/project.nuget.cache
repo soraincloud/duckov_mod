@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "bIqVRisR5bY=",
+  "success": true,
+  "projectFilePath": "E:\\MyAddon\\duckov\\src\\Unity.RenderPipeline.Universal.ShaderLibrary\\Unity.RenderPipeline.Universal.ShaderLibrary.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net40\\1.0.3\\microsoft.netframework.referenceassemblies.net40.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

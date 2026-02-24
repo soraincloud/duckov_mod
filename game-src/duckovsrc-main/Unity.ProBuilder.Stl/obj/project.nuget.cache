@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "HDBbhOha2kg=",
+  "success": true,
+  "projectFilePath": "E:\\MyAddon\\duckov\\src\\Unity.ProBuilder.Stl\\Unity.ProBuilder.Stl.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\admin\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net40\\1.0.3\\microsoft.netframework.referenceassemblies.net40.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

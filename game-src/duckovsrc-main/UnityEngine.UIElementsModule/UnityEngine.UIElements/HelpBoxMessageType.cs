@@ -1,0 +1,9 @@
+namespace UnityEngine.UIElements;
+
+public enum HelpBoxMessageType
+{
+	None,
+	Info,
+	Warning,
+	Error
+}
