@@ -29,7 +29,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         Debug.Log("[EnderPearl] Loaded.");
 
         ApplyLocalizationOverrides();
-        CreateAndRegisterItemPrefab();
+        CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -63,7 +63,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。\n（测试版：NPC 售价 $1）");
     }
 
-    private static void CreateAndRegisterItemPrefab()
+    private static void CreateAndRegisterItemPrefab(string? modPath)
     {
         var go = new GameObject("EnderPearl_ItemPrefab");
         go.SetActive(false);
@@ -75,7 +75,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ReflectionUtil.SetPrivateField(item, "typeID", EnderPearlTypeId);
 
         item.DisplayNameRaw = "Item_EnderPearl";
-        item.Icon = RuntimeIcon.CreatePearlIcon();
+        item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreatePearlIcon();
         item.MaxStackCount = 16;
         item.Value = 1;
         item.Quality = 0;
@@ -88,6 +88,10 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var skillSetting = go.AddComponent<ItemSetting_Skill>();
         skillSetting.Skill = skill;
         skillSetting.onRelease = ItemSetting_Skill.OnReleaseAction.reduceCount;
+
+        // 可选：从 AssetBundle 注入 Handheld/Pickup 模型
+        ModAssets.TryInjectItemAgents(item, modPath);
+        ModAssets.TryAttachModelsOnAgentCreate(item, modPath);
 
         go.SetActive(true);
 
