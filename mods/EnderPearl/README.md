@@ -51,6 +51,33 @@ dotnet build mods/EnderPearl/EnderPearl.csproj -c Release
 
 你可以只做其中一个：只提供 Handheld 或只提供 Pickup 都可以。
 
+## 渲染模式开关（默认 Unlit）
+
+### 本次结论（记录）
+
+末影珍珠的自带模型在 Unity 编辑器里预览正常，但在游戏运行时走 **URP/Lit** 渲染路径会稳定出现“纯蓝/发蓝”的异常（多轮验证 UV/Normals/Tangents/贴图内容后依旧如此）。
+
+把材质强制切到 **Unlit** 时，游戏内显示稳定正常，因此本 MOD 选择：
+
+- 默认：对末影珍珠相关的 Renderer 强制使用 Unlit（尽量保留贴图）。
+- 目的：优先保证“最终可用/可交付”，Lit 的根因留待以后慢慢追。
+
+### 如何切回 Lit（用于后续研究）
+
+在 MOD 目录创建一个空文件：
+
+- `force_lit.txt`
+
+存在时：不再强制 Unlit（尽量回到游戏原本的 Lit 渲染路径）。
+
+兼容说明：
+
+- `force_unlit.txt` 仍会被识别，但由于默认已是 Unlit，一般不再需要。
+
+### 影响
+
+- Unlit 不参与场景光照/阴影与部分后处理效果，外观会更“平”，但能避免当前 Lit 路径的蓝色异常。
+
 ## TypeID
 
 当前固定为：`900001`（如果与你的其他 MOD 冲突，改 [ModBehaviour.cs](ModBehaviour.cs) 里的常量即可）。

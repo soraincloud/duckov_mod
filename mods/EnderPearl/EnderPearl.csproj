@@ -25,6 +25,9 @@
 
     <!-- 构建产物直接复制到 mods/EnderPearl 根目录，便于测试 -->
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+    <!-- 可选：如果你在本机安装了游戏，并且存在 Duckov.app/Contents/Mods/EnderPearl，构建后自动同步过去 -->
+    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/EnderPearl</GameModDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,5 +47,15 @@
 
   <Target Name="CopyModDll" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/EnderPearl.dll" />
+  </Target>
+
+  <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
+    <Message Text="[EnderPearl] Syncing mod files to: $(GameModDir)" Importance="high" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/EnderPearl.dll" DestinationFolder="$(GameModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/enderpearl_assets" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/enderpearl_assets')" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
   </Target>
 </Project>

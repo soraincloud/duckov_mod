@@ -15,7 +15,15 @@ public class EnderPearlProjectile : MonoBehaviour
         var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = "EnderPearl_Projectile";
         go.transform.position = startPos;
-        go.transform.localScale = Vector3.one * 0.22f;
+        // Keep root scale at 1 so attached model scaling is predictable.
+        go.transform.localScale = Vector3.one;
+
+        // Ensure collider size stays reasonable.
+        var sphereCol = go.GetComponent<SphereCollider>();
+        if (sphereCol != null)
+        {
+            sphereCol.radius = 0.11f;
+        }
 
         var rb = go.AddComponent<Rigidbody>();
         rb.mass = 0.2f;
@@ -29,11 +37,20 @@ public class EnderPearlProjectile : MonoBehaviour
         proj._col = go.GetComponent<Collider>();
         proj._maxLifeSeconds = Mathf.Max(0.5f, maxLifeSeconds);
 
-        // 简单上色（避免纯白球太突兀）
+        // Prefer bundle model for flight; fallback to colored sphere if not available.
+        var attached = ModAssets.TryAttachModelToProjectile(go);
         var renderer = go.GetComponent<Renderer>();
         if (renderer != null)
         {
-            renderer.material.color = new Color(0.55f, 0.2f, 0.9f, 1f);
+            if (attached)
+            {
+                renderer.enabled = false;
+            }
+            else
+            {
+                // 简单上色（避免纯白球太突兀）
+                renderer.material.color = new Color(0.55f, 0.2f, 0.9f, 1f);
+            }
         }
 
         proj.StartCoroutine(proj.IgnoreOwnerCollisionForSeconds(0.35f));

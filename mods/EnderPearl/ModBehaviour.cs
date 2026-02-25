@@ -26,6 +26,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         _initialized = true;
 
+        ModLog.Initialize(info.path);
+        ModAssets.SetModPath(info.path);
+
         Debug.Log("[EnderPearl] Loaded.");
 
         ApplyLocalizationOverrides();
@@ -65,6 +68,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
     {
+        ModAssets.SetModPath(modPath);
+
         var go = new GameObject("EnderPearl_ItemPrefab");
         go.SetActive(false);
         UnityEngine.Object.DontDestroyOnLoad(go);
@@ -89,9 +94,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         skillSetting.Skill = skill;
         skillSetting.onRelease = ItemSetting_Skill.OnReleaseAction.reduceCount;
 
-        // 可选：从 AssetBundle 注入 Handheld/Pickup 模型
-        ModAssets.TryInjectItemAgents(item, modPath);
-        ModAssets.TryAttachModelsOnAgentCreate(item, modPath);
+        // 视觉挂载：在“物品实例”启用时订阅 onCreateAgent，自动挂载 bundle 里的模型
+        var visualHook = go.AddComponent<EnderPearlVisualHook>();
+        visualHook.SetModPath(modPath);
 
         go.SetActive(true);
 
