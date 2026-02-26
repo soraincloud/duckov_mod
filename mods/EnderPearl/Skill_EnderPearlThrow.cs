@@ -75,6 +75,8 @@ public class Skill_EnderPearlThrow : SkillBase
         {
             rb.velocity = velocity;
         }
+
+        ModSfx.PlayThrow(startPos);
     }
 
     private static Vector3 CalculateVelocity(Vector3 start, Vector3 target, float verticleSpeed)

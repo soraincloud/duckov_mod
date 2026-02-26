@@ -28,6 +28,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         ModLog.Initialize(info.path);
         ModAssets.SetModPath(info.path);
+        ModSfx.Initialize(info.path);
 
         Debug.Log("[EnderPearl] Loaded.");
 
@@ -40,6 +41,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     protected override void OnBeforeDeactivate()
     {
+        ModSfx.Deinitialize();
         SceneManager.sceneLoaded -= OnSceneLoaded;
 
         if (_prefab != null)

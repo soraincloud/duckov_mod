@@ -116,6 +116,8 @@ public class EnderPearlProjectile : MonoBehaviour
             point = hit.point;
         }
 
+        ModSfx.PlayTransmit(point);
+
         _owner.SetPosition(point + Vector3.up * 0.1f);
         if (LevelManager.Instance != null)
         {

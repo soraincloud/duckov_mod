@@ -36,7 +36,6 @@ dotnet build mods/EnderPearl/EnderPearl.csproj -c Release
 1) 把 AssetBundle 文件放在本 MOD 目录的子目录下（推荐按类型分类）：
 
 - 模型：`assets/bundles/models/`
-- 音效（预留）：`assets/bundles/sfx/`
 
 文件名支持其一：
 
@@ -55,6 +54,14 @@ dotnet build mods/EnderPearl/EnderPearl.csproj -c Release
 	- `EnderPearl_PickupAgent`
 
 你可以只做其中一个：只提供 Handheld 或只提供 Pickup 都可以。
+
+## 音效（SFX）
+
+默认使用 `assets/sfx/*.wav`，通过 **FMOD CoreSystem 直接播放**（不依赖 Unity Audio / 不需要 bank），已验证在 Duckov 中可响：
+
+- `assets/sfx/throw.wav`
+- `assets/sfx/transmit1.wav`
+- `assets/sfx/transmit2.wav`
 
 ## 渲染模式开关（默认 Unlit）
 

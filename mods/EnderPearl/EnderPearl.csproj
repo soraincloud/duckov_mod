@@ -40,6 +40,9 @@
     <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)FMODUnity.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(DuckovPath)$(SubPath)Unity*">
       <Private>False</Private>
     </Reference>
@@ -56,15 +59,15 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
 
     <MakeDir Directories="$(GameModDir)/assets/bundles/models" />
-    <MakeDir Directories="$(GameModDir)/assets/bundles/sfx" />
+    <MakeDir Directories="$(GameModDir)/assets/sfx" />
 
     <ItemGroup>
       <ModelBundleFiles Include="$(MSBuildProjectDirectory)/assets/bundles/models/*" />
-      <SfxBundleFiles Include="$(MSBuildProjectDirectory)/assets/bundles/sfx/*" />
+      <WavSfxFiles Include="$(MSBuildProjectDirectory)/assets/sfx/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(ModelBundleFiles)" DestinationFolder="$(GameModDir)/assets/bundles/models" SkipUnchangedFiles="true" Condition=" '@(ModelBundleFiles)' != '' " />
-    <Copy SourceFiles="@(SfxBundleFiles)" DestinationFolder="$(GameModDir)/assets/bundles/sfx" SkipUnchangedFiles="true" Condition=" '@(SfxBundleFiles)' != '' " />
+    <Copy SourceFiles="@(WavSfxFiles)" DestinationFolder="$(GameModDir)/assets/sfx" SkipUnchangedFiles="true" Condition=" '@(WavSfxFiles)' != '' " />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
   </Target>
 </Project>
