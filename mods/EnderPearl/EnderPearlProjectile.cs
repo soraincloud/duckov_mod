@@ -4,6 +4,9 @@ namespace EnderPearl;
 
 public class EnderPearlProjectile : MonoBehaviour
 {
+    private const float SpinRadPerSecond = 12f;
+    private const float MaxAngularVelocity = 25f;
+
     private CharacterMainControl? _owner;
     private Rigidbody? _rb;
     private Collider? _col;
@@ -28,8 +31,12 @@ public class EnderPearlProjectile : MonoBehaviour
         var rb = go.AddComponent<Rigidbody>();
         rb.mass = 0.2f;
         rb.drag = 0.05f;
-        rb.angularDrag = 0.05f;
+        // "Weightless" feel: keep spinning in flight.
+        rb.angularDrag = 0f;
+        rb.maxAngularVelocity = MaxAngularVelocity;
+        rb.angularVelocity = UnityEngine.Random.onUnitSphere * SpinRadPerSecond;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         var proj = go.AddComponent<EnderPearlProjectile>();
         proj._owner = owner;
