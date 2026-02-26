@@ -55,7 +55,8 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)/EnderPearl.dll" DestinationFolder="$(GameModDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/enderpearl_assets" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/enderpearl_assets')" />
+    <MakeDir Directories="$(GameModDir)/assets/bundles" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/assets/bundles/enderpearl_assets" DestinationFolder="$(GameModDir)/assets/bundles" Condition="Exists('$(MSBuildProjectDirectory)/assets/bundles/enderpearl_assets')" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
   </Target>
 </Project>

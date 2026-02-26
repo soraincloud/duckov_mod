@@ -14,7 +14,8 @@ internal static class ModAssets
     private const string ForceUnlitFlagFileName = "force_unlit.txt";
     private const string ForceLitFlagFileName = "force_lit.txt";
 
-    // Bundle file names we will try under the mod folder
+    // Bundle file names we will try under the mod folder.
+    // Note: We search `assets/bundles/` first, then fall back to the mod root for backward-compat.
     private static readonly string[] BundleCandidateNames =
     {
         "enderpearl_assets",
@@ -461,52 +462,61 @@ internal static class ModAssets
             return _bundle;
         }
 
-        foreach (var name in BundleCandidateNames)
+        var candidateBaseDirs = new[]
         {
-            var bundlePath = Path.Combine(modPath, name);
-            if (!File.Exists(bundlePath))
-            {
-                continue;
-            }
+            Path.Combine(modPath, "assets", "bundles"),
+            modPath
+        };
 
-            try
+        foreach (var baseDir in candidateBaseDirs)
+        {
+            foreach (var name in BundleCandidateNames)
             {
+                var bundlePath = Path.Combine(baseDir, name);
+                if (!File.Exists(bundlePath))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    var fi = new FileInfo(bundlePath);
-                    ModLog.Info($"[EnderPearl] Loading AssetBundle file: name='{name}' bytes={fi.Length} lastWriteUtc={fi.LastWriteTimeUtc:O}");
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                _bundle = AssetBundle.LoadFromFile(bundlePath);
-                if (_bundle != null)
-                {
-                    ModLog.Info($"[EnderPearl] Loaded AssetBundle: {bundlePath}");
                     try
                     {
-                        var assets = _bundle.GetAllAssetNames();
-                        if (assets != null && assets.Length > 0)
-                        {
-                            ModLog.Info($"[EnderPearl] Bundle assets ({assets.Length}):\n- {string.Join("\n- ", assets)}");
-                        }
-                        else
-                        {
-                            ModLog.Warn("[EnderPearl] Bundle loaded but GetAllAssetNames returned empty.");
-                        }
+                        var fi = new FileInfo(bundlePath);
+                        ModLog.Info($"[EnderPearl] Loading AssetBundle file: path='{bundlePath}' bytes={fi.Length} lastWriteUtc={fi.LastWriteTimeUtc:O}");
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        ModLog.Warn($"[EnderPearl] Failed to list bundle assets: {e.Message}");
+                        // ignore
                     }
-                    return _bundle;
+
+                    _bundle = AssetBundle.LoadFromFile(bundlePath);
+                    if (_bundle != null)
+                    {
+                        ModLog.Info($"[EnderPearl] Loaded AssetBundle: {bundlePath}");
+                        try
+                        {
+                            var assets = _bundle.GetAllAssetNames();
+                            if (assets != null && assets.Length > 0)
+                            {
+                                ModLog.Info($"[EnderPearl] Bundle assets ({assets.Length}):\n- {string.Join("\n- ", assets)}");
+                            }
+                            else
+                            {
+                                ModLog.Warn("[EnderPearl] Bundle loaded but GetAllAssetNames returned empty.");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            ModLog.Warn($"[EnderPearl] Failed to list bundle assets: {e.Message}");
+                        }
+                        return _bundle;
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                ModLog.Warn($"[EnderPearl] Failed to load AssetBundle '{bundlePath}': {e.Message}");
+                catch (Exception e)
+                {
+                    ModLog.Warn($"[EnderPearl] Failed to load AssetBundle '{bundlePath}': {e.Message}");
+                }
             }
         }
 

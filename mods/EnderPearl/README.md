@@ -33,7 +33,11 @@ dotnet build mods/EnderPearl/EnderPearl.csproj -c Release
 
 本 MOD 支持从 AssetBundle 注入 3D 资源（没有 AssetBundle 也不影响功能）。
 
-1) 把 AssetBundle 文件放在本目录，文件名支持其一：
+1) 把 AssetBundle 文件放在本 MOD 目录的子目录下：
+
+- `assets/bundles/`
+
+文件名支持其一：
 
 - `enderpearl_assets`
 - `enderpearl_assets.bundle`
