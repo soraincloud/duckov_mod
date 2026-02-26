@@ -464,7 +464,12 @@ internal static class ModAssets
 
         var candidateBaseDirs = new[]
         {
+            // Organized bundles (preferred)
+            Path.Combine(modPath, "assets", "bundles", "models"),
+            Path.Combine(modPath, "assets", "bundles", "sfx"),
+            // Backward compatible: allow bundles directly under assets/bundles
             Path.Combine(modPath, "assets", "bundles"),
+            // Backward compatible: allow bundles at mod root
             modPath
         };
 

@@ -55,8 +55,16 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)/EnderPearl.dll" DestinationFolder="$(GameModDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
 
-    <MakeDir Directories="$(GameModDir)/assets/bundles" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/assets/bundles/enderpearl_assets" DestinationFolder="$(GameModDir)/assets/bundles" Condition="Exists('$(MSBuildProjectDirectory)/assets/bundles/enderpearl_assets')" />
+    <MakeDir Directories="$(GameModDir)/assets/bundles/models" />
+    <MakeDir Directories="$(GameModDir)/assets/bundles/sfx" />
+
+    <ItemGroup>
+      <ModelBundleFiles Include="$(MSBuildProjectDirectory)/assets/bundles/models/*" />
+      <SfxBundleFiles Include="$(MSBuildProjectDirectory)/assets/bundles/sfx/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ModelBundleFiles)" DestinationFolder="$(GameModDir)/assets/bundles/models" SkipUnchangedFiles="true" Condition=" '@(ModelBundleFiles)' != '' " />
+    <Copy SourceFiles="@(SfxBundleFiles)" DestinationFolder="$(GameModDir)/assets/bundles/sfx" SkipUnchangedFiles="true" Condition=" '@(SfxBundleFiles)' != '' " />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
   </Target>
 </Project>
