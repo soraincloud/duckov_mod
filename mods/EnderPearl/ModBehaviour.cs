@@ -94,7 +94,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var skill = go.AddComponent<Skill_EnderPearlThrow>();
         var skillSetting = go.AddComponent<ItemSetting_Skill>();
         skillSetting.Skill = skill;
-        skillSetting.onRelease = ItemSetting_Skill.OnReleaseAction.reduceCount;
+        // The game's built-in reduceCount does NOT trigger in base level.
+        // We handle consumption ourselves inside Skill_EnderPearlThrow so it always consumes.
+        skillSetting.onRelease = ItemSetting_Skill.OnReleaseAction.none;
 
         // 视觉挂载：在“物品实例”启用时订阅 onCreateAgent，自动挂载 bundle 里的模型
         var visualHook = go.AddComponent<EnderPearlVisualHook>();

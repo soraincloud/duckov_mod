@@ -11,6 +11,7 @@ internal static class ModAssets
     internal static string? CurrentModPath { get; private set; }
 
     private const string IconFileName = "icon.png";
+    private const string EnderPearlIconRelativePath = "assets/item-icons/Ender_Pearl.png";
     private const string ForceUnlitFlagFileName = "force_unlit.txt";
     private const string ForceLitFlagFileName = "force_lit.txt";
 
@@ -194,13 +195,39 @@ internal static class ModAssets
                 return null;
             }
 
+            // Preferred: load from assets/item-icons (project-shipped icon).
+            var itemIconPath = Path.Combine(modPath, EnderPearlIconRelativePath);
+            if (File.Exists(itemIconPath))
+            {
+                var sprite = TryLoadSpriteFromPngFile(itemIconPath, "EnderPearl_Icon");
+                if (sprite != null) return sprite;
+            }
+
             var iconPath = Path.Combine(modPath, IconFileName);
             if (!File.Exists(iconPath))
             {
                 return null;
             }
 
-            var pngBytes = File.ReadAllBytes(iconPath);
+            return TryLoadSpriteFromPngFile(iconPath, "EnderPearl_Icon");
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[EnderPearl] Failed to load icon.png: {e.Message}");
+            return null;
+        }
+    }
+
+    private static Sprite? TryLoadSpriteFromPngFile(string pngPath, string textureName)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(pngPath) || !File.Exists(pngPath))
+            {
+                return null;
+            }
+
+            var pngBytes = File.ReadAllBytes(pngPath);
             if (pngBytes.Length == 0)
             {
                 return null;
@@ -213,7 +240,7 @@ internal static class ModAssets
                 return null;
             }
 
-            texture.name = "EnderPearl_Icon";
+            texture.name = textureName;
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.filterMode = FilterMode.Bilinear;
 
@@ -223,9 +250,8 @@ internal static class ModAssets
             // Using pixelsPerUnit=100 is a common Unity default; UI will scale anyway.
             return Sprite.Create(texture, rect, pivot, pixelsPerUnit: 100f);
         }
-        catch (Exception e)
+        catch
         {
-            ModLog.Warn($"[EnderPearl] Failed to load icon.png: {e.Message}");
             return null;
         }
     }

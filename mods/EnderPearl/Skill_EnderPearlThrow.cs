@@ -1,3 +1,4 @@
+using ItemStatsSystem;
 using UnityEngine;
 
 namespace EnderPearl;
@@ -74,6 +75,29 @@ public class Skill_EnderPearlThrow : SkillBase
         if (rb != null)
         {
             rb.velocity = velocity;
+        }
+
+        // Consume 1 pearl only outside base level.
+        // (In base level, keep infinite testing behavior.)
+        try
+        {
+            var isBase = LevelManager.Instance != null && LevelManager.Instance.IsBaseLevel;
+            if (!isBase && fromItem != null)
+            {
+                if (fromItem.Stackable)
+                {
+                    fromItem.StackCount--;
+                }
+                else
+                {
+                    fromItem.Detach();
+                    fromItem.DestroyTree();
+                }
+            }
+        }
+        catch
+        {
+            // If consumption fails for any reason, we still allow the throw.
         }
 
         ModSfx.PlayThrow(startPos);
