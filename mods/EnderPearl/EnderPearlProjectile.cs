@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace EnderPearl;
 
@@ -196,10 +197,10 @@ public class EnderPearlProjectile : MonoBehaviour
 
         var main = ps.main;
         main.loop = false;
-        main.duration = 1.2f;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.75f, 1.35f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(0.15f, 0.45f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.045f, 0.09f);
+        main.duration = 1.25f;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.7f, 1.2f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.55f, 1.15f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.1f);
         main.gravityModifier = 0.0f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.maxParticles = 64;
@@ -214,7 +215,12 @@ public class EnderPearlProjectile : MonoBehaviour
         var shape = ps.shape;
         shape.enabled = true;
         shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.18f;
+        shape.radius = 0.28f;
+
+        var vel = ps.velocityOverLifetime;
+        vel.enabled = true;
+        vel.space = ParticleSystemSimulationSpace.World;
+        vel.radial = new ParticleSystem.MinMaxCurve(0.12f, 0.35f);
 
         var col = ps.colorOverLifetime;
         col.enabled = true;
@@ -223,6 +229,8 @@ public class EnderPearlProjectile : MonoBehaviour
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         renderer.renderMode = ParticleSystemRenderMode.Billboard;
         renderer.sortingFudge = 1f;
+        renderer.shadowCastingMode = ShadowCastingMode.Off;
+        renderer.receiveShadows = false;
 
         _teleportParticleMaterial ??= TryCreateTeleportParticleMaterial();
         if (_teleportParticleMaterial != null)
@@ -306,6 +314,20 @@ public class EnderPearlProjectile : MonoBehaviour
         {
             return null;
         }
-        return new Material(shader);
+
+        var material = new Material(shader);
+
+        // Use a mild tint boost for glow-like look while avoiding aggressive HDR bloom cost.
+        var glowColor = new Color(202f / 255f, 109f / 255f, 225f / 255f, 1f) * 1.2f;
+        if (material.HasProperty("_TintColor"))
+        {
+            material.SetColor("_TintColor", glowColor);
+        }
+        if (material.HasProperty("_Color"))
+        {
+            material.SetColor("_Color", glowColor);
+        }
+
+        return material;
     }
 }
