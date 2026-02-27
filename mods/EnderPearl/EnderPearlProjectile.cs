@@ -11,6 +11,9 @@ public class EnderPearlProjectile : MonoBehaviour
     private float _maxLifeSeconds;
 
     private static Material? _teleportParticleMaterial;
+    private static readonly System.Collections.Generic.Queue<ParticleSystem> _teleportFxPool = new();
+    private static int _teleportFxCreated;
+    private const int TeleportFxPoolMax = 6;
 
     public static GameObject Create(Vector3 startPos, CharacterMainControl owner, float maxLifeSeconds)
     {
@@ -139,96 +142,83 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static void SpawnTeleportParticles(Vector3 position)
     {
-        // Simple, self-contained purple particle burst (Enderman-ish).
-        // Darker purple target (approx): #ca6de1
-        var brightPurple = new Color(202f / 255f, 109f / 255f, 225f / 255f, 1f);
-        var brightPurpleEnd = new Color(180f / 255f, 85f / 255f, 210f / 255f, 1f);
-        // Subtle glow: HDR intensity (> 1) but keep the tone darker.
-        var glowStart = Color.Lerp(brightPurple, Color.white, 0.06f) * 1.8f;
-        glowStart.a = 1f;
-        var glowEnd = Color.Lerp(brightPurpleEnd, Color.white, 0.04f) * 1.45f;
-        glowEnd.a = 1f;
-        var go = new GameObject("EnderPearl_TeleportFX");
-        go.transform.position = position;
+        // NOTE (Windows perf): creating/destroying ParticleSystems on demand can cause big stalls
+        // (GC + resource churn + bloom/overdraw). Use a tiny pool and keep the effect simple.
+        // Target tone: #ca6de1
+        var colorStart = new Color(202f / 255f, 109f / 255f, 225f / 255f, 1f);
+        var colorEnd = new Color(180f / 255f, 85f / 255f, 210f / 255f, 1f);
 
+        var ps = GetOrCreateTeleportFx();
+        if (ps == null)
+        {
+            return;
+        }
+
+        var t = ps.transform;
+        t.position = position;
+
+        // Ensure color matches latest tuning.
+        var main = ps.main;
+        main.startColor = colorStart;
+
+        var col = ps.colorOverLifetime;
+        if (col.enabled)
+        {
+            col.color = CreateTeleportGradient(colorStart, colorEnd);
+        }
+
+        ps.Clear(withChildren: true);
+        ps.Play(withChildren: true);
+    }
+
+    private static ParticleSystem? GetOrCreateTeleportFx()
+    {
+        if (_teleportFxPool.Count > 0)
+        {
+            var pooled = _teleportFxPool.Dequeue();
+            if (pooled != null)
+            {
+                pooled.gameObject.SetActive(true);
+                return pooled;
+            }
+        }
+
+        if (_teleportFxCreated >= TeleportFxPoolMax)
+        {
+            // If pool is exhausted, do nothing rather than creating more and risking spikes.
+            return null;
+        }
+
+        _teleportFxCreated++;
+
+        var go = new GameObject("EnderPearl_TeleportFX");
         var ps = go.AddComponent<ParticleSystem>();
+
         var main = ps.main;
         main.loop = false;
-        main.duration = 2.2f;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.5f, 2.8f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(0.25f, 0.8f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
-        main.startColor = glowStart;
+        main.duration = 1.2f;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.75f, 1.35f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.15f, 0.45f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.045f, 0.09f);
         main.gravityModifier = 0.0f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.maxParticles = 80;
+        main.maxParticles = 64;
 
         var emission = ps.emission;
         emission.rateOverTime = 0f;
         emission.SetBursts(new[]
         {
-            new ParticleSystem.Burst(0f, 55)
+            new ParticleSystem.Burst(0f, 22)
         });
 
         var shape = ps.shape;
         shape.enabled = true;
         shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.25f;
-
-        var vel = ps.velocityOverLifetime;
-        vel.enabled = true;
-        vel.space = ParticleSystemSimulationSpace.World;
-        // Slow drift with slight upward float.
-        vel.radial = new ParticleSystem.MinMaxCurve(0.12f, 0.45f);
-        vel.y = new ParticleSystem.MinMaxCurve(0.10f, 0.35f);
-
-        var noise = ps.noise;
-        noise.enabled = true;
-        noise.quality = ParticleSystemNoiseQuality.Medium;
-        noise.strength = new ParticleSystem.MinMaxCurve(0.08f, 0.22f);
-        noise.frequency = 0.35f;
-        noise.damping = true;
+        shape.radius = 0.18f;
 
         var col = ps.colorOverLifetime;
         col.enabled = true;
-        col.color = new ParticleSystem.MinMaxGradient(
-            new Gradient
-            {
-                colorKeys = new[]
-                {
-                    new GradientColorKey(brightPurple, 0f),
-                    new GradientColorKey(brightPurpleEnd, 1f)
-                },
-                alphaKeys = new[]
-                {
-                    new GradientAlphaKey(0.95f, 0f),
-                    new GradientAlphaKey(0.85f, 0.7f),
-                    new GradientAlphaKey(0.0f, 1f)
-                }
-            }
-        );
-
-        // Also push a HDR gradient into the particle color stream (works best with additive shaders).
-        col.color = new ParticleSystem.MinMaxGradient(
-            new Gradient
-            {
-                colorKeys = new[]
-                {
-                    new GradientColorKey(glowStart, 0f),
-                    new GradientColorKey(glowEnd, 1f)
-                },
-                alphaKeys = new[]
-                {
-                    new GradientAlphaKey(0.95f, 0f),
-                    new GradientAlphaKey(0.85f, 0.7f),
-                    new GradientAlphaKey(0.0f, 1f)
-                }
-            }
-        );
-
-        var size = ps.sizeOverLifetime;
-        size.enabled = true;
-        size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0f));
+        col.color = CreateTeleportGradient(new Color(1f, 1f, 1f, 1f), new Color(1f, 1f, 1f, 1f));
 
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         renderer.renderMode = ParticleSystemRenderMode.Billboard;
@@ -238,32 +228,63 @@ public class EnderPearlProjectile : MonoBehaviour
         if (_teleportParticleMaterial != null)
         {
             renderer.sharedMaterial = _teleportParticleMaterial;
-
-            // Try to brighten material tint as well (shader-dependent).
-            try
-            {
-                if (renderer.sharedMaterial.HasProperty("_TintColor"))
-                {
-                    renderer.sharedMaterial.SetColor("_TintColor", glowStart);
-                }
-                else if (renderer.sharedMaterial.HasProperty("_Color"))
-                {
-                    renderer.sharedMaterial.SetColor("_Color", glowStart);
-                }
-            }
-            catch
-            {
-                // ignore
-            }
         }
 
-        ps.Play(true);
-        Destroy(go, 6.0f);
+        var recycle = go.AddComponent<TeleportFxRecycle>();
+        recycle.SetParticleSystem(ps);
+
+        return ps;
+    }
+
+    private static ParticleSystem.MinMaxGradient CreateTeleportGradient(Color start, Color end)
+    {
+        return new ParticleSystem.MinMaxGradient(
+            new Gradient
+            {
+                colorKeys = new[]
+                {
+                    new GradientColorKey(start, 0f),
+                    new GradientColorKey(end, 1f)
+                },
+                alphaKeys = new[]
+                {
+                    new GradientAlphaKey(0.95f, 0f),
+                    new GradientAlphaKey(0.0f, 1f)
+                }
+            }
+        );
+    }
+
+    private sealed class TeleportFxRecycle : MonoBehaviour
+    {
+        private ParticleSystem? _ps;
+
+        internal void SetParticleSystem(ParticleSystem ps)
+        {
+            _ps = ps;
+        }
+
+        private void Update()
+        {
+            if (_ps == null)
+            {
+                return;
+            }
+
+            // Recycle when finished.
+            if (!_ps.IsAlive(withChildren: true))
+            {
+                gameObject.SetActive(false);
+                _teleportFxPool.Enqueue(_ps);
+            }
+        }
     }
 
     private static Material? TryCreateTeleportParticleMaterial()
     {
         // Prefer unlit particle shaders so the purple stays vivid under different lighting.
+        // Prefer additive for a "glow" look, but keep the effect cheap (low particle count + pooling).
+        // Avoid HDR intensity > 1 elsewhere to reduce bloom-related spikes on some Windows setups.
         var shader = Shader.Find("Particles/Additive");
         if (shader == null)
         {

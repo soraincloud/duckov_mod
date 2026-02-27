@@ -354,6 +354,34 @@ internal static class ModAssets
                 }
             }
 
+            // Handheld agents often have a default 2D icon/quad renderer.
+            // If we inject a 3D model, disable other renderers under this agent to avoid double-visuals.
+            if (agent.AgentType == ItemAgent.AgentTypes.handheld)
+            {
+                var allAgentRenderers = agent.GetComponentsInChildren<Renderer>(includeInactive: true);
+                var disabled = 0;
+                if (allAgentRenderers != null)
+                {
+                    foreach (var ar in allAgentRenderers)
+                    {
+                        if (ar == null) continue;
+                        if (ar.transform == null) continue;
+                        if (ar.transform.IsChildOf(instance.transform)) continue;
+
+                        if (ar.enabled)
+                        {
+                            ar.enabled = false;
+                            disabled++;
+                        }
+                    }
+                }
+
+                if (disabled > 0)
+                {
+                    ModLog.Info($"[EnderPearl] Handheld agent: disabled {disabled} original renderer(s) to prevent double visuals.");
+                }
+            }
+
             ModLog.Info($"[EnderPearl] Attached model '{modelPrefab.name}' to agentType={agent.AgentType} renderers={(renderers?.Length ?? 0)} layer={targetLayer} prefabLocalScale={prefabLocalScale} instanceLocalScale={instance.transform.localScale}");
         }
         catch (Exception e)

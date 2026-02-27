@@ -27,3 +27,7 @@
 - macOS：官方示例提到位于 `Duckov.app/Contents/Mods/`
 
 具体以你的游戏安装目录为准。
+
+## 教程
+
+- [BUILD_AND_DEPLOY.md](BUILD_AND_DEPLOY.md)：编译并部署 Mod 到游戏目录（本地测试）
