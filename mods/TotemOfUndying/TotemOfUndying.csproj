@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>TotemOfUndying</AssemblyName>
+    <RootNamespace>TotemOfUndying</RootNamespace>
+
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+
+    <!-- Duckov 安装路径（包含 Duckov.app 的目录）
+         你也可以通过环境变量 DUCKOV_PATH 覆盖：
+         DUCKOV_PATH="/path/to/Escape from Duckov" dotnet build -c Release
+    -->
+    <DuckovPath>$(DUCKOV_PATH)</DuckovPath>
+
+    <!-- 常见 Steam 默认位置（如果你本机不同，请改这里） -->
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' != 'true'">E:\\Program Files (x86)\\Steam\\steamapps\\common\\Escape from Duckov</DuckovPath>
+
+    <SubPath>\Duckov_Data\Managed\</SubPath>
+    <SubPath Condition="'$(IsMac)' == 'true'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+
+    <!-- 构建产物直接复制到 mods/TotemOfUndying 根目录，便于测试 -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+    <!-- 可选：如果你在本机安装了游戏，并且存在 Duckov.app/Contents/Mods/TotemOfUndying，构建后自动同步过去 -->
+    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/TotemOfUndying</GameModDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DuckovPath)$(SubPath)TeamSoda.*">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)ItemStatsSystem.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)FMODUnity.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Unity*">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyModDll" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/TotemOfUndying.dll" />
+  </Target>
+
+  <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
+    <Message Text="[TotemOfUndying] Syncing mod files to: $(GameModDir)" Importance="high" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/TotemOfUndying.dll" DestinationFolder="$(GameModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
+  </Target>
+</Project>
