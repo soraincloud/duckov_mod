@@ -9,3 +9,14 @@
 /Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.sourcelink.json
 /Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.dll
 /Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.pdb
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/bin/Release/netstandard2.1/TotemOfUndying.deps.json
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/bin/Release/netstandard2.1/TotemOfUndying.dll
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/bin/Release/netstandard2.1/TotemOfUndying.pdb
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.csproj.AssemblyReference.cache
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.GeneratedMSBuildEditorConfig.editorconfig
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.AssemblyInfoInputs.cache
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.AssemblyInfo.cs
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.csproj.CoreCompileInputs.cache
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.sourcelink.json
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.dll
+/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.pdb

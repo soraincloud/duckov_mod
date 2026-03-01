@@ -18,7 +18,7 @@
 - 同时爆发黄色 + 绿色粒子
 
 获取方式：
-- NPC 橘子处购买（装备商人 `Merchant_Equipment`），售价 `$300`
+- NPC 橘子处购买（装备商人 `Merchant_Equipment`），售价 `$1`
 
 开发者：soraincloud  
 策划：吱吱歪
@@ -46,7 +46,7 @@ bash mods/TotemOfUndying/deploy.sh
 ## 贴图/模型说明
 
 你可以先不提供资源，功能不受影响：
-- 物品贴图：不放 `icon.png` 时会使用运行时占位图标
+- 物品贴图：优先使用 `assets/item-icons/TotemOfUndying.png`，缺失时回退到 `icon.png`，再缺失则使用运行时占位图标
 - 3D 模型与预览图：可后续补齐
 
 ## TypeID

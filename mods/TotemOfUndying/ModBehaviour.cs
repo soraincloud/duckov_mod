@@ -85,7 +85,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.DisplayNameRaw = DisplayNameKey;
         item.Icon = TryLoadIconSprite(modPath) ?? RuntimeIcon.CreateTotemIcon();
         item.MaxStackCount = 1;
-        item.Value = 300;
+        item.Value = 1;
         item.Quality = 3;
         item.SetBool("IsSkill", false);
 
@@ -257,7 +257,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         try
         {
-            var iconPath = Path.Combine(modPath, "icon.png");
+            var iconPath = Path.Combine(modPath, "assets", "item-icons", "TotemOfUndying.png");
+            if (!File.Exists(iconPath))
+            {
+                iconPath = Path.Combine(modPath, "icon.png");
+            }
+
             if (!File.Exists(iconPath))
             {
                 return null;
@@ -284,7 +289,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[TotemOfUndying] Failed to load icon.png: {e.Message}");
+            ModLog.Warn($"[TotemOfUndying] Failed to load icon: {e.Message}");
             return null;
         }
     }

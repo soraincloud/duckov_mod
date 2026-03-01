@@ -1,6 +1,6 @@
 is_global = true
 build_property.RootNamespace = TotemOfUndying
-build_property.ProjectDir = /Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/
+build_property.ProjectDir = /Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.CsWinRTUseWindowsUIXamlProjections = false

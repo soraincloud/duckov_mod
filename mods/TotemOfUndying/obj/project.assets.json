@@ -8,25 +8,24 @@
     ".NETStandard,Version=v2.1": []
   },
   "packageFolders": {
-    "/Users/sric/.nuget/packages/": {}
+    "/Users/soraincloud/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
+      "projectUniqueName": "/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
       "projectName": "TotemOfUndying",
-      "projectPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
-      "packagesPath": "/Users/sric/.nuget/packages/",
-      "outputPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/obj/",
+      "projectPath": "/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
+      "packagesPath": "/Users/soraincloud/.nuget/packages/",
+      "outputPath": "/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/sric/.nuget/NuGet/NuGet.Config"
+        "/Users/soraincloud/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netstandard2.1"
       ],
       "sources": {
-        "/opt/homebrew/Cellar/dotnet/10.0.103/libexec/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -72,7 +71,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/10.0.103/libexec/sdk/10.0.103/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/RuntimeIdentifierGraph.json"
       }
     }
   }
