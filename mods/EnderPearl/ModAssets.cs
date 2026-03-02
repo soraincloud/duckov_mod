@@ -471,6 +471,33 @@ internal static class ModAssets
             instance.transform.localPosition = Vector3.zero;
             // Keep prefab-authored rotation/scale (do not override), so creators can tune it in Unity.
 
+            // Important: imported visual prefabs may contain colliders/rigidbodies.
+            // If kept on the projectile hierarchy, they join projectile physics and can
+            // cause immediate self/owner collision, leading to instant teleport.
+            var modelColliders = instance.GetComponentsInChildren<Collider>(includeInactive: true);
+            if (modelColliders != null)
+            {
+                foreach (var c in modelColliders)
+                {
+                    if (c != null)
+                    {
+                        UnityEngine.Object.Destroy(c);
+                    }
+                }
+            }
+
+            var modelRigidbodies = instance.GetComponentsInChildren<Rigidbody>(includeInactive: true);
+            if (modelRigidbodies != null)
+            {
+                foreach (var rb in modelRigidbodies)
+                {
+                    if (rb != null)
+                    {
+                        UnityEngine.Object.Destroy(rb);
+                    }
+                }
+            }
+
             SetLayerRecursively(instance, projectileRoot.layer);
 
             var renderers = instance.GetComponentsInChildren<Renderer>(includeInactive: true);
@@ -482,6 +509,13 @@ internal static class ModAssets
                     r.enabled = true;
                     TryApplyVisualMaterialFixes(r, modPath);
                 }
+            }
+
+            // Center visual bounds to projectile origin at runtime so spin looks natural
+            // even when source mesh pivot/origin is off-center.
+            if (TryCenterModelByRenderBounds(instance, projectileRoot.transform, out var appliedOffset))
+            {
+                ModLog.Info($"[EnderPearl] Projectile model auto-centered by bounds. localOffset={appliedOffset}");
             }
 
             ModLog.Info($"[EnderPearl] Projectile model '{modelPrefab.name}' attached. renderers={(renderers?.Length ?? 0)} layer={projectileRoot.layer}");
@@ -507,6 +541,54 @@ internal static class ModAssets
                 SetLayerRecursively(child.gameObject, layer);
             }
         }
+    }
+
+    private static bool TryCenterModelByRenderBounds(GameObject modelRoot, Transform pivot, out Vector3 appliedLocalOffset)
+    {
+        appliedLocalOffset = Vector3.zero;
+
+        if (modelRoot == null || pivot == null)
+        {
+            return false;
+        }
+
+        var renderers = modelRoot.GetComponentsInChildren<Renderer>(includeInactive: true);
+        if (renderers == null || renderers.Length == 0)
+        {
+            return false;
+        }
+
+        var hasBounds = false;
+        var combined = new Bounds();
+        foreach (var r in renderers)
+        {
+            if (r == null) continue;
+            if (!hasBounds)
+            {
+                combined = r.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                combined.Encapsulate(r.bounds);
+            }
+        }
+
+        if (!hasBounds)
+        {
+            return false;
+        }
+
+        var centerWorld = combined.center;
+        var centerInPivot = pivot.InverseTransformPoint(centerWorld);
+        if (centerInPivot.sqrMagnitude < 0.0000001f)
+        {
+            return false;
+        }
+
+        appliedLocalOffset = -centerInPivot;
+        modelRoot.transform.localPosition += appliedLocalOffset;
+        return true;
     }
 
     private static AssetBundle? TryLoadBundle(string modPath)

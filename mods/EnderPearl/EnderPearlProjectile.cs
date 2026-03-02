@@ -10,6 +10,9 @@ public class EnderPearlProjectile : MonoBehaviour
     private Collider? _col;
     private bool _teleported;
     private float _maxLifeSeconds;
+    private float _spawnTime;
+
+    private const float ArmDelaySeconds = 0.12f;
 
     private static Material? _teleportParticleMaterial;
     private static readonly System.Collections.Generic.Queue<ParticleSystem> _teleportFxPool = new();
@@ -45,6 +48,7 @@ public class EnderPearlProjectile : MonoBehaviour
         proj._rb = rb;
         proj._col = go.GetComponent<Collider>();
         proj._maxLifeSeconds = Mathf.Max(0.5f, maxLifeSeconds);
+        proj._spawnTime = Time.time;
 
         // Prefer bundle model for flight; fallback to colored sphere if not available.
         var attached = ModAssets.TryAttachModelToProjectile(go);
@@ -76,22 +80,63 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private System.Collections.IEnumerator IgnoreOwnerCollisionForSeconds(float seconds)
     {
-        if (_owner == null || _col == null)
+        if (_owner == null)
         {
             yield break;
         }
 
-        var ownerCol = _owner.GetComponent<Collider>();
-        if (ownerCol == null)
+        var ownerCols = _owner.GetComponentsInChildren<Collider>(includeInactive: true);
+        if (ownerCols == null || ownerCols.Length == 0)
         {
             yield break;
         }
 
-        Physics.IgnoreCollision(ownerCol, _col, true);
+        var projectileCols = GetComponentsInChildren<Collider>(includeInactive: true);
+        if (projectileCols == null || projectileCols.Length == 0)
+        {
+            if (_col == null)
+            {
+                yield break;
+            }
+            projectileCols = new[] { _col };
+        }
+
+        foreach (var ownerCol in ownerCols)
+        {
+            if (ownerCol == null)
+            {
+                continue;
+            }
+
+            foreach (var projectileCol in projectileCols)
+            {
+                if (projectileCol == null)
+                {
+                    continue;
+                }
+
+                Physics.IgnoreCollision(ownerCol, projectileCol, true);
+            }
+        }
+
         yield return new WaitForSeconds(seconds);
-        if (ownerCol != null && _col != null)
+
+        foreach (var ownerCol in ownerCols)
         {
-            Physics.IgnoreCollision(ownerCol, _col, false);
+            if (ownerCol == null)
+            {
+                continue;
+            }
+
+            foreach (var projectileCol in projectileCols)
+            {
+                if (projectileCol == null)
+                {
+                    continue;
+                }
+
+                Physics.IgnoreCollision(ownerCol, projectileCol, false);
+            }
         }
     }
 
@@ -101,6 +146,23 @@ public class EnderPearlProjectile : MonoBehaviour
         {
             return;
         }
+
+        // Ignore owner/self contacts (owner often has multiple child colliders).
+        if (_owner != null)
+        {
+            var other = collision.collider != null ? collision.collider.transform : collision.transform;
+            if (other != null && other.IsChildOf(_owner.transform))
+            {
+                return;
+            }
+        }
+
+        // Small arm delay to avoid immediate spawn overlap causing instant teleport.
+        if (Time.time - _spawnTime < ArmDelaySeconds)
+        {
+            return;
+        }
+
         _teleported = true;
 
         if (_owner == null)
