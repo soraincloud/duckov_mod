@@ -49,6 +49,11 @@ bash mods/TotemOfUndying/deploy.sh
 - 物品贴图：优先使用 `assets/item-icons/TotemOfUndying.png`，缺失时回退到 `icon.png`，再缺失则使用运行时占位图标
 - 3D 模型与预览图：可后续补齐
 
+注意（重要）：
+- **当前 TotemOfUndying 代码只会读取图标，不会加载 `assets/bundles/models/` 里的 AssetBundle。**
+- 因此就算你已经在 Unity 导出了 `HandheldAgent/PickupAgent` 或模型 bundle，现阶段 Totem 运行时也不会自动使用。
+- 如果你希望 Totem 走和 EnderPearl 一样的 3D 资源加载流程，需要额外实现对应的 bundle 加载与 agent/model 挂载代码。
+
 ## TypeID
 
 当前固定为：`900011`（如有冲突，可改 `ModBehaviour.cs` 中常量）。

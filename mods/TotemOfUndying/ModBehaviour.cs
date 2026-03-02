@@ -38,7 +38,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
-        TotemRescueSystem.Initialize();
+        TotemRescueSystem.Initialize(info.path);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
