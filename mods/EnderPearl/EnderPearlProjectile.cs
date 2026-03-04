@@ -265,13 +265,13 @@ public class EnderPearlProjectile : MonoBehaviour
         main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.1f);
         main.gravityModifier = 0.0f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.maxParticles = 64;
+        main.maxParticles = 42;
 
         var emission = ps.emission;
         emission.rateOverTime = 0f;
         emission.SetBursts(new[]
         {
-            new ParticleSystem.Burst(0f, 22)
+            new ParticleSystem.Burst(0f, 15)
         });
 
         var shape = ps.shape;

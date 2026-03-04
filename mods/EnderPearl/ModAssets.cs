@@ -354,9 +354,9 @@ internal static class ModAssets
                 }
             }
 
-            // Handheld agents often have a default 2D icon/quad renderer.
+            // Handheld / Pickup agents often have a default 2D icon/quad renderer.
             // If we inject a 3D model, disable other renderers under this agent to avoid double-visuals.
-            if (agent.AgentType == ItemAgent.AgentTypes.handheld)
+            if (agent.AgentType == ItemAgent.AgentTypes.handheld || agent.AgentType == ItemAgent.AgentTypes.pickUp)
             {
                 var allAgentRenderers = agent.GetComponentsInChildren<Renderer>(includeInactive: true);
                 var disabled = 0;
@@ -378,7 +378,26 @@ internal static class ModAssets
 
                 if (disabled > 0)
                 {
-                    ModLog.Info($"[EnderPearl] Handheld agent: disabled {disabled} original renderer(s) to prevent double visuals.");
+                    ModLog.Info($"[EnderPearl] AgentType={agent.AgentType}: disabled {disabled} original renderer(s) to prevent double visuals.");
+                }
+
+                // Some pickup pipelines place default icon renderers on parent/sibling nodes
+                // (outside agent subtree). For pickup only, also disable competing renderers
+                // in the immediate container hierarchy.
+                if (agent.AgentType == ItemAgent.AgentTypes.pickUp)
+                {
+                    var extraDisabled = DisableCompetingPickupRenderers(agent, instance.transform);
+                    if (extraDisabled > 0)
+                    {
+                        ModLog.Info($"[EnderPearl] Pickup extra dedupe: disabled {extraDisabled} container renderer(s).");
+                    }
+
+                    var suppressor = agent.GetComponent<PickupVisualSuppressor>();
+                    if (suppressor == null)
+                    {
+                        suppressor = agent.gameObject.AddComponent<PickupVisualSuppressor>();
+                    }
+                    suppressor.Bind(agent, instance.transform);
                 }
             }
 
@@ -540,6 +559,162 @@ internal static class ModAssets
             {
                 SetLayerRecursively(child.gameObject, layer);
             }
+        }
+    }
+
+    private static int DisableCompetingPickupRenderers(ItemAgent agent, Transform keepModelRoot)
+    {
+        if (agent == null || keepModelRoot == null)
+        {
+            return 0;
+        }
+
+        var container = agent.transform.parent;
+        if (container == null)
+        {
+            return 0;
+        }
+
+        var renderers = container.GetComponentsInChildren<Renderer>(includeInactive: true);
+        if (renderers == null || renderers.Length == 0)
+        {
+            return 0;
+        }
+
+        var disabled = 0;
+        foreach (var renderer in renderers)
+        {
+            if (renderer == null || renderer.transform == null)
+            {
+                continue;
+            }
+
+            if (renderer.transform.IsChildOf(keepModelRoot))
+            {
+                continue;
+            }
+
+            if (!renderer.enabled)
+            {
+                continue;
+            }
+
+            renderer.enabled = false;
+            disabled++;
+        }
+
+        return disabled;
+    }
+
+    private sealed class PickupVisualSuppressor : MonoBehaviour
+    {
+        private ItemAgent? _agent;
+        private Transform? _keepModelRoot;
+        private InteractablePickup? _interactablePickup;
+        private SpriteRenderer? _pickupSprite;
+
+        internal void Bind(ItemAgent agent, Transform keepModelRoot)
+        {
+            _agent = agent;
+            _keepModelRoot = keepModelRoot;
+            _interactablePickup = agent != null ? agent.GetComponent<InteractablePickup>() : null;
+            _pickupSprite = ResolvePickupSprite(_interactablePickup);
+            SuppressNow();
+        }
+
+        private void LateUpdate()
+        {
+            SuppressNow();
+        }
+
+        private void SuppressNow()
+        {
+            if (_agent == null || _keepModelRoot == null)
+            {
+                return;
+            }
+
+            if (_interactablePickup == null)
+            {
+                _interactablePickup = _agent.GetComponent<InteractablePickup>();
+                _pickupSprite = ResolvePickupSprite(_interactablePickup);
+            }
+
+            if (_pickupSprite == null)
+            {
+                _pickupSprite = ResolvePickupSprite(_interactablePickup);
+            }
+
+            if (_pickupSprite != null)
+            {
+                var pickupSprite = _pickupSprite;
+                if (pickupSprite.enabled)
+                {
+                    pickupSprite.enabled = false;
+                }
+
+                if (pickupSprite.gameObject != null && pickupSprite.gameObject.activeSelf)
+                {
+                    pickupSprite.gameObject.SetActive(false);
+                }
+            }
+
+            var root = _agent.transform.parent != null ? _agent.transform.parent : _agent.transform;
+            var renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+            if (renderers == null || renderers.Length == 0)
+            {
+                return;
+            }
+
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null || renderer.transform == null)
+                {
+                    continue;
+                }
+
+                if (renderer.transform.IsChildOf(_keepModelRoot))
+                {
+                    continue;
+                }
+
+                if (renderer.enabled)
+                {
+                    renderer.enabled = false;
+                }
+            }
+        }
+
+        private static SpriteRenderer? ResolvePickupSprite(InteractablePickup? pickup)
+        {
+            if (pickup == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var t = pickup.GetType();
+                var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+
+                var field = t.GetField("sprite", flags) ?? t.GetField("Sprite", flags);
+                if (field != null)
+                {
+                    return field.GetValue(pickup) as SpriteRenderer;
+                }
+
+                var prop = t.GetProperty("sprite", flags) ?? t.GetProperty("Sprite", flags);
+                if (prop != null)
+                {
+                    return prop.GetValue(pickup) as SpriteRenderer;
+                }
+            }
+            catch
+            {
+                // ignore reflection failures; fallback to renderer sweep
+            }
+
+            return null;
         }
     }
 
