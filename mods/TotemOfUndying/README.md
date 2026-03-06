@@ -13,8 +13,8 @@
 触发效果：
 - 消耗 1 个图腾
 - 免除本次死亡
-- 恢复 50% 最大生命
-- 获得 3 秒无敌
+- 恢复 30% 最大生命
+- 获得 5 秒无敌
 - 同时爆发黄色 + 绿色粒子
 
 获取方式：
@@ -50,9 +50,8 @@ bash mods/TotemOfUndying/deploy.sh
 - 3D 模型与预览图：可后续补齐
 
 注意（重要）：
-- **当前 TotemOfUndying 代码只会读取图标，不会加载 `assets/bundles/models/` 里的 AssetBundle。**
-- 因此就算你已经在 Unity 导出了 `HandheldAgent/PickupAgent` 或模型 bundle，现阶段 Totem 运行时也不会自动使用。
-- 如果你希望 Totem 走和 EnderPearl 一样的 3D 资源加载流程，需要额外实现对应的 bundle 加载与 agent/model 挂载代码。
+- 当前 TotemOfUndying 运行时会尝试从 `assets/bundles/models/`（以及若干候选路径）加载模型 AssetBundle。
+- 若 bundle 缺失或未找到 `TotemOfUndying_PickupModel` 预制体，将回退到运行时默认模型，保证触发时可见并旋转。
 
 ## TypeID
 
