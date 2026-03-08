@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "3YpWnk9Hy1A=",
+  "dgSpecHash": "/vulXHAttdA=",
   "success": true,
-  "projectFilePath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
+  "projectFilePath": "/Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/TotemOfUndying.csproj",
   "expectedPackageFiles": [
-    "/Users/sric/.nuget/packages/netstandard.library.ref/2.1.0/netstandard.library.ref.2.1.0.nupkg.sha512"
+    "/Users/soraincloud/.nuget/packages/netstandard.library.ref/2.1.0/netstandard.library.ref.2.1.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -32,22 +32,22 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         _modPath = info.path;
 
         ModLog.Initialize(info.path);
-        TotemModelAssets.SetModPath(info.path);
+        ModSfx.Initialize(info.path);
 
         Debug.Log("[TotemOfUndying] Loaded.");
 
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
-        TotemRescueSystem.Initialize(info.path);
+        TotemRescueSystem.Initialize();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     protected override void OnBeforeDeactivate()
     {
+        ModSfx.Deinitialize();
         TotemRescueSystem.Deinitialize();
-        TotemModelAssets.Deinitialize();
         SceneManager.sceneLoaded -= OnSceneLoaded;
 
         if (_prefab != null)
@@ -71,13 +71,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static void ApplyLocalizationOverrides()
     {
         LocalizationManager.SetOverrideText(DisplayNameKey, "不死图腾");
-        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 30% 最大生命\n- 获得 5 秒无敌\n并爆发黄绿粒子效果。");
+        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 50% 最大生命\n- 获得 3 秒无敌\n并爆发黄绿粒子效果。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
     {
-        TotemModelAssets.SetModPath(modPath);
-
         var go = new GameObject("TotemOfUndying_ItemPrefab");
         go.SetActive(false);
         UnityEngine.Object.DontDestroyOnLoad(go);
@@ -92,11 +90,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Value = 1;
         item.Quality = 3;
         item.SetBool("IsSkill", false);
-
-        TotemModelAssets.TryInjectItemAgents(item, modPath);
-
-        var visualHook = go.AddComponent<TotemVisualHook>();
-        visualHook.SetModPath(modPath);
 
         AddTagIfExists(item, GameplayDataSettings.Tags.Special);
         AddTagIfExists(item, GameplayDataSettings.Tags.DontDropOnDeadInSlot);

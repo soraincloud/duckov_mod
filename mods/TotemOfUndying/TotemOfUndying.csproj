@@ -16,8 +16,8 @@
     <DuckovPath>$(DUCKOV_PATH)</DuckovPath>
 
     <!-- 常见 Steam 默认位置（如果你本机不同，请改这里） -->
-    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
-    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true' and Exists('/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov/Duckov.app')">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov/Duckov.app')">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
     <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' != 'true'">E:\\Program Files (x86)\\Steam\\steamapps\\common\\Escape from Duckov</DuckovPath>
 
     <SubPath>\Duckov_Data\Managed\</SubPath>
@@ -58,5 +58,11 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)/TotemOfUndying.dll" DestinationFolder="$(GameModDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
+    <ItemGroup>
+      <ModAssetFiles Include="$(MSBuildProjectDirectory)/assets/**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModAssetFiles)"
+          DestinationFiles="@(ModAssetFiles->'$(GameModDir)/assets/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
   </Target>
 </Project>
