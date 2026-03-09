@@ -13,8 +13,8 @@
 触发效果：
 - 消耗 1 个图腾
 - 免除本次死亡
-- 恢复 50% 最大生命
-- 获得 3 秒无敌
+- 恢复 30% 最大生命
+- 获得 5 秒无敌
 - 同时爆发黄色 + 绿色粒子
 
 获取方式：
@@ -48,6 +48,10 @@ bash mods/TotemOfUndying/deploy.sh
 你可以先不提供资源，功能不受影响：
 - 物品贴图：优先使用 `assets/item-icons/TotemOfUndying.png`，缺失时回退到 `icon.png`，再缺失则使用运行时占位图标
 - 3D 模型与预览图：可后续补齐
+
+注意（重要）：
+- 当前 TotemOfUndying 运行时会尝试从 `assets/bundles/models/`（以及若干候选路径）加载模型 AssetBundle。
+- 若 bundle 缺失或未找到 `TotemOfUndying_PickupModel` 预制体，将回退到运行时默认模型，保证触发时可见并旋转。
 
 ## TypeID
 
