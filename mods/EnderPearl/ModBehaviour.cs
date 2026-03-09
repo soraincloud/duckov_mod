@@ -14,7 +14,8 @@ namespace EnderPearl;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900001;
-    private const string FormulaId = "EnderPearl_Workbench";
+    private const string PrimaryFormulaId = "EnderPearl_Workbench";
+    private const string SecondaryFormulaId = "EnderPearl_Workbench_Alt";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 1000;
     private const int MerchantStock = 99;
@@ -53,7 +54,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
-        RegisterOrUpdateCraftingFormula();
+        RegisterOrUpdateCraftingFormulas();
         PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -65,7 +66,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
-        UnregisterCraftingFormula();
+        UnregisterCraftingFormulas();
 
         if (_prefab != null)
         {
@@ -88,7 +89,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         // Item.DisplayNameRaw 是本地化 key（Items 表），Description key 是 DisplayNameRaw + "_Desc"
         LocalizationManager.SetOverrideText("Item_EnderPearl", "末影珍珠");
-        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。\n可在橘子处购买，或在工作台使用 1 个风暴眼和 3 个冷核碎片制作。");
+        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -175,7 +176,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         profile?.entries.RemoveAll(entry => entry != null && entry.typeID == EnderPearlTypeId);
     }
 
-    private static void RegisterOrUpdateCraftingFormula()
+    private static void RegisterOrUpdateCraftingFormulas()
     {
         var formulas = CraftingFormulaCollection.Instance;
         if (formulas == null)
@@ -184,7 +185,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        if (!TryBuildCraftingFormula(formulas, out var formula))
+        if (!TryBuildCraftingFormulas(formulas, out var builtFormulas))
         {
             return;
         }
@@ -196,34 +197,43 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        formulaList.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
-        formulaList.Add(formula);
+        formulaList.RemoveAll(existing => string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
+        formulaList.AddRange(builtFormulas);
 
-        EnsureFormulaUnlocked(FormulaId);
-        ModLog.Info($"[EnderPearl] Registered crafting formula '{FormulaId}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+        foreach (var formula in builtFormulas)
+        {
+            EnsureFormulaUnlocked(formula.id);
+            ModLog.Info($"[EnderPearl] Registered crafting formula '{formula.id}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+        }
     }
 
-    private static bool TryBuildCraftingFormula(CraftingFormulaCollection formulas, out CraftingFormula formula)
+    private static bool TryBuildCraftingFormulas(CraftingFormulaCollection formulas, out List<CraftingFormula> builtFormulas)
     {
-        formula = default;
+        builtFormulas = new List<CraftingFormula>();
 
         var stormEyeId = ResolveIngredientTypeId("风暴眼", "风暴眼", "Storm Eye", "StormEye");
         var coldCoreFragmentId = ResolveIngredientTypeId("冷核碎片", "冷核碎片", "Cold Core Fragment", "Cold Core Fragments", "ColdCoreFragment", "ColdCoreFragments", "Cold Core Shard", "ColdCoreShard");
+        var polyethyleneSheetId = ResolveIngredientTypeId("聚乙烯片", "聚乙烯片", "Polyethylene Sheet", "Polyethylene Sheets", "Polyethylene", "PESheet", "PESheets");
+        var inkId = ResolveIngredientTypeId("墨水", "墨水", "Ink");
+        var glueAId = ResolveIngredientTypeId("万能胶A", "万能胶A", "万能胶a", "Universal Glue A", "UniversalGlueA", "Glue A", "GlueA");
+        var glueBId = ResolveIngredientTypeId("万能胶B", "万能胶B", "万能胶b", "Universal Glue B", "UniversalGlueB", "Glue B", "GlueB");
 
-        if (stormEyeId < 0 || coldCoreFragmentId < 0)
+        if (stormEyeId < 0 || coldCoreFragmentId < 0 || polyethyleneSheetId < 0 || inkId < 0 || glueAId < 0 || glueBId < 0)
         {
             return false;
         }
 
-        formula = new CraftingFormula
+        var compatibleTags = BuildCompatibleFormulaTags(formulas);
+
+        builtFormulas.Add(new CraftingFormula
         {
-            id = FormulaId,
+            id = PrimaryFormulaId,
             result = new CraftingFormula.ItemEntry
             {
                 id = EnderPearlTypeId,
                 amount = 1
             },
-            tags = BuildCompatibleFormulaTags(formulas),
+            tags = compatibleTags,
             cost = new Cost(
                 (stormEyeId, 1L),
                 (coldCoreFragmentId, 3L)),
@@ -231,7 +241,27 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             lockInDemo = false,
             requirePerk = string.Empty,
             hideInIndex = false
-        };
+        });
+
+        builtFormulas.Add(new CraftingFormula
+        {
+            id = SecondaryFormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = EnderPearlTypeId,
+                amount = 2
+            },
+            tags = compatibleTags,
+            cost = new Cost(
+                (polyethyleneSheetId, 10L),
+                (inkId, 1L),
+                (glueAId, 1L),
+                (glueBId, 1L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        });
 
         return true;
     }
@@ -379,16 +409,16 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         unlockedFormulaIds.Sort(StringComparer.Ordinal);
     }
 
-    private static void UnregisterCraftingFormula()
+    private static void UnregisterCraftingFormulas()
     {
         var formulas = CraftingFormulaCollection.Instance;
         var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
-        formulaList?.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+        formulaList?.RemoveAll(existing => string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
 
         if (CraftingManager.Instance != null)
         {
             var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
-            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, FormulaId, StringComparison.Ordinal));
+            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing, SecondaryFormulaId, StringComparison.Ordinal));
         }
     }
 
@@ -398,7 +428,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         try
         {
             AddToMerchantProfile();
-            RegisterOrUpdateCraftingFormula();
+            RegisterOrUpdateCraftingFormulas();
             PatchExistingStockShops();
         }
         catch (Exception e)
