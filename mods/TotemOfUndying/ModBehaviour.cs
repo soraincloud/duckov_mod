@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Duckov.Economy;
 using Duckov.Utilities;
 using Duckov.Modding;
@@ -15,8 +16,24 @@ namespace TotemOfUndying;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int TotemOfUndyingTypeId = 900011;
-    private const string TargetMerchantId = "Merchant_Equipment";
     private const string DisplayNameKey = "Item_TotemOfUndying";
+    private const string FormulaId = "TotemOfUndying_Workbench";
+    private const string TargetMerchantId = "Merchant_Equipment";
+    private const float TotemWeightKg = 0.3f;
+    private const int MerchantPrice = 8400;
+    private const int MerchantStock = 99;
+
+    private static readonly string[] WorkbenchFormulaTags =
+    {
+        "Workbench",
+        "workbench",
+        "Craft",
+        "craft",
+        "Crafter",
+        "crafter",
+        "Crafting",
+        "crafting"
+    };
 
     private static bool _initialized;
     private static Item? _prefab;
@@ -42,7 +59,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
+        RegisterOrUpdateCraftingFormula();
+        WorkbenchCraftSystem.Initialize();
         TotemRescueSystem.Initialize(info.path);
+
+        PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -50,9 +71,13 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     protected override void OnBeforeDeactivate()
     {
         ModSfx.Deinitialize();
+        WorkbenchCraftSystem.Deinitialize();
         TotemRescueSystem.Deinitialize();
         TotemModelAssets.Deinitialize();
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        RemoveFromMerchantProfile();
+        UnpatchExistingStockShops();
+        UnregisterCraftingFormula();
 
         if (_prefab != null)
         {
@@ -95,6 +120,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.MaxStackCount = 1;
         item.Value = 1;
         item.Quality = 3;
+        ReflectionUtil.SetPrivateField(item, "weight", TotemWeightKg);
         item.SetBool("IsSkill", false);
 
         AttachCharacterModifiers(item);
@@ -108,6 +134,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         AddTagIfExists(item, GameplayDataSettings.Tags.DontDropOnDeadInSlot);
         EnsureRuntimeTag(item, "Totem");
         EnsureRuntimeTag(item, "SoulCube");
+
+        ModLog.Info($"[TotemOfUndying] Item tags: {DescribeItemTags(item)}");
 
         go.SetActive(true);
 
@@ -148,40 +176,294 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var db = StockShopDatabase.Instance;
         if (db == null)
         {
-            Debug.LogWarning("[TotemOfUndying] StockShopDatabase.Instance is null (too early?). Will retry on scene load.");
+            ModLog.Warn("[TotemOfUndying] StockShopDatabase.Instance is null. Will retry on scene load.");
             return;
         }
 
         var profile = db.GetMerchantProfile(TargetMerchantId);
         if (profile == null)
         {
-            Debug.LogWarning($"[TotemOfUndying] Merchant profile '{TargetMerchantId}' not found.");
+            ModLog.Warn($"[TotemOfUndying] Merchant profile '{TargetMerchantId}' not found.");
             return;
         }
 
-        if (profile.entries.Exists(e => e != null && e.typeID == TotemOfUndyingTypeId))
+        var existing = profile.entries.Find(entry => entry != null && entry.typeID == TotemOfUndyingTypeId);
+        if (existing != null)
+        {
+            existing.maxStock = MerchantStock;
+            existing.forceUnlock = true;
+            existing.priceFactor = MerchantPrice;
+            existing.possibility = 1f;
+            existing.lockInDemo = false;
+            ModLog.Info($"[TotemOfUndying] Updated merchant profile '{TargetMerchantId}' price to {MerchantPrice}.");
+            return;
+        }
+
+        profile.entries.Add(CreateMerchantItemEntry());
+        ModLog.Info($"[TotemOfUndying] Added to merchant profile '{TargetMerchantId}' at price {MerchantPrice}.");
+    }
+
+    private static void RemoveFromMerchantProfile()
+    {
+        var profile = StockShopDatabase.Instance?.GetMerchantProfile(TargetMerchantId);
+        profile?.entries.RemoveAll(entry => entry != null && entry.typeID == TotemOfUndyingTypeId);
+    }
+
+    private static void RegisterOrUpdateCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        if (formulas == null)
+        {
+            ModLog.Warn("[TotemOfUndying] CraftingFormulaCollection.Instance is null. Will retry later.");
+            return;
+        }
+
+        if (!TryBuildCraftingFormula(formulas, out var formula))
         {
             return;
         }
 
-        profile.entries.Add(new StockShopDatabase.ItemEntry
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList == null)
         {
-            typeID = TotemOfUndyingTypeId,
-            maxStock = 99,
-            forceUnlock = true,
-            priceFactor = 1f,
-            possibility = 1f,
-            lockInDemo = false
-        });
+            ModLog.Warn("[TotemOfUndying] Failed to access crafting formula list.");
+            return;
+        }
 
-        Debug.Log($"[TotemOfUndying] Added to merchant profile {TargetMerchantId}.");
+        formulaList.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+        formulaList.Add(formula);
+
+        EnsureFormulaUnlocked(FormulaId);
+        ModLog.Info($"[TotemOfUndying] Registered crafting formula '{FormulaId}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+    }
+
+    private static bool TryBuildCraftingFormula(CraftingFormulaCollection formulas, out CraftingFormula formula)
+    {
+        formula = default;
+
+        var featherId = ResolveIngredientTypeId("羽毛", "羽毛", "Feather");
+        var blueBlockId = ResolveIngredientTypeId("蓝色方块", "蓝色方块", "Blue Block", "Blue Cube", "BlueBlock", "BlueCube");
+        var dogTagId = ResolveIngredientTypeId("狗牌", "狗牌", "Dog Tag", "DogTag");
+        var topOrganicFiberId = ResolveIngredientTypeId("顶级有机纤维", "顶级有机纤维", "Top Organic Fiber", "Premium Organic Fiber", "Organic Fiber", "TopOrganicFiber", "PremiumOrganicFiber");
+
+        if (featherId < 0 || blueBlockId < 0 || dogTagId < 0 || topOrganicFiberId < 0)
+        {
+            return false;
+        }
+
+        var formulaTags = BuildCompatibleFormulaTags(formulas);
+
+        formula = new CraftingFormula
+        {
+            id = FormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = TotemOfUndyingTypeId,
+                amount = 1
+            },
+            tags = formulaTags,
+            cost = new Cost(
+                (featherId, 10L),
+                (blueBlockId, 150L),
+                (dogTagId, 3L),
+                (topOrganicFiberId, 2L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        };
+
+        return true;
+    }
+
+    private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
+    {
+        var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList != null)
+        {
+            foreach (var existing in formulaList)
+            {
+                if (existing.tags == null)
+                {
+                    continue;
+                }
+
+                foreach (var tag in existing.tags)
+                {
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        tags.Add(tag);
+                    }
+                }
+            }
+        }
+
+        return tags.OrderBy(value => value, StringComparer.Ordinal).ToArray();
+    }
+
+    internal static bool TryBuildTotemCraftCost(out Cost cost)
+    {
+        cost = default;
+
+        var featherId = ResolveIngredientTypeId("羽毛", "羽毛", "Feather");
+        var blueBlockId = ResolveIngredientTypeId("蓝色方块", "蓝色方块", "Blue Block", "Blue Cube", "BlueBlock", "BlueCube");
+        var dogTagId = ResolveIngredientTypeId("狗牌", "狗牌", "Dog Tag", "DogTag");
+        var topOrganicFiberId = ResolveIngredientTypeId("顶级有机纤维", "顶级有机纤维", "Top Organic Fiber", "Premium Organic Fiber", "Organic Fiber", "TopOrganicFiber", "PremiumOrganicFiber");
+
+        if (featherId < 0 || blueBlockId < 0 || dogTagId < 0 || topOrganicFiberId < 0)
+        {
+            return false;
+        }
+
+        cost = new Cost(
+            (featherId, 10L),
+            (blueBlockId, 150L),
+            (dogTagId, 3L),
+            (topOrganicFiberId, 2L));
+
+        return true;
+    }
+
+    private static int ResolveIngredientTypeId(string label, params string[] candidates)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries == null)
+        {
+            ModLog.Warn($"[TotemOfUndying] ItemAssetsCollection not ready while resolving ingredient '{label}'.");
+            return -1;
+        }
+
+        var normalizedCandidates = candidates
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: false))
+            {
+                return entry.typeID;
+            }
+        }
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: true))
+            {
+                ModLog.Info($"[TotemOfUndying] Ingredient '{label}' matched fuzzily to '{entry.metaData.DisplayName}' ({entry.typeID}).");
+                return entry.typeID;
+            }
+        }
+
+        ModLog.Warn($"[TotemOfUndying] Failed to resolve ingredient '{label}'. Candidates: {string.Join(", ", candidates)}");
+        return -1;
+    }
+
+    private static bool MatchesIngredient(ItemMetaData metaData, string[] normalizedCandidates, bool contains)
+    {
+        var names = new[]
+        {
+            metaData.Name,
+            metaData.DisplayName,
+            metaData.DisplayNameKey
+        }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var candidate in normalizedCandidates)
+        {
+            foreach (var name in names)
+            {
+                if (!contains && string.Equals(name, candidate, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (contains && (name.Contains(candidate, StringComparison.Ordinal) || candidate.Contains(name, StringComparison.Ordinal)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeLookupText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var chars = value
+            .Trim()
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray();
+
+        return new string(chars);
+    }
+
+    private static void EnsureFormulaUnlocked(string formulaId)
+    {
+        if (CraftingManager.Instance == null)
+        {
+            return;
+        }
+
+        var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+        if (unlockedFormulaIds == null)
+        {
+            ModLog.Warn("[TotemOfUndying] Failed to access unlocked formula list.");
+            return;
+        }
+
+        if (unlockedFormulaIds.Contains(formulaId))
+        {
+            return;
+        }
+
+        unlockedFormulaIds.Add(formulaId);
+        unlockedFormulaIds.Sort(StringComparer.Ordinal);
+    }
+
+    private static void UnregisterCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
+        formulaList?.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+
+        if (CraftingManager.Instance != null)
+        {
+            var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, FormulaId, StringComparison.Ordinal));
+        }
+
+        ModLog.Info($"[TotemOfUndying] Unregistered crafting formula '{FormulaId}'.");
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         try
         {
+            AddToMerchantProfile();
             PatchExistingStockShops();
+            RegisterOrUpdateCraftingFormula();
         }
         catch (Exception e)
         {
@@ -199,39 +481,69 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         foreach (var shop in shops)
         {
-            if (shop == null)
+            if (shop == null || !string.Equals(shop.MerchantID, TargetMerchantId, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            if (!string.Equals(shop.MerchantID, TargetMerchantId, StringComparison.OrdinalIgnoreCase))
+            var existing = shop.entries.Find(entry => entry != null && entry.ItemTypeID == TotemOfUndyingTypeId);
+            if (existing != null)
             {
+                existing.Show = true;
+                if (existing.CurrentStock < 1)
+                {
+                    existing.CurrentStock = MerchantStock;
+                }
+
+                EnsureShopHasCachedItemInstance(shop);
                 continue;
             }
 
-            if (shop.entries.Exists(e => e != null && e.ItemTypeID == TotemOfUndyingTypeId))
-            {
-                continue;
-            }
-
-            var itemEntry = new StockShopDatabase.ItemEntry
-            {
-                typeID = TotemOfUndyingTypeId,
-                maxStock = 99,
-                forceUnlock = true,
-                priceFactor = 1f,
-                possibility = 1f,
-                lockInDemo = false
-            };
-
-            var entry = new StockShop.Entry(itemEntry)
+            var entry = new StockShop.Entry(CreateMerchantItemEntry())
             {
                 Show = true,
-                CurrentStock = 99
+                CurrentStock = MerchantStock
             };
 
             shop.entries.Add(entry);
             EnsureShopHasCachedItemInstance(shop);
+            ModLog.Info($"[TotemOfUndying] Patched live shop '{shop.MerchantID}' with Totem stock.");
+        }
+    }
+
+    private static void UnpatchExistingStockShops()
+    {
+        var shops = UnityEngine.Object.FindObjectsOfType<StockShop>();
+        if (shops == null || shops.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var shop in shops)
+        {
+            if (shop == null || !string.Equals(shop.MerchantID, TargetMerchantId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            shop.entries.RemoveAll(entry => entry != null && entry.ItemTypeID == TotemOfUndyingTypeId);
+
+            var dict = ReflectionUtil.GetPrivateField<Dictionary<int, Item>>(shop, "itemInstances");
+            if (dict != null && dict.TryGetValue(TotemOfUndyingTypeId, out var cachedItem))
+            {
+                dict.Remove(TotemOfUndyingTypeId);
+                if (cachedItem != null)
+                {
+                    try
+                    {
+                        UnityEngine.Object.Destroy(cachedItem.gameObject);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
         }
     }
 
@@ -239,6 +551,17 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         try
         {
+            var dict = ReflectionUtil.GetPrivateField<Dictionary<int, Item>>(shop, "itemInstances");
+            if (dict == null)
+            {
+                return;
+            }
+
+            if (dict.ContainsKey(TotemOfUndyingTypeId) && dict[TotemOfUndyingTypeId] != null)
+            {
+                return;
+            }
+
             var item = ItemAssetsCollection.InstantiateSync(TotemOfUndyingTypeId);
             if (item == null)
             {
@@ -247,19 +570,25 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
             item.transform.SetParent(shop.transform);
             item.gameObject.SetActive(false);
-
-            var dict = ReflectionUtil.GetPrivateField<System.Collections.Generic.Dictionary<int, Item>>(shop, "itemInstances");
-            if (dict == null)
-            {
-                return;
-            }
-
             dict[TotemOfUndyingTypeId] = item;
         }
         catch (Exception e)
         {
             Debug.LogException(e);
         }
+    }
+
+    private static StockShopDatabase.ItemEntry CreateMerchantItemEntry()
+    {
+        return new StockShopDatabase.ItemEntry
+        {
+            typeID = TotemOfUndyingTypeId,
+            maxStock = MerchantStock,
+            forceUnlock = true,
+            priceFactor = MerchantPrice,
+            possibility = 1f,
+            lockInDemo = false
+        };
     }
 
     private static void AddTagIfExists(Item item, Tag? tag)
@@ -286,6 +615,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         runtimeTag.name = tagName;
         runtimeTag.hideFlags = HideFlags.HideAndDontSave;
         item.Tags.Add(runtimeTag);
+    }
+
+    private static string DescribeItemTags(Item item)
+    {
+        return string.Join(", ", item.Tags.Select(tag => tag != null ? tag.name : "<null>"));
     }
 
     private static Sprite? TryLoadIconSprite(string? modPath)
