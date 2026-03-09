@@ -10,7 +10,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
 {
     private const float InvincibleSeconds = 5f;
     private const float HealPercent = 0.3f;
-    private const float RescueModelScaleInSeconds = 0.72f;
+    private const float RescueModelScaleInSeconds = 0.42f;
     private const float RescueModelSlowDownSeconds = 1.18f;
     private const float RescueModelScaleOutSeconds = 0.55f;
     private const float RescueModelScaleMultiplier = 2f;

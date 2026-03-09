@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Duckov.Economy;
 using Duckov.Utilities;
 using Duckov.Modding;
 using ItemStatsSystem;
+using ItemStatsSystem.Stats;
 using SodaCraft.Localizations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -73,7 +75,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static void ApplyLocalizationOverrides()
     {
         LocalizationManager.SetOverrideText(DisplayNameKey, "不死图腾");
-        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 30% 最大生命\n- 获得 5 秒无敌\n并爆发黄绿粒子效果。");
+        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 30% 最大生命\n- 获得 5 秒无敌\n");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -95,6 +97,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Quality = 3;
         item.SetBool("IsSkill", false);
 
+        AttachCharacterModifiers(item);
+
         TotemModelAssets.TryInjectItemAgents(item, modPath);
 
         var visualHook = go.AddComponent<TotemVisualHook>();
@@ -112,6 +116,31 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         _prefab = item;
 
         Debug.Log($"[TotemOfUndying] Registered dynamic item. TypeID={TotemOfUndyingTypeId}");
+    }
+
+    private static void AttachCharacterModifiers(Item item)
+    {
+        item.CreateModifiersComponent();
+
+        if (item.Modifiers == null)
+        {
+            return;
+        }
+
+        var modifierList = ReflectionUtil.GetPrivateField<List<ModifierDescription>>(item.Modifiers, "list");
+        if (modifierList == null)
+        {
+            modifierList = new List<ModifierDescription>();
+            ReflectionUtil.SetPrivateField(item.Modifiers, "list", modifierList);
+        }
+
+        var walkSpeedModifier = new ModifierDescription(ModifierTarget.Character, "WalkSpeed", ModifierType.PercentageAdd, 0.1f);
+        ReflectionUtil.SetPrivateField(walkSpeedModifier, "display", true);
+        modifierList.Add(walkSpeedModifier);
+
+        var runSpeedModifier = new ModifierDescription(ModifierTarget.Character, "RunSpeed", ModifierType.PercentageAdd, 0.1f);
+        ReflectionUtil.SetPrivateField(runSpeedModifier, "display", false);
+        modifierList.Add(runSpeedModifier);
     }
 
     private static void AddToMerchantProfile()
