@@ -16,6 +16,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     internal const int EnderPearlTypeId = 900001;
     private const string PrimaryFormulaId = "EnderPearl_Workbench";
     private const string SecondaryFormulaId = "EnderPearl_Workbench_Alt";
+    private const string TertiaryFormulaId = "EnderPearl_Workbench_1242";
+    private const string QuaternaryFormulaId = "EnderPearl_Workbench_1507";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 1000;
     private const int MerchantStock = 99;
@@ -197,7 +199,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        formulaList.RemoveAll(existing => string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
+        formulaList.RemoveAll(existing =>
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, TertiaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, QuaternaryFormulaId, StringComparison.Ordinal));
         formulaList.AddRange(builtFormulas);
 
         foreach (var formula in builtFormulas)
@@ -257,6 +263,38 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 (inkId, 1L),
                 (glueAId, 1L),
                 (glueBId, 1L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        });
+
+        builtFormulas.Add(new CraftingFormula
+        {
+            id = TertiaryFormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = EnderPearlTypeId,
+                amount = 8
+            },
+            tags = compatibleTags,
+            cost = new Cost((1242, 1L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        });
+
+        builtFormulas.Add(new CraftingFormula
+        {
+            id = QuaternaryFormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = EnderPearlTypeId,
+                amount = 16
+            },
+            tags = compatibleTags,
+            cost = new Cost((1507, 1L)),
             unlockByDefault = true,
             lockInDemo = false,
             requirePerk = string.Empty,
@@ -413,12 +451,20 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         var formulas = CraftingFormulaCollection.Instance;
         var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
-        formulaList?.RemoveAll(existing => string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
+        formulaList?.RemoveAll(existing =>
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, TertiaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, QuaternaryFormulaId, StringComparison.Ordinal));
 
         if (CraftingManager.Instance != null)
         {
             var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
-            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal) || string.Equals(existing, SecondaryFormulaId, StringComparison.Ordinal));
+            unlockedFormulaIds?.RemoveAll(existing =>
+                string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal) ||
+                string.Equals(existing, SecondaryFormulaId, StringComparison.Ordinal) ||
+                string.Equals(existing, TertiaryFormulaId, StringComparison.Ordinal) ||
+                string.Equals(existing, QuaternaryFormulaId, StringComparison.Ordinal));
         }
     }
 
