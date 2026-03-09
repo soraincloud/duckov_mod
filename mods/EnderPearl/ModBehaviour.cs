@@ -14,6 +14,8 @@ namespace EnderPearl;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900001;
+    private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
+    private const string SharedCraftCategoryDisplayNameKey = "CraftFilter_ModMystic";
     private const string PrimaryFormulaId = "EnderPearl_Workbench";
     private const string SecondaryFormulaId = "EnderPearl_Workbench_Alt";
     private const string TertiaryFormulaId = "EnderPearl_Workbench_1242";
@@ -36,6 +38,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static bool _initialized;
     private static Item? _prefab;
+    private static Tag? _sharedCraftCategoryTag;
 
     protected override void OnAfterSetup()
     {
@@ -57,6 +60,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormulas();
+        RegisterCraftCategoryFilter();
         PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -92,6 +96,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         // Item.DisplayNameRaw 是本地化 key（Items 表），Description key 是 DisplayNameRaw + "_Desc"
         LocalizationManager.SetOverrideText("Item_EnderPearl", "末影珍珠");
         LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。");
+        LocalizationManager.SetOverrideText(SharedCraftCategoryDisplayNameKey, "MC");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -128,7 +133,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var visualHook = go.AddComponent<EnderPearlVisualHook>();
         visualHook.SetModPath(modPath);
 
-        AddTagIfExists(item, GameplayDataSettings.Tags.Bullet);
+        EnsureRuntimeTag(item, SharedCraftCategoryTagName);
 
         go.SetActive(true);
 
@@ -475,6 +480,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             AddToMerchantProfile();
             RegisterOrUpdateCraftingFormulas();
+            RegisterCraftCategoryFilter();
             PatchExistingStockShops();
         }
         catch (Exception e)
@@ -625,5 +631,136 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             item.Tags.Add(tag);
         }
+    }
+
+    private static void EnsureRuntimeTag(Item item, string tagName)
+    {
+        if (item == null || string.IsNullOrWhiteSpace(tagName) || item.Tags.Contains(tagName))
+        {
+            return;
+        }
+
+        item.Tags.Add(GetOrCreateSharedCraftCategoryTag(tagName));
+    }
+
+    private static void RegisterCraftCategoryFilter()
+    {
+        try
+        {
+            var filterTag = GetOrCreateSharedCraftCategoryTag(SharedCraftCategoryTagName);
+            var filterIcon = ModAssets.TryLoadCraftCategoryIconSprite(ModAssets.CurrentModPath);
+            var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
+            if (craftViews == null || craftViews.Length == 0)
+            {
+                return;
+            }
+
+            foreach (var craftView in craftViews)
+            {
+                if (craftView == null)
+                {
+                    continue;
+                }
+
+                EnsureCraftViewHasSharedCategoryFilter(craftView, filterTag, filterIcon);
+            }
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[EnderPearl] Failed to register craft category filter: {e.Message}");
+        }
+    }
+
+    private static void EnsureCraftViewHasSharedCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon)
+    {
+        var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
+        var updatedFilters = filters.ToList();
+        var index = updatedFilters.FindIndex(HasSharedCategoryFilter);
+        var filterInfo = new CraftView.FilterInfo
+        {
+            displayNameKey = SharedCraftCategoryDisplayNameKey,
+            icon = filterIcon,
+            requireTags = new[] { filterTag }
+        };
+
+        if (index >= 0)
+        {
+            var existing = updatedFilters[index];
+            if (string.IsNullOrWhiteSpace(existing.displayNameKey))
+            {
+                existing.displayNameKey = filterInfo.displayNameKey;
+            }
+
+            if (existing.icon == null && filterInfo.icon != null)
+            {
+                existing.icon = filterInfo.icon;
+            }
+
+            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
+
+            updatedFilters[index] = existing;
+        }
+        else
+        {
+            updatedFilters.Add(filterInfo);
+        }
+
+        ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
+    }
+
+    private static bool HasSharedCategoryFilter(CraftView.FilterInfo filter)
+    {
+        if (filter.requireTags == null)
+        {
+            return false;
+        }
+
+        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
+    }
+
+    private static Tag[] MergeFilterTags(Tag[]? existingTags, Tag filterTag)
+    {
+        if (filterTag == null)
+        {
+            return existingTags ?? Array.Empty<Tag>();
+        }
+
+        var merged = new List<Tag>();
+        if (existingTags != null)
+        {
+            foreach (var tag in existingTags)
+            {
+                if (tag != null && !merged.Any(existing => ReferenceEquals(existing, tag)))
+                {
+                    merged.Add(tag);
+                }
+            }
+        }
+
+        if (!merged.Any(existing => ReferenceEquals(existing, filterTag)))
+        {
+            merged.Add(filterTag);
+        }
+
+        return merged.ToArray();
+    }
+
+    private static Tag GetOrCreateSharedCraftCategoryTag(string tagName)
+    {
+        if (_sharedCraftCategoryTag != null)
+        {
+            return _sharedCraftCategoryTag;
+        }
+
+        _sharedCraftCategoryTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, tagName));
+        if (_sharedCraftCategoryTag != null)
+        {
+            return _sharedCraftCategoryTag;
+        }
+
+        _sharedCraftCategoryTag = ScriptableObject.CreateInstance<Tag>();
+        _sharedCraftCategoryTag.name = tagName;
+        _sharedCraftCategoryTag.hideFlags = HideFlags.HideAndDontSave;
+        return _sharedCraftCategoryTag;
     }
 }

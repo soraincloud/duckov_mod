@@ -12,6 +12,7 @@ internal static class ModAssets
 
     private const string IconFileName = "icon.png";
     private const string EnderPearlIconRelativePath = "assets/item-icons/Ender_Pearl.png";
+    private const string CraftCategoryIconRelativePath = "assets/item-icons/grass.png";
     private const string ForceUnlitFlagFileName = "force_unlit.txt";
     private const string ForceLitFlagFileName = "force_lit.txt";
 
@@ -214,6 +215,27 @@ internal static class ModAssets
         catch (Exception e)
         {
             ModLog.Warn($"[EnderPearl] Failed to load icon.png: {e.Message}");
+            return null;
+        }
+    }
+
+    internal static Sprite? TryLoadCraftCategoryIconSprite(string? modPath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(modPath))
+            {
+                return null;
+            }
+
+            var iconPath = Path.Combine(modPath, CraftCategoryIconRelativePath);
+            return File.Exists(iconPath)
+                ? TryLoadSpriteFromPngFile(iconPath, "EnderPearl_CraftCategory_Icon")
+                : null;
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[EnderPearl] Failed to load craft category icon: {e.Message}");
             return null;
         }
     }
