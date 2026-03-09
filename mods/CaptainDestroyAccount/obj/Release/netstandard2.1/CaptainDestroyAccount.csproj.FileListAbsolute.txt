@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/bin/Release/netstandard2.1/CaptainDestroyAccount.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/bin/Release/netstandard2.1/CaptainDestroyAccount.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/bin/Release/netstandard2.1/CaptainDestroyAccount.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/CaptainDestroyAccount/obj/Release/netstandard2.1/CaptainDestroyAccount.pdb
