@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EnderPearl")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9da4eb2948e31a54ebc024b0fb7ca98e148d4091")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34ed7912a7f6a28563d04d360a446394456ac0b8")]
 [assembly: System.Reflection.AssemblyProductAttribute("EnderPearl")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EnderPearl")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

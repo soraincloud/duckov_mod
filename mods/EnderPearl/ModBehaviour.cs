@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Duckov.Economy;
 using Duckov.Modding;
+using Duckov.Utilities;
 using ItemStatsSystem;
 using SodaCraft.Localizations;
 using UnityEngine;
@@ -11,7 +14,22 @@ namespace EnderPearl;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900001;
+    private const string FormulaId = "EnderPearl_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
+    private const int MerchantPrice = 1000;
+    private const int MerchantStock = 99;
+
+    private static readonly string[] WorkbenchFormulaTags =
+    {
+        "Workbench",
+        "workbench",
+        "Craft",
+        "craft",
+        "Crafter",
+        "crafter",
+        "Crafting",
+        "crafting"
+    };
 
     private static bool _initialized;
     private static Item? _prefab;
@@ -35,6 +53,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
+        RegisterOrUpdateCraftingFormula();
+        PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -43,6 +63,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         ModSfx.Deinitialize();
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        RemoveFromMerchantProfile();
+        UnpatchExistingStockShops();
+        UnregisterCraftingFormula();
 
         if (_prefab != null)
         {
@@ -65,7 +88,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         // Item.DisplayNameRaw 是本地化 key（Items 表），Description key 是 DisplayNameRaw + "_Desc"
         LocalizationManager.SetOverrideText("Item_EnderPearl", "末影珍珠");
-        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。\n（测试版：NPC 售价 $1）");
+        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。\n可在橘子处购买，或在工作台使用 1 个风暴眼和 3 个冷核碎片制作。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -102,6 +125,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var visualHook = go.AddComponent<EnderPearlVisualHook>();
         visualHook.SetModPath(modPath);
 
+        AddTagIfExists(item, GameplayDataSettings.Tags.Bullet);
+
         go.SetActive(true);
 
         // 注册为动态物品（InstantiateAsync/Sync 都会认识）
@@ -128,22 +153,243 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        if (profile.entries.Exists(e => e != null && e.typeID == EnderPearlTypeId))
+        var existing = profile.entries.Find(e => e != null && e.typeID == EnderPearlTypeId);
+        if (existing != null)
+        {
+            existing.maxStock = MerchantStock;
+            existing.forceUnlock = true;
+            existing.priceFactor = MerchantPrice;
+            existing.possibility = 1f;
+            existing.lockInDemo = false;
+            return;
+        }
+
+        profile.entries.Add(CreateMerchantItemEntry());
+
+        Debug.Log($"[EnderPearl] Added to merchant profile {TargetMerchantId}.");
+    }
+
+    private static void RemoveFromMerchantProfile()
+    {
+        var profile = StockShopDatabase.Instance?.GetMerchantProfile(TargetMerchantId);
+        profile?.entries.RemoveAll(entry => entry != null && entry.typeID == EnderPearlTypeId);
+    }
+
+    private static void RegisterOrUpdateCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        if (formulas == null)
+        {
+            ModLog.Warn("[EnderPearl] CraftingFormulaCollection.Instance is null. Will retry on scene load.");
+            return;
+        }
+
+        if (!TryBuildCraftingFormula(formulas, out var formula))
         {
             return;
         }
 
-        profile.entries.Add(new StockShopDatabase.ItemEntry
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList == null)
         {
-            typeID = EnderPearlTypeId,
-            maxStock = 99,
-            forceUnlock = true,
-            priceFactor = 1f,
-            possibility = 1f,
-            lockInDemo = false
-        });
+            ModLog.Warn("[EnderPearl] Failed to access crafting formula list.");
+            return;
+        }
 
-        Debug.Log($"[EnderPearl] Added to merchant profile {TargetMerchantId}.");
+        formulaList.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+        formulaList.Add(formula);
+
+        EnsureFormulaUnlocked(FormulaId);
+        ModLog.Info($"[EnderPearl] Registered crafting formula '{FormulaId}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+    }
+
+    private static bool TryBuildCraftingFormula(CraftingFormulaCollection formulas, out CraftingFormula formula)
+    {
+        formula = default;
+
+        var stormEyeId = ResolveIngredientTypeId("风暴眼", "风暴眼", "Storm Eye", "StormEye");
+        var coldCoreFragmentId = ResolveIngredientTypeId("冷核碎片", "冷核碎片", "Cold Core Fragment", "Cold Core Fragments", "ColdCoreFragment", "ColdCoreFragments", "Cold Core Shard", "ColdCoreShard");
+
+        if (stormEyeId < 0 || coldCoreFragmentId < 0)
+        {
+            return false;
+        }
+
+        formula = new CraftingFormula
+        {
+            id = FormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = EnderPearlTypeId,
+                amount = 1
+            },
+            tags = BuildCompatibleFormulaTags(formulas),
+            cost = new Cost(
+                (stormEyeId, 1L),
+                (coldCoreFragmentId, 3L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        };
+
+        return true;
+    }
+
+    private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
+    {
+        var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList != null)
+        {
+            foreach (var existing in formulaList)
+            {
+                if (existing.tags == null)
+                {
+                    continue;
+                }
+
+                foreach (var tag in existing.tags)
+                {
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        tags.Add(tag);
+                    }
+                }
+            }
+        }
+
+        return tags.OrderBy(value => value, StringComparer.Ordinal).ToArray();
+    }
+
+    private static int ResolveIngredientTypeId(string label, params string[] candidates)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries == null)
+        {
+            ModLog.Warn($"[EnderPearl] ItemAssetsCollection not ready while resolving ingredient '{label}'.");
+            return -1;
+        }
+
+        var normalizedCandidates = candidates
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: false))
+            {
+                return entry.typeID;
+            }
+        }
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: true))
+            {
+                ModLog.Info($"[EnderPearl] Ingredient '{label}' matched fuzzily to '{entry.metaData.DisplayName}' ({entry.typeID}).");
+                return entry.typeID;
+            }
+        }
+
+        ModLog.Warn($"[EnderPearl] Failed to resolve ingredient '{label}'. Candidates: {string.Join(", ", candidates)}");
+        return -1;
+    }
+
+    private static bool MatchesIngredient(ItemMetaData metaData, string[] normalizedCandidates, bool contains)
+    {
+        var names = new[]
+        {
+            metaData.Name,
+            metaData.DisplayName,
+            metaData.DisplayNameKey
+        }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var candidate in normalizedCandidates)
+        {
+            foreach (var name in names)
+            {
+                if (!contains && string.Equals(name, candidate, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (contains && (name.Contains(candidate, StringComparison.Ordinal) || candidate.Contains(name, StringComparison.Ordinal)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeLookupText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var chars = value
+            .Trim()
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray();
+
+        return new string(chars);
+    }
+
+    private static void EnsureFormulaUnlocked(string formulaId)
+    {
+        if (CraftingManager.Instance == null)
+        {
+            return;
+        }
+
+        var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+        if (unlockedFormulaIds == null)
+        {
+            ModLog.Warn("[EnderPearl] Failed to access unlocked formula list.");
+            return;
+        }
+
+        if (unlockedFormulaIds.Contains(formulaId))
+        {
+            return;
+        }
+
+        unlockedFormulaIds.Add(formulaId);
+        unlockedFormulaIds.Sort(StringComparer.Ordinal);
+    }
+
+    private static void UnregisterCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
+        formulaList?.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+
+        if (CraftingManager.Instance != null)
+        {
+            var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, FormulaId, StringComparison.Ordinal));
+        }
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -151,6 +397,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         // 兜底：如果商店对象已经 Awake/Start 过了，确保 entries + itemInstances 都补齐
         try
         {
+            AddToMerchantProfile();
+            RegisterOrUpdateCraftingFormula();
             PatchExistingStockShops();
         }
         catch (Exception e)
@@ -181,25 +429,25 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 continue;
             }
 
-            if (shop.entries.Exists(e => e != null && e.ItemTypeID == EnderPearlTypeId))
+            var existing = shop.entries.Find(e => e != null && e.ItemTypeID == EnderPearlTypeId);
+            if (existing != null)
             {
+                existing.Show = true;
+                if (existing.CurrentStock < 1)
+                {
+                    existing.CurrentStock = MerchantStock;
+                }
+
+                EnsureShopHasCachedItemInstance(shop);
                 continue;
             }
 
-            var itemEntry = new StockShopDatabase.ItemEntry
-            {
-                typeID = EnderPearlTypeId,
-                maxStock = 99,
-                forceUnlock = true,
-                priceFactor = 1f,
-                possibility = 1f,
-                lockInDemo = false
-            };
+            var itemEntry = CreateMerchantItemEntry();
 
             var entry = new StockShop.Entry(itemEntry)
             {
                 Show = true,
-                CurrentStock = 99
+                CurrentStock = MerchantStock
             };
 
             shop.entries.Add(entry);
@@ -209,10 +457,57 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
     }
 
+    private static void UnpatchExistingStockShops()
+    {
+        var shops = UnityEngine.Object.FindObjectsOfType<StockShop>();
+        if (shops == null || shops.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var shop in shops)
+        {
+            if (shop == null || !string.Equals(shop.MerchantID, TargetMerchantId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            shop.entries.RemoveAll(entry => entry != null && entry.ItemTypeID == EnderPearlTypeId);
+
+            var dict = ReflectionUtil.GetPrivateField<System.Collections.Generic.Dictionary<int, Item>>(shop, "itemInstances");
+            if (dict != null && dict.TryGetValue(EnderPearlTypeId, out var cachedItem))
+            {
+                dict.Remove(EnderPearlTypeId);
+                if (cachedItem != null)
+                {
+                    try
+                    {
+                        UnityEngine.Object.Destroy(cachedItem.gameObject);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+        }
+    }
+
     private static void EnsureShopHasCachedItemInstance(StockShop shop)
     {
         try
         {
+            var dict = ReflectionUtil.GetPrivateField<System.Collections.Generic.Dictionary<int, Item>>(shop, "itemInstances");
+            if (dict == null)
+            {
+                return;
+            }
+
+            if (dict.ContainsKey(EnderPearlTypeId) && dict[EnderPearlTypeId] != null)
+            {
+                return;
+            }
+
             var item = ItemAssetsCollection.InstantiateSync(EnderPearlTypeId);
             if (item == null)
             {
@@ -222,17 +517,37 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             item.transform.SetParent(shop.transform);
             item.gameObject.SetActive(false);
 
-            var dict = ReflectionUtil.GetPrivateField<System.Collections.Generic.Dictionary<int, Item>>(shop, "itemInstances");
-            if (dict == null)
-            {
-                return;
-            }
-
             dict[EnderPearlTypeId] = item;
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+        }
+    }
+
+    private static StockShopDatabase.ItemEntry CreateMerchantItemEntry()
+    {
+        return new StockShopDatabase.ItemEntry
+        {
+            typeID = EnderPearlTypeId,
+            maxStock = MerchantStock,
+            forceUnlock = true,
+            priceFactor = MerchantPrice,
+            possibility = 1f,
+            lockInDemo = false
+        };
+    }
+
+    private static void AddTagIfExists(Item item, Tag? tag)
+    {
+        if (item == null || tag == null)
+        {
+            return;
+        }
+
+        if (!item.Tags.Contains(tag))
+        {
+            item.Tags.Add(tag);
         }
     }
 }
