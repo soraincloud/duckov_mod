@@ -162,12 +162,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             ReflectionUtil.SetPrivateField(item.Modifiers, "list", modifierList);
         }
 
-        var walkSpeedModifier = new ModifierDescription(ModifierTarget.Character, "WalkSpeed", ModifierType.PercentageAdd, 0.1f);
+        var walkSpeedModifier = new ModifierDescription(ModifierTarget.Character, "WalkSpeed", ModifierType.PercentageAdd, 0.08f);
         ReflectionUtil.SetPrivateField(walkSpeedModifier, "display", true);
         modifierList.Add(walkSpeedModifier);
 
-        var runSpeedModifier = new ModifierDescription(ModifierTarget.Character, "RunSpeed", ModifierType.PercentageAdd, 0.1f);
-        ReflectionUtil.SetPrivateField(runSpeedModifier, "display", false);
+        var runSpeedModifier = new ModifierDescription(ModifierTarget.Character, "RunSpeed", ModifierType.PercentageAdd, 0.08f);
+        ReflectionUtil.SetPrivateField(runSpeedModifier, "display", true);
         modifierList.Add(runSpeedModifier);
     }
 
