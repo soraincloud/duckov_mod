@@ -32,6 +32,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         _modPath = info.path;
 
         ModLog.Initialize(info.path);
+        ModSfx.Initialize(info.path);
         TotemModelAssets.SetModPath(info.path);
 
         Debug.Log("[TotemOfUndying] Loaded.");
@@ -46,6 +47,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     protected override void OnBeforeDeactivate()
     {
+        ModSfx.Deinitialize();
         TotemRescueSystem.Deinitialize();
         TotemModelAssets.Deinitialize();
         SceneManager.sceneLoaded -= OnSceneLoaded;

@@ -112,6 +112,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
         var headPos = ResolveHeadPosition(character, health.transform.position + Vector3.up * HeadFallbackHeight);
         var effectPos = headPos + Vector3.up * RescueEffectHeadOffset;
 
+        ModSfx.PlayRescue(effectPos);
         SpawnRescueParticles(effectPos);
         SpawnRescueModel(headPos, character);
     }

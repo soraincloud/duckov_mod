@@ -55,8 +55,16 @@
   <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
     <Message Text="[TotemOfUndying] Syncing mod files to: $(GameModDir)" Importance="high" />
 
+    <MakeDir Directories="$(GameModDir)/assets/sfx" />
+
     <Copy SourceFiles="$(MSBuildProjectDirectory)/TotemOfUndying.dll" DestinationFolder="$(GameModDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(GameModDir)" Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
+
+    <ItemGroup>
+      <WavSfxFiles Include="$(MSBuildProjectDirectory)/assets/sfx/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(WavSfxFiles)" DestinationFolder="$(GameModDir)/assets/sfx" SkipUnchangedFiles="true" Condition=" '@(WavSfxFiles)' != '' " />
   </Target>
 </Project>
