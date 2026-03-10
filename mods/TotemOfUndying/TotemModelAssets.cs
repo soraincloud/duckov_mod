@@ -356,13 +356,7 @@ internal static class TotemModelAssets
 
     private static int DisableCompetingPickupRenderers(ItemAgent agent, Transform keepModelRoot)
     {
-        var container = agent.transform.parent;
-        if (container == null)
-        {
-            return 0;
-        }
-
-        var renderers = container.GetComponentsInChildren<Renderer>(includeInactive: true);
+        var renderers = agent.transform.GetComponentsInChildren<Renderer>(includeInactive: true);
         if (renderers == null || renderers.Length == 0)
         {
             return 0;
@@ -445,8 +439,7 @@ internal static class TotemModelAssets
                 }
             }
 
-            var root = _agent.transform.parent != null ? _agent.transform.parent : _agent.transform;
-            var renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+            var renderers = _agent.transform.GetComponentsInChildren<Renderer>(includeInactive: true);
             if (renderers == null)
             {
                 return;
