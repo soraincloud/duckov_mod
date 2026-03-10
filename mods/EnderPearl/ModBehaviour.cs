@@ -61,14 +61,17 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormulas();
         RegisterCraftCategoryFilter();
+        RegisterStorageCategoryFilter();
         PatchExistingStockShops();
 
+        PlayerStorage.OnLoadingFinished += OnPlayerStorageLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     protected override void OnBeforeDeactivate()
     {
         ModSfx.Deinitialize();
+        PlayerStorage.OnLoadingFinished -= OnPlayerStorageLoaded;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
@@ -481,7 +484,20 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             AddToMerchantProfile();
             RegisterOrUpdateCraftingFormulas();
             RegisterCraftCategoryFilter();
+            RegisterStorageCategoryFilter();
             PatchExistingStockShops();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private static void OnPlayerStorageLoaded()
+    {
+        try
+        {
+            RegisterStorageCategoryFilter();
         }
         catch (Exception e)
         {
@@ -671,6 +687,32 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
     }
 
+    private static void RegisterStorageCategoryFilter()
+    {
+        try
+        {
+            var inventory = PlayerStorage.Inventory;
+            if (inventory == null)
+            {
+                return;
+            }
+
+            var provider = inventory.GetComponent<InventoryFilterProvider>();
+            if (provider == null)
+            {
+                return;
+            }
+
+            var filterTag = GetOrCreateSharedCraftCategoryTag(SharedCraftCategoryTagName);
+            var filterIcon = ModAssets.TryLoadCraftCategoryIconSprite(ModAssets.CurrentModPath);
+            EnsureInventoryHasSharedCategoryFilter(provider, filterTag, filterIcon);
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[EnderPearl] Failed to register storage category filter: {e.Message}");
+        }
+    }
+
     private static void EnsureCraftViewHasSharedCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon)
     {
         var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
@@ -709,6 +751,52 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     }
 
     private static bool HasSharedCategoryFilter(CraftView.FilterInfo filter)
+    {
+        if (filter.requireTags == null)
+        {
+            return false;
+        }
+
+        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
+    }
+
+    private static void EnsureInventoryHasSharedCategoryFilter(InventoryFilterProvider provider, Tag filterTag, Sprite? filterIcon)
+    {
+        var filters = provider.entries ?? Array.Empty<InventoryFilterProvider.FilterEntry>();
+        var updatedFilters = filters.ToList();
+        var index = updatedFilters.FindIndex(HasSharedStorageCategoryFilter);
+        var filterEntry = new InventoryFilterProvider.FilterEntry
+        {
+            name = SharedCraftCategoryDisplayNameKey,
+            icon = filterIcon,
+            requireTags = new[] { filterTag }
+        };
+
+        if (index >= 0)
+        {
+            var existing = updatedFilters[index];
+            if (string.IsNullOrWhiteSpace(existing.name))
+            {
+                existing.name = filterEntry.name;
+            }
+
+            if (existing.icon == null && filterEntry.icon != null)
+            {
+                existing.icon = filterEntry.icon;
+            }
+
+            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
+            updatedFilters[index] = existing;
+        }
+        else
+        {
+            updatedFilters.Add(filterEntry);
+        }
+
+        provider.entries = updatedFilters.ToArray();
+    }
+
+    private static bool HasSharedStorageCategoryFilter(InventoryFilterProvider.FilterEntry filter)
     {
         if (filter.requireTags == null)
         {
