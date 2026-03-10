@@ -30,6 +30,9 @@
     <Reference Include="$(DuckovPath)$(SubPath)ItemStatsSystem.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Sirenix.OdinInspector.Attributes.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
       <Private>False</Private>
     </Reference>

@@ -29,8 +29,9 @@
 
 ### 开发信息
 
-开发者：GitHub Copilot  
-声明：本 Mod 为本地自定义 Mod。
+开发者：soraincloud  
+策划：吱吱歪  
+声明：本 Mod 为开源项目，使用 AI 辅助开发。
 
 ## English Description
 
@@ -61,5 +62,6 @@ After entering a level, the mod automatically starts a 10-second countdown. When
 
 ### Credits
 
-Developer: GitHub Copilot  
-Disclaimer: This is a local custom mod.
+Developer: soraincloud  
+Design: 吱吱歪  
+Disclaimer: This mod is open source and was developed with AI assistance.

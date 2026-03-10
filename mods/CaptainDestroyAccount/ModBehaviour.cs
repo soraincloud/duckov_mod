@@ -1,5 +1,7 @@
-using Duckov.Economy;
+using System.Collections.Generic;
+using System.Linq;
 using Duckov.UI;
+using ItemStatsSystem;
 using UnityEngine;
 
 namespace CaptainDestroyAccount;
@@ -8,6 +10,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     private const float CountdownSeconds = 10f;
     private const long DeductionAmount = 168L;
+    private const int CashItemTypeId = 451;
 
     private bool _countdownActive;
     private float _countdownDeadline;
@@ -60,32 +63,102 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         _countdownDeadline = Time.time + CountdownSeconds;
         _lastBroadcastSecond = -1;
 
-        if (EconomyManager.Instance == null)
-        {
-            Debug.LogWarning("[CaptainDestroyAccount] EconomyManager not ready yet. Countdown started and will retry deduction at trigger time.");
-        }
-
         NotificationText.Push($"由于舰长过期 毁号倒计时已启动，{CountdownSeconds:0} 秒后扣除 ${DeductionAmount}");
     }
 
     private static void ApplyDeduction()
     {
-        if (EconomyManager.Instance == null)
+        var storageInventory = PlayerStorage.Inventory;
+        if (storageInventory == null)
         {
-            Debug.LogWarning("[CaptainDestroyAccount] EconomyManager missing when deduction triggered.");
+            NotificationText.Push("舰长毁号触发失败：仓库未就绪");
+            Debug.LogWarning("[CaptainDestroyAccount] PlayerStorage inventory missing when deduction triggered.");
             return;
         }
 
-        var cost = new Cost(DeductionAmount);
-        if (!cost.Pay())
+        if (TryConsumeStorageCash(storageInventory, DeductionAmount))
         {
-            NotificationText.Push($"舰长毁号触发失败：余额不足，无法扣除 ${DeductionAmount}");
-            Debug.LogWarning($"[CaptainDestroyAccount] Not enough money to deduct ${DeductionAmount}.");
+            NotificationText.Push($"舰长毁号已生效：已从仓库扣除现金 ${DeductionAmount}");
+            Debug.Log($"[CaptainDestroyAccount] Deducted ${DeductionAmount} cash from storage.");
             return;
         }
 
-        NotificationText.Push($"舰长毁号已生效：扣除 ${DeductionAmount}");
-        Debug.Log($"[CaptainDestroyAccount] Deducted ${DeductionAmount}.");
+        if (TryDeleteRandomStorageItem(storageInventory, out var deletedItemName))
+        {
+            NotificationText.Push($"仓库现金不足，已随机删除：{deletedItemName}");
+            Debug.Log($"[CaptainDestroyAccount] Storage cash insufficient. Deleted random storage item: {deletedItemName}.");
+            return;
+        }
+
+        NotificationText.Push("仓库现金不足，且仓库中没有可删除的物品");
+        Debug.LogWarning("[CaptainDestroyAccount] Storage cash insufficient and no storage item could be deleted.");
+    }
+
+    private static bool TryConsumeStorageCash(Inventory storageInventory, long amount)
+    {
+        List<Item> cashItems = storageInventory
+            .Where(item => item != null && item.TypeID == CashItemTypeId)
+            .ToList();
+
+        long totalCash = cashItems.Sum(item => (long)(item.Stackable ? item.StackCount : 1));
+        if (totalCash < amount)
+        {
+            return false;
+        }
+
+        long remaining = amount;
+        foreach (var cashItem in cashItems)
+        {
+            if (cashItem == null)
+            {
+                continue;
+            }
+
+            long itemAmount = cashItem.Stackable ? cashItem.StackCount : 1;
+            if (itemAmount <= remaining)
+            {
+                remaining -= itemAmount;
+                storageInventory.RemoveItem(cashItem);
+                cashItem.DestroyTree();
+            }
+            else
+            {
+                cashItem.StackCount -= (int)remaining;
+                remaining = 0L;
+            }
+
+            if (remaining <= 0)
+            {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryDeleteRandomStorageItem(Inventory storageInventory, out string deletedItemName)
+    {
+        List<Item> candidates = storageInventory
+            .Where(item => item != null)
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            deletedItemName = string.Empty;
+            return false;
+        }
+
+        Item targetItem = candidates[Random.Range(0, candidates.Count)];
+        deletedItemName = targetItem.DisplayName;
+
+        if (!storageInventory.RemoveItem(targetItem))
+        {
+            deletedItemName = string.Empty;
+            return false;
+        }
+
+        targetItem.DestroyTree();
+        return true;
     }
 
     private void ResetCountdown()
