@@ -2,7 +2,7 @@
 
 ## 中文介绍
 
-版本：v1.0.0  
+版本：v1.0.0
 更新日期：2026-03-09
 更新内容：初始版本发布。
 
@@ -34,7 +34,7 @@
 
 ## English Description
 
-Version: v1.0.0  
+Version: v1.0.0
 Updated: 2026-03-09
 Update Notes: Initial release.
 

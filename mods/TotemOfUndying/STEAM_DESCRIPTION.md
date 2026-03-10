@@ -2,9 +2,9 @@
 
 ## 中文介绍
 
-版本：v1.0.0  
-更新日期：2026-03-09
-更新内容：添加了合成配方。
+版本：v1.0.4
+更新日期：2026-03-10
+更新内容：增加了独特的物品分类，并修复模型冲突。
 
 为游戏新增物品“不死图腾”。将其放入图腾槽位后即可生效。当角色受到致命伤害时，会自动消耗 1 个图腾，免除本次死亡，恢复 30% 最大生命，并获得 5 秒无敌效果。
 
@@ -14,6 +14,8 @@
 - 致命伤害触发时自动保命
 - 恢复 30% 最大生命并提供 5 秒无敌
 - 额外提供行走速度 +8% 与奔跑速度 +8%
+- 工作台与仓库新增独立的 `MC` 分类
+- 修复物品掉落时的模型冲突问题
 
 ### 获取方式
 
@@ -35,9 +37,9 @@
 
 ## English Description
 
-Version: v1.0.0  
-Updated: 2026-03-09
-Update Notes: Added crafting recipes.
+Version: v1.0.4
+Updated: 2026-03-10
+Update Notes: Added a unique item category and fixed model conflicts.
 
 Adds a new item called the Totem of Undying. Once placed in the totem slot, it becomes active. When the player receives lethal damage, it automatically consumes 1 totem, prevents death, restores 30% of max HP, and grants 5 seconds of invulnerability.
 
@@ -47,6 +49,8 @@ Adds a new item called the Totem of Undying. Once placed in the totem slot, it b
 - Automatically prevents death on lethal damage
 - Restores 30% max HP and grants 5 seconds of invulnerability
 - Also provides +8% walking speed and +8% running speed
+- Adds a dedicated `MC` category in the workbench and storage UI
+- Fixes model conflicts when the item is dropped on the ground
 
 ### How to Obtain
 
