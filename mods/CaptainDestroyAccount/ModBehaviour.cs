@@ -42,7 +42,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         if (remainingSeconds != _lastBroadcastSecond)
         {
             _lastBroadcastSecond = remainingSeconds;
-            NotificationText.Push($"舰长毁号倒计时：{remainingSeconds} 秒");
+            NotificationText.Push($"由于舰长过期 毁号倒计时：{remainingSeconds} 秒");
         }
 
         if (Time.time < _countdownDeadline)
@@ -56,17 +56,16 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private void OnLevelInitialized()
     {
-        if (EconomyManager.Instance == null)
-        {
-            Debug.LogWarning("[CaptainDestroyAccount] EconomyManager not ready. Countdown skipped.");
-            return;
-        }
-
         _countdownActive = true;
         _countdownDeadline = Time.time + CountdownSeconds;
         _lastBroadcastSecond = -1;
 
-        NotificationText.Push($"舰长毁号已启动，{CountdownSeconds:0} 秒后扣除 ${DeductionAmount}");
+        if (EconomyManager.Instance == null)
+        {
+            Debug.LogWarning("[CaptainDestroyAccount] EconomyManager not ready yet. Countdown started and will retry deduction at trigger time.");
+        }
+
+        NotificationText.Push($"由于舰长过期 毁号倒计时已启动，{CountdownSeconds:0} 秒后扣除 ${DeductionAmount}");
     }
 
     private static void ApplyDeduction()
