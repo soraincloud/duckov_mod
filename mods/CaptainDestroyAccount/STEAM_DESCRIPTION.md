@@ -2,11 +2,11 @@
 
 ## 中文介绍
 
-版本：v1.0.0
-更新日期：2026-03-09
-更新内容：初始版本发布。
+版本：v1.1.0
+更新日期：2026-03-11
+更新内容：改为优先扣除仓库中的现金物品；若仓库现金不足，则随机删除仓库中的一个物品并提示物品名称。
 
-进入关卡后，Mod 会自动开始 10 秒倒计时。倒计时结束时，系统会尝试直接扣除 `$168`。如果账户余额和身上现金总额不足，则不会扣款，并会弹出提示。
+进入关卡后，Mod 会自动开始 10 秒倒计时。倒计时结束时，系统会优先从仓库中的现金物品里扣除 `$168`。如果仓库现金不足，则会随机删除仓库中的一个物品，并弹出提示显示删除了什么物品。
 
 ### 特别提醒
 
@@ -19,7 +19,8 @@
 
 - 自动触发，无需手动使用
 - 每次关卡初始化完成后都会重新开始计时
-- 扣款失败时会给出明确提示
+- 仓库现金不足时会随机删除一个仓库物品
+- 删除后会明确提示被删除的物品名称
 
 ### 适用场景
 
@@ -35,11 +36,11 @@
 
 ## English Description
 
-Version: v1.0.0
-Updated: 2026-03-09
-Update Notes: Initial release.
+Version: v1.1.0
+Updated: 2026-03-11
+Update Notes: The mod now deducts cash items from player storage first; if storage cash is insufficient, it randomly deletes one item from storage and shows what was removed.
 
-After entering a level, the mod automatically starts a 10-second countdown. When the countdown ends, it attempts to deduct `$168` from the player. If the combined account balance and carried cash are insufficient, no money is deducted and a notice is shown.
+After entering a level, the mod automatically starts a 10-second countdown. When the countdown ends, it first deducts `$168` from cash items stored in player storage. If storage cash is insufficient, it randomly deletes one item from storage and shows which item was removed.
 
 ### Important Notice
 
@@ -52,7 +53,8 @@ After entering a level, the mod automatically starts a 10-second countdown. When
 
 - Automatic activation with no manual use required
 - Restarts the countdown after each level initialization
-- Shows a clear notice when the deduction cannot be completed
+- Randomly deletes one storage item when storage cash is insufficient
+- Shows a clear notice naming the removed item
 
 ### Best For
 

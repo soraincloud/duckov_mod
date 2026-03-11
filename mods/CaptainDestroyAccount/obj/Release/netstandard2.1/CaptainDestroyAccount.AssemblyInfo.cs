@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CaptainDestroyAccount")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+81c9910361782d7e2178eadef52bf0f2f871985d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b443b34974025606d97e2d7f681d17b12910e66d")]
 [assembly: System.Reflection.AssemblyProductAttribute("CaptainDestroyAccount")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CaptainDestroyAccount")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
