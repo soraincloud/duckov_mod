@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TotemOfUndying")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa467cbe127656105bab8bd7090c8643aec2a2cb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7a6620db778c1b0e2480fafbb6f2a31969196e2")]
 [assembly: System.Reflection.AssemblyProductAttribute("TotemOfUndying")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TotemOfUndying")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -6,6 +6,7 @@ using Duckov.Economy;
 using Duckov.Utilities;
 using Duckov.Modding;
 using ItemStatsSystem;
+using ItemStatsSystem.Items;
 using ItemStatsSystem.Stats;
 using SodaCraft.Localizations;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace TotemOfUndying;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int TotemOfUndyingTypeId = 900011;
+    private const int SoulCubeTypeId = 1165;
     private const string DisplayNameKey = "Item_TotemOfUndying";
     private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
     private const string SharedCraftCategoryDisplayNameKey = "CraftFilter_ModMystic";
@@ -140,6 +142,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         AddTagIfExists(item, GameplayDataSettings.Tags.DontDropOnDeadInSlot);
         EnsureRuntimeTag(item, SharedCraftCategoryTagName);
+        EnsureTotemSlotCompatibility();
 
         ModLog.Info($"[TotemOfUndying] Item tags: {DescribeItemTags(item)}");
 
@@ -467,6 +470,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         try
         {
+            EnsureTotemSlotCompatibility();
             AddToMerchantProfile();
             PatchExistingStockShops();
             RegisterOrUpdateCraftingFormula();
@@ -483,6 +487,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         try
         {
+            EnsureTotemSlotCompatibility();
             RegisterStorageCategoryFilter();
         }
         catch (Exception e)
@@ -622,6 +627,133 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             item.Tags.Add(tag);
         }
+    }
+
+    private static void EnsureTotemSlotCompatibility()
+    {
+        try
+        {
+            var compatibleTags = ResolveTotemSlotTags();
+            if (compatibleTags.Count == 0)
+            {
+                ModLog.Warn("[TotemOfUndying] Could not resolve any compatible tags for the totem slot.");
+                return;
+            }
+
+            var patchedCount = 0;
+
+            if (_prefab != null && ApplyCompatibilityTags(_prefab, compatibleTags))
+            {
+                patchedCount++;
+            }
+
+            var liveItems = Resources.FindObjectsOfTypeAll<Item>();
+            foreach (var liveItem in liveItems)
+            {
+                if (liveItem == null || liveItem.TypeID != TotemOfUndyingTypeId)
+                {
+                    continue;
+                }
+
+                if (ApplyCompatibilityTags(liveItem, compatibleTags))
+                {
+                    patchedCount++;
+                }
+            }
+
+            if (patchedCount > 0)
+            {
+                ModLog.Info($"[TotemOfUndying] Applied totem-slot compatibility tags to {patchedCount} totem instance(s). Tags: {string.Join(", ", compatibleTags.Select(tag => tag.name))}");
+            }
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[TotemOfUndying] Failed to ensure totem-slot compatibility: {e.Message}");
+        }
+    }
+
+    private static List<Tag> ResolveTotemSlotTags()
+    {
+        var tags = new List<Tag>();
+
+        void AddTags(IEnumerable<Tag>? source)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            foreach (var tag in source)
+            {
+                if (tag == null || tags.Any(existing => existing.Hash == tag.Hash))
+                {
+                    continue;
+                }
+
+                tags.Add(tag);
+            }
+        }
+
+        var soulCubePrefab = ItemAssetsCollection.GetPrefab(SoulCubeTypeId);
+        if (soulCubePrefab != null)
+        {
+            AddTags(soulCubePrefab.Tags);
+        }
+
+        var characters = Resources.FindObjectsOfTypeAll<CharacterMainControl>();
+        foreach (var character in characters)
+        {
+            var slots = character?.CharacterItem?.Slots;
+            if (slots == null)
+            {
+                continue;
+            }
+
+            foreach (Slot slot in slots)
+            {
+                if (slot == null || !IsTotemSlotKey(slot.Key))
+                {
+                    continue;
+                }
+
+                AddTags(slot.requireTags);
+            }
+        }
+
+        return tags;
+    }
+
+    private static bool ApplyCompatibilityTags(Item item, IEnumerable<Tag> compatibleTags)
+    {
+        if (item == null)
+        {
+            return false;
+        }
+
+        var changed = false;
+        foreach (var tag in compatibleTags)
+        {
+            if (tag == null || item.Tags.Contains(tag))
+            {
+                continue;
+            }
+
+            item.Tags.Add(tag);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private static bool IsTotemSlotKey(string? slotKey)
+    {
+        if (string.IsNullOrWhiteSpace(slotKey))
+        {
+            return false;
+        }
+
+        var key = slotKey.ToLowerInvariant();
+        return key == "totem" || key.Contains("totem") || key == "soulcube" || key.Contains("soulcube");
     }
 
     private static void EnsureRuntimeTag(Item item, string tagName)
