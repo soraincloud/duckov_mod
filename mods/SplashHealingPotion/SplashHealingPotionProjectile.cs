@@ -8,7 +8,7 @@ namespace SplashHealingPotion;
 public class EnderPearlProjectile : MonoBehaviour
 {
     private const float HealPercent = 0.5f;
-    private const float HealRadius = 5.5f;
+    private const float HealRadius = 2.8f;
     private const float ArmDelaySeconds = 0.12f;
     private const int SplashFxPoolMax = 6;
 
@@ -226,8 +226,8 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static void SpawnSplashParticles(Vector3 position)
     {
-        var colorStart = new Color(244f / 255f, 102f / 255f, 172f / 255f, 1f);
-        var colorEnd = new Color(255f / 255f, 205f / 255f, 228f / 255f, 1f);
+        var colorStart = new Color(192f / 255f, 28f / 255f, 27f / 255f, 1f);
+        var colorEnd = new Color(232f / 255f, 112f / 255f, 111f / 255f, 1f);
 
         var ps = GetOrCreateSplashFx();
         if (ps == null)
@@ -274,11 +274,11 @@ public class EnderPearlProjectile : MonoBehaviour
 
         var main = ps.main;
         main.loop = false;
-        main.duration = 0.75f;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.75f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(1.2f, 2.8f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.18f);
-        main.gravityModifier = 0.12f;
+        main.duration = 1.5f;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.9f, 1.6f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(1.15f, 1.95f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.09f, 0.2f);
+        main.gravityModifier = 0.03f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.maxParticles = 64;
 
@@ -286,22 +286,22 @@ public class EnderPearlProjectile : MonoBehaviour
         emission.rateOverTime = 0f;
         emission.SetBursts(new[]
         {
-            new ParticleSystem.Burst(0f, 28)
+            new ParticleSystem.Burst(0f, 36)
         });
 
         var shape = ps.shape;
         shape.enabled = true;
         shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.22f;
+        shape.radius = 0.16f;
 
         var velocity = ps.velocityOverLifetime;
         velocity.enabled = true;
         velocity.space = ParticleSystemSimulationSpace.World;
-        velocity.radial = new ParticleSystem.MinMaxCurve(0.45f, 1.25f);
+        velocity.radial = new ParticleSystem.MinMaxCurve(0.95f, 1.65f);
 
         var sizeOverLifetime = ps.sizeOverLifetime;
         sizeOverLifetime.enabled = true;
-        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0.2f));
+        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0.45f));
 
         var colorOverLifetime = ps.colorOverLifetime;
         colorOverLifetime.enabled = true;
@@ -346,7 +346,8 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static Material? TryCreateSplashParticleMaterial()
     {
-        var shader = Shader.Find("Particles/Additive") ?? Shader.Find("Particles/Standard Unlit");
+        var tint = new Color(192f / 255f, 28f / 255f, 27f / 255f, 1f);
+        var shader = Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Particles/Additive");
         if (shader == null)
         {
             return null;
@@ -357,10 +358,9 @@ public class EnderPearlProjectile : MonoBehaviour
             name = "SplashHealingPotion_ParticleMat"
         };
 
-        if (material.HasProperty("_Color"))
-        {
-            material.SetColor("_Color", Color.white);
-        }
+        if (material.HasProperty("_Color")) material.SetColor("_Color", tint);
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", tint);
+        if (material.HasProperty("_TintColor")) material.SetColor("_TintColor", tint);
 
         return material;
     }

@@ -16,12 +16,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     internal const int EnderPearlTypeId = 900012;
     private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
     private const string SharedCraftCategoryDisplayNameKey = "CraftFilter_ModMystic";
-    private const string PrimaryFormulaId = "EnderPearl_Workbench";
-    private const string SecondaryFormulaId = "EnderPearl_Workbench_Alt";
-    private const string TertiaryFormulaId = "EnderPearl_Workbench_1242";
-    private const string QuaternaryFormulaId = "EnderPearl_Workbench_1507";
+    private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
-    private const int MerchantPrice = 1000;
+    private const int MerchantPrice = 2000;
     private const int MerchantStock = 99;
 
     private static readonly string[] WorkbenchFormulaTags =
@@ -59,6 +56,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
+        RegisterOrUpdateCraftingFormulas();
         PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -70,6 +68,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
+        UnregisterCraftingFormulas();
 
         if (_prefab != null)
         {
@@ -191,10 +190,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
 
         formulaList.RemoveAll(existing =>
-            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, TertiaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, QuaternaryFormulaId, StringComparison.Ordinal));
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal));
         formulaList.AddRange(builtFormulas);
 
         foreach (var formula in builtFormulas)
@@ -208,14 +204,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         builtFormulas = new List<CraftingFormula>();
 
-        var stormEyeId = ResolveIngredientTypeId("风暴眼", "风暴眼", "Storm Eye", "StormEye");
-        var coldCoreFragmentId = ResolveIngredientTypeId("冷核碎片", "冷核碎片", "Cold Core Fragment", "Cold Core Fragments", "ColdCoreFragment", "ColdCoreFragments", "Cold Core Shard", "ColdCoreShard");
-        var polyethyleneSheetId = ResolveIngredientTypeId("聚乙烯片", "聚乙烯片", "Polyethylene Sheet", "Polyethylene Sheets", "Polyethylene", "PESheet", "PESheets");
-        var inkId = ResolveIngredientTypeId("墨水", "墨水", "Ink");
-        var glueAId = ResolveIngredientTypeId("万能胶A", "万能胶A", "万能胶a", "Universal Glue A", "UniversalGlueA", "Glue A", "GlueA");
-        var glueBId = ResolveIngredientTypeId("万能胶B", "万能胶B", "万能胶b", "Universal Glue B", "UniversalGlueB", "Glue B", "GlueB");
+        var bandageId = ResolveIngredientTypeId("止血绷带", "止血绷带", "Bandage", "Hemostatic Bandage", "HemostaticBandage");
+        var firstAidKitId = ResolveIngredientTypeId("小急救箱", "小急救箱", "Small First Aid Kit", "First Aid Kit", "SmallFirstAidKit", "Small Medkit", "SmallMedkit");
+        var recoveryShotId = ResolveIngredientTypeId("恢复针", "恢复针", "Recovery Shot", "Recovery Syringe", "Recovery Injection", "RecoveryShot", "RecoverySyringe", "RecoveryInjection");
 
-        if (stormEyeId < 0 || coldCoreFragmentId < 0 || polyethyleneSheetId < 0 || inkId < 0 || glueAId < 0 || glueBId < 0)
+        if (bandageId < 0 || firstAidKitId < 0 || recoveryShotId < 0)
         {
             return false;
         }
@@ -232,60 +225,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             },
             tags = compatibleTags,
             cost = new Cost(
-                (stormEyeId, 1L),
-                (coldCoreFragmentId, 3L)),
-            unlockByDefault = true,
-            lockInDemo = false,
-            requirePerk = string.Empty,
-            hideInIndex = false
-        });
-
-        builtFormulas.Add(new CraftingFormula
-        {
-            id = SecondaryFormulaId,
-            result = new CraftingFormula.ItemEntry
-            {
-                id = EnderPearlTypeId,
-                amount = 2
-            },
-            tags = compatibleTags,
-            cost = new Cost(
-                (polyethyleneSheetId, 10L),
-                (inkId, 1L),
-                (glueAId, 1L),
-                (glueBId, 1L)),
-            unlockByDefault = true,
-            lockInDemo = false,
-            requirePerk = string.Empty,
-            hideInIndex = false
-        });
-
-        builtFormulas.Add(new CraftingFormula
-        {
-            id = TertiaryFormulaId,
-            result = new CraftingFormula.ItemEntry
-            {
-                id = EnderPearlTypeId,
-                amount = 8
-            },
-            tags = compatibleTags,
-            cost = new Cost((1242, 1L)),
-            unlockByDefault = true,
-            lockInDemo = false,
-            requirePerk = string.Empty,
-            hideInIndex = false
-        });
-
-        builtFormulas.Add(new CraftingFormula
-        {
-            id = QuaternaryFormulaId,
-            result = new CraftingFormula.ItemEntry
-            {
-                id = EnderPearlTypeId,
-                amount = 16
-            },
-            tags = compatibleTags,
-            cost = new Cost((1507, 1L)),
+                (bandageId, 6L),
+                (firstAidKitId, 2L),
+                (recoveryShotId, 1L)),
             unlockByDefault = true,
             lockInDemo = false,
             requirePerk = string.Empty,
@@ -443,19 +385,13 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var formulas = CraftingFormulaCollection.Instance;
         var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
         formulaList?.RemoveAll(existing =>
-            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, TertiaryFormulaId, StringComparison.Ordinal) ||
-            string.Equals(existing.id, QuaternaryFormulaId, StringComparison.Ordinal));
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal));
 
         if (CraftingManager.Instance != null)
         {
             var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
             unlockedFormulaIds?.RemoveAll(existing =>
-                string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal) ||
-                string.Equals(existing, SecondaryFormulaId, StringComparison.Ordinal) ||
-                string.Equals(existing, TertiaryFormulaId, StringComparison.Ordinal) ||
-                string.Equals(existing, QuaternaryFormulaId, StringComparison.Ordinal));
+                string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal));
         }
     }
 
@@ -464,6 +400,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         try
         {
             AddToMerchantProfile();
+            RegisterOrUpdateCraftingFormulas();
             PatchExistingStockShops();
         }
         catch (Exception e)

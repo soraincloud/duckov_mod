@@ -5,7 +5,7 @@ namespace SplashHealingPotion;
 
 public class Skill_EnderPearlThrow : SkillBase
 {
-    private const float HealRadius = 5.5f;
+    private const float HealRadius = 2.8f;
 
     [SerializeField]
     private float maxLifeSeconds = 10f;
