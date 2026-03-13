@@ -20,7 +20,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private const int SoulCubeTypeId = 1165;
     private const string DisplayNameKey = "Item_TotemOfUndying";
     private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
-    private const string SharedCraftCategoryDisplayNameKey = "CraftFilter_ModMystic";
     private const string FormulaId = "TotemOfUndying_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const float TotemWeightKg = 0.3f;
@@ -65,8 +64,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormula();
-        RegisterCraftCategoryFilter();
-        RegisterStorageCategoryFilter();
         WorkbenchCraftSystem.Initialize();
         TotemRescueSystem.Initialize(info.path);
 
@@ -110,7 +107,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         LocalizationManager.SetOverrideText(DisplayNameKey, "不死图腾");
         LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 30% 最大生命\n- 获得 5 秒无敌\n");
-        LocalizationManager.SetOverrideText(SharedCraftCategoryDisplayNameKey, "MC");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -474,8 +470,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             AddToMerchantProfile();
             PatchExistingStockShops();
             RegisterOrUpdateCraftingFormula();
-            RegisterCraftCategoryFilter();
-            RegisterStorageCategoryFilter();
         }
         catch (Exception e)
         {
@@ -488,7 +482,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         try
         {
             EnsureTotemSlotCompatibility();
-            RegisterStorageCategoryFilter();
         }
         catch (Exception e)
         {
@@ -766,185 +759,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Tags.Add(GetOrCreateRuntimeTag(tagName));
     }
 
-    private static string DescribeItemTags(Item item)
-    {
-        return string.Join(", ", item.Tags.Select(tag => tag != null ? tag.name : "<null>"));
-    }
-
-    private static void RegisterCraftCategoryFilter()
-    {
-        try
-        {
-            var filterTag = GetOrCreateRuntimeTag(SharedCraftCategoryTagName);
-            var filterIcon = TryLoadCraftCategoryIconSprite(_modPath);
-            var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
-            if (craftViews == null || craftViews.Length == 0)
-            {
-                return;
-            }
-
-            foreach (var craftView in craftViews)
-            {
-                if (craftView == null)
-                {
-                    continue;
-                }
-
-                EnsureCraftViewHasSharedCategoryFilter(craftView, filterTag, filterIcon);
-            }
-        }
-        catch (Exception e)
-        {
-            ModLog.Warn($"[TotemOfUndying] Failed to register craft category filter: {e.Message}");
-        }
-    }
-
-    private static void RegisterStorageCategoryFilter()
-    {
-        try
-        {
-            var inventory = PlayerStorage.Inventory;
-            if (inventory == null)
-            {
-                return;
-            }
-
-            var provider = inventory.GetComponent<InventoryFilterProvider>();
-            if (provider == null)
-            {
-                return;
-            }
-
-            var filterTag = GetOrCreateRuntimeTag(SharedCraftCategoryTagName);
-            var filterIcon = TryLoadCraftCategoryIconSprite(_modPath);
-            EnsureInventoryHasSharedCategoryFilter(provider, filterTag, filterIcon);
-        }
-        catch (Exception e)
-        {
-            ModLog.Warn($"[TotemOfUndying] Failed to register storage category filter: {e.Message}");
-        }
-    }
-
-    private static void EnsureCraftViewHasSharedCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon)
-    {
-        var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
-        var updatedFilters = filters.ToList();
-        var index = updatedFilters.FindIndex(HasSharedCategoryFilter);
-        var filterInfo = new CraftView.FilterInfo
-        {
-            displayNameKey = SharedCraftCategoryDisplayNameKey,
-            icon = filterIcon,
-            requireTags = new[] { filterTag }
-        };
-
-        if (index >= 0)
-        {
-            var existing = updatedFilters[index];
-            if (string.IsNullOrWhiteSpace(existing.displayNameKey))
-            {
-                existing.displayNameKey = filterInfo.displayNameKey;
-            }
-
-            if (existing.icon == null && filterInfo.icon != null)
-            {
-                existing.icon = filterInfo.icon;
-            }
-
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
-
-            updatedFilters[index] = existing;
-        }
-        else
-        {
-            updatedFilters.Add(filterInfo);
-        }
-
-        ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
-    }
-
-    private static bool HasSharedCategoryFilter(CraftView.FilterInfo filter)
-    {
-        if (filter.requireTags == null)
-        {
-            return false;
-        }
-
-        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
-    }
-
-    private static void EnsureInventoryHasSharedCategoryFilter(InventoryFilterProvider provider, Tag filterTag, Sprite? filterIcon)
-    {
-        var filters = provider.entries ?? Array.Empty<InventoryFilterProvider.FilterEntry>();
-        var updatedFilters = filters.ToList();
-        var index = updatedFilters.FindIndex(HasSharedStorageCategoryFilter);
-        var filterEntry = new InventoryFilterProvider.FilterEntry
-        {
-            name = SharedCraftCategoryDisplayNameKey,
-            icon = filterIcon,
-            requireTags = new[] { filterTag }
-        };
-
-        if (index >= 0)
-        {
-            var existing = updatedFilters[index];
-            if (string.IsNullOrWhiteSpace(existing.name))
-            {
-                existing.name = filterEntry.name;
-            }
-
-            if (existing.icon == null && filterEntry.icon != null)
-            {
-                existing.icon = filterEntry.icon;
-            }
-
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
-            updatedFilters[index] = existing;
-        }
-        else
-        {
-            updatedFilters.Add(filterEntry);
-        }
-
-        provider.entries = updatedFilters.ToArray();
-    }
-
-    private static bool HasSharedStorageCategoryFilter(InventoryFilterProvider.FilterEntry filter)
-    {
-        if (filter.requireTags == null)
-        {
-            return false;
-        }
-
-        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
-    }
-
-    private static Tag[] MergeFilterTags(Tag[]? existingTags, Tag filterTag)
-    {
-        if (filterTag == null)
-        {
-            return existingTags ?? Array.Empty<Tag>();
-        }
-
-        var merged = new List<Tag>();
-        if (existingTags != null)
-        {
-            foreach (var tag in existingTags)
-            {
-                if (tag != null && !merged.Any(existing => ReferenceEquals(existing, tag)))
-                {
-                    merged.Add(tag);
-                }
-            }
-        }
-
-        if (!merged.Any(existing => ReferenceEquals(existing, filterTag)))
-        {
-            merged.Add(filterTag);
-        }
-
-        return merged.ToArray();
-    }
-
     private static Tag GetOrCreateRuntimeTag(string tagName)
     {
         if (string.Equals(tagName, SharedCraftCategoryTagName, StringComparison.Ordinal) && _sharedCraftCategoryTag != null)
@@ -975,23 +789,9 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         return runtimeTag;
     }
 
-    private static Sprite? TryLoadCraftCategoryIconSprite(string? modPath)
+    private static string DescribeItemTags(Item item)
     {
-        if (string.IsNullOrWhiteSpace(modPath))
-        {
-            return null;
-        }
-
-        try
-        {
-            var iconPath = Path.Combine(modPath, "assets", "item-icons", "grass.png");
-            return TryLoadSpriteFromPngFile(iconPath, "TotemOfUndying_CraftCategory_Icon");
-        }
-        catch (Exception e)
-        {
-            ModLog.Warn($"[TotemOfUndying] Failed to load craft category icon: {e.Message}");
-            return null;
-        }
+        return string.Join(", ", item.Tags.Select(tag => tag != null ? tag.name : "<null>"));
     }
 
     private static Sprite? TryLoadIconSprite(string? modPath)

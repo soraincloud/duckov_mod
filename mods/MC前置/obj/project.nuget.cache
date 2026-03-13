@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "36LqzGrlwIw=",
+  "success": true,
+  "projectFilePath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/MC前置.csproj",
+  "expectedPackageFiles": [
+    "/Users/sric/.nuget/packages/netstandard.library.ref/2.1.0/netstandard.library.ref.2.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

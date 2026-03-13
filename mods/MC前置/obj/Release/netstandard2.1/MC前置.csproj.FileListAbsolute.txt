@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/bin/Release/netstandard2.1/MC前置.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/bin/Release/netstandard2.1/MC前置.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/bin/Release/netstandard2.1/MC前置.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/Release/netstandard2.1/MC前置.pdb

@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>MC前置</AssemblyName>
+    <RootNamespace>MC前置</RootNamespace>
+
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+
+    <DuckovPath>$(DUCKOV_PATH)</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' != 'true'">E:\\Program Files (x86)\\Steam\\steamapps\\common\\Escape from Duckov</DuckovPath>
+
+    <SubPath>\Duckov_Data\Managed\</SubPath>
+    <SubPath Condition="'$(IsMac)' == 'true'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/MC前置</GameModDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DuckovPath)$(SubPath)TeamSoda.*">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)ItemStatsSystem.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Unity*">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyModDll" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/MC前置.dll" />
+  </Target>
+
+  <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
+    <Message Text="[MC前置] Syncing mod files to: $(GameModDir)" Importance="high" />
+
+    <MakeDir Directories="$(GameModDir)/assets/item-icons" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/MC前置.dll" DestinationFolder="$(GameModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <ItemIconFiles Include="$(MSBuildProjectDirectory)/assets/item-icons/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ItemIconFiles)" DestinationFolder="$(GameModDir)/assets/item-icons" SkipUnchangedFiles="true" Condition=" '@(ItemIconFiles)' != '' " />
+  </Target>
+</Project>

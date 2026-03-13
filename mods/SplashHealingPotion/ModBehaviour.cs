@@ -15,7 +15,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900012;
     private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
-    private const string SharedCraftCategoryDisplayNameKey = "CraftFilter_ModMystic";
     private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 2000;
@@ -57,18 +56,14 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormulas();
-        RegisterCraftCategoryFilter();
-        RegisterStorageCategoryFilter();
         PatchExistingStockShops();
 
-        PlayerStorage.OnLoadingFinished += OnPlayerStorageLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     protected override void OnBeforeDeactivate()
     {
         ModSfx.Deinitialize();
-        PlayerStorage.OnLoadingFinished -= OnPlayerStorageLoaded;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
@@ -95,7 +90,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         LocalizationManager.SetOverrideText("Item_SplashHealingPotion", "喷溅治疗药水");
         LocalizationManager.SetOverrideText("Item_SplashHealingPotion_Desc", "手持后：按住显示投掷线，松手投掷。\n落地时在范围内为角色恢复 50% 最大生命值，并爆开带发白高光感的莓果玫红粒子。");
-        LocalizationManager.SetOverrideText(SharedCraftCategoryDisplayNameKey, "MC");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -408,21 +402,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             AddToMerchantProfile();
             RegisterOrUpdateCraftingFormulas();
-            RegisterCraftCategoryFilter();
-            RegisterStorageCategoryFilter();
             PatchExistingStockShops();
-        }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-        }
-    }
-
-    private static void OnPlayerStorageLoaded()
-    {
-        try
-        {
-            RegisterStorageCategoryFilter();
         }
         catch (Exception e)
         {
@@ -584,180 +564,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Tags.Add(GetOrCreateSharedCraftCategoryTag(tagName));
     }
 
-    private static void RegisterCraftCategoryFilter()
-    {
-        try
-        {
-            var filterTag = GetOrCreateSharedCraftCategoryTag(SharedCraftCategoryTagName);
-            var filterIcon = ModAssets.TryLoadCraftCategoryIconSprite(ModAssets.CurrentModPath);
-            var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
-            if (craftViews == null || craftViews.Length == 0)
-            {
-                return;
-            }
-
-            foreach (var craftView in craftViews)
-            {
-                if (craftView == null)
-                {
-                    continue;
-                }
-
-                EnsureCraftViewHasSharedCategoryFilter(craftView, filterTag, filterIcon);
-            }
-        }
-        catch (Exception e)
-        {
-            ModLog.Warn($"[EnderPearl] Failed to register craft category filter: {e.Message}");
-        }
-    }
-
-    private static void RegisterStorageCategoryFilter()
-    {
-        try
-        {
-            var inventory = PlayerStorage.Inventory;
-            if (inventory == null)
-            {
-                return;
-            }
-
-            var provider = inventory.GetComponent<InventoryFilterProvider>();
-            if (provider == null)
-            {
-                return;
-            }
-
-            var filterTag = GetOrCreateSharedCraftCategoryTag(SharedCraftCategoryTagName);
-            var filterIcon = ModAssets.TryLoadCraftCategoryIconSprite(ModAssets.CurrentModPath);
-            EnsureInventoryHasSharedCategoryFilter(provider, filterTag, filterIcon);
-        }
-        catch (Exception e)
-        {
-            ModLog.Warn($"[EnderPearl] Failed to register storage category filter: {e.Message}");
-        }
-    }
-
-    private static void EnsureCraftViewHasSharedCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon)
-    {
-        var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
-        var updatedFilters = filters.ToList();
-        var index = updatedFilters.FindIndex(HasSharedCategoryFilter);
-        var filterInfo = new CraftView.FilterInfo
-        {
-            displayNameKey = SharedCraftCategoryDisplayNameKey,
-            icon = filterIcon,
-            requireTags = new[] { filterTag }
-        };
-
-        if (index >= 0)
-        {
-            var existing = updatedFilters[index];
-            if (string.IsNullOrWhiteSpace(existing.displayNameKey))
-            {
-                existing.displayNameKey = filterInfo.displayNameKey;
-            }
-
-            if (existing.icon == null && filterInfo.icon != null)
-            {
-                existing.icon = filterInfo.icon;
-            }
-
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
-
-            updatedFilters[index] = existing;
-        }
-        else
-        {
-            updatedFilters.Add(filterInfo);
-        }
-
-        ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
-    }
-
-    private static bool HasSharedCategoryFilter(CraftView.FilterInfo filter)
-    {
-        if (filter.requireTags == null)
-        {
-            return false;
-        }
-
-        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
-    }
-
-    private static void EnsureInventoryHasSharedCategoryFilter(InventoryFilterProvider provider, Tag filterTag, Sprite? filterIcon)
-    {
-        var filters = provider.entries ?? Array.Empty<InventoryFilterProvider.FilterEntry>();
-        var updatedFilters = filters.ToList();
-        var index = updatedFilters.FindIndex(HasSharedStorageCategoryFilter);
-        var filterEntry = new InventoryFilterProvider.FilterEntry
-        {
-            name = SharedCraftCategoryDisplayNameKey,
-            icon = filterIcon,
-            requireTags = new[] { filterTag }
-        };
-
-        if (index >= 0)
-        {
-            var existing = updatedFilters[index];
-            if (string.IsNullOrWhiteSpace(existing.name))
-            {
-                existing.name = filterEntry.name;
-            }
-
-            if (existing.icon == null && filterEntry.icon != null)
-            {
-                existing.icon = filterEntry.icon;
-            }
-
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
-            updatedFilters[index] = existing;
-        }
-        else
-        {
-            updatedFilters.Add(filterEntry);
-        }
-
-        provider.entries = updatedFilters.ToArray();
-    }
-
-    private static bool HasSharedStorageCategoryFilter(InventoryFilterProvider.FilterEntry filter)
-    {
-        if (filter.requireTags == null)
-        {
-            return false;
-        }
-
-        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCraftCategoryTagName));
-    }
-
-    private static Tag[] MergeFilterTags(Tag[]? existingTags, Tag filterTag)
-    {
-        if (filterTag == null)
-        {
-            return existingTags ?? Array.Empty<Tag>();
-        }
-
-        var merged = new List<Tag>();
-        if (existingTags != null)
-        {
-            foreach (var tag in existingTags)
-            {
-                if (tag != null && !merged.Any(existing => ReferenceEquals(existing, tag)))
-                {
-                    merged.Add(tag);
-                }
-            }
-        }
-
-        if (!merged.Any(existing => ReferenceEquals(existing, filterTag)))
-        {
-            merged.Add(filterTag);
-        }
-
-        return merged.ToArray();
-    }
-
     private static Tag GetOrCreateSharedCraftCategoryTag(string tagName)
     {
         if (_sharedCraftCategoryTag != null)
@@ -776,4 +582,5 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         _sharedCraftCategoryTag.hideFlags = HideFlags.HideAndDontSave;
         return _sharedCraftCategoryTag;
     }
+
 }
