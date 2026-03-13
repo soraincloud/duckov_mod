@@ -57,14 +57,18 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         CreateAndRegisterItemPrefab(info.path);
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormulas();
+        RegisterCraftCategoryFilter();
+        RegisterStorageCategoryFilter();
         PatchExistingStockShops();
 
+        PlayerStorage.OnLoadingFinished += OnPlayerStorageLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     protected override void OnBeforeDeactivate()
     {
         ModSfx.Deinitialize();
+        PlayerStorage.OnLoadingFinished -= OnPlayerStorageLoaded;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
@@ -91,6 +95,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         LocalizationManager.SetOverrideText("Item_SplashHealingPotion", "喷溅治疗药水");
         LocalizationManager.SetOverrideText("Item_SplashHealingPotion_Desc", "手持后：按住显示投掷线，松手投掷。\n落地时在范围内为角色恢复 50% 最大生命值，并爆开带发白高光感的莓果玫红粒子。");
+        LocalizationManager.SetOverrideText(SharedCraftCategoryDisplayNameKey, "MC");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
@@ -121,6 +126,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         var visualHook = go.AddComponent<EnderPearlVisualHook>();
         visualHook.SetModPath(modPath);
+
+        EnsureRuntimeTag(item, SharedCraftCategoryTagName);
 
         go.SetActive(true);
         ItemAssetsCollection.AddDynamicEntry(item);
@@ -401,6 +408,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             AddToMerchantProfile();
             RegisterOrUpdateCraftingFormulas();
+            RegisterCraftCategoryFilter();
+            RegisterStorageCategoryFilter();
             PatchExistingStockShops();
         }
         catch (Exception e)
