@@ -226,8 +226,8 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static void SpawnSplashParticles(Vector3 position)
     {
-        var colorStart = new Color(122f / 255f, 12f / 255f, 20f / 255f, 1f);
-        var colorEnd = new Color(176f / 255f, 44f / 255f, 58f / 255f, 1f);
+        var colorStart = new Color(222f / 255f, 82f / 255f, 136f / 255f, 1f);
+        var colorEnd = new Color(1f, 228f / 255f, 238f / 255f, 1f);
 
         var ps = GetOrCreateSplashFx();
         if (ps == null)
@@ -346,7 +346,7 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static Material? TryCreateSplashParticleMaterial()
     {
-        var tint = new Color(122f / 255f, 12f / 255f, 20f / 255f, 1f);
+        var tint = new Color(238f / 255f, 112f / 255f, 156f / 255f, 1f);
         var shader = Shader.Find("Particles/Alpha Blended")
             ?? Shader.Find("Legacy Shaders/Particles/Alpha Blended")
             ?? Shader.Find("Particles/Standard Unlit")
