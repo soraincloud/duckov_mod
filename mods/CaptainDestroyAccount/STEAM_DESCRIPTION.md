@@ -2,11 +2,11 @@
 
 ## 中文介绍
 
-版本：v1.1.0
-更新日期：2026-03-11
-更新内容：改为优先扣除仓库中的现金物品；若仓库现金不足，则随机删除仓库中的一个物品并提示物品名称。
+版本：v1.2.0
+更新日期：2026-03-16
+更新内容：若倒计时结束后仓库现金不足，不再只删除一次，而是改为每 5 秒持续随机删除一个仓库物品并提示物品名称。
 
-进入关卡后，Mod 会自动开始 10 秒倒计时。倒计时结束时，系统会优先从仓库中的现金物品里扣除 `$168`。如果仓库现金不足，则会随机删除仓库中的一个物品，并弹出提示显示删除了什么物品。
+进入关卡后，Mod 会自动开始 10 秒倒计时。倒计时结束时，系统会优先从仓库中的现金物品里扣除 `$168`。如果仓库现金不足，则会进入持续毁号状态，每隔 5 秒随机删除仓库中的一个物品，并弹出提示显示删除了什么物品。
 
 ### 特别提醒
 
@@ -19,7 +19,7 @@
 
 - 自动触发，无需手动使用
 - 每次关卡初始化完成后都会重新开始计时
-- 仓库现金不足时会随机删除一个仓库物品
+- 仓库现金不足时会每隔 5 秒随机删除一个仓库物品
 - 删除后会明确提示被删除的物品名称
 
 ### 适用场景
@@ -36,11 +36,11 @@
 
 ## English Description
 
-Version: v1.1.0
-Updated: 2026-03-11
-Update Notes: The mod now deducts cash items from player storage first; if storage cash is insufficient, it randomly deletes one item from storage and shows what was removed.
+Version: v1.2.0
+Updated: 2026-03-16
+Update Notes: If storage cash is insufficient after the countdown, the mod now keeps deleting one random storage item every 5 seconds instead of deleting only once.
 
-After entering a level, the mod automatically starts a 10-second countdown. When the countdown ends, it first deducts `$168` from cash items stored in player storage. If storage cash is insufficient, it randomly deletes one item from storage and shows which item was removed.
+After entering a level, the mod automatically starts a 10-second countdown. When the countdown ends, it first deducts `$168` from cash items stored in player storage. If storage cash is insufficient, it enters a repeated destruction state and deletes one random storage item every 5 seconds, showing which item was removed.
 
 ### Important Notice
 
@@ -53,7 +53,7 @@ After entering a level, the mod automatically starts a 10-second countdown. When
 
 - Automatic activation with no manual use required
 - Restarts the countdown after each level initialization
-- Randomly deletes one storage item when storage cash is insufficient
+- Randomly deletes one storage item every 5 seconds when storage cash is insufficient
 - Shows a clear notice naming the removed item
 
 ### Best For

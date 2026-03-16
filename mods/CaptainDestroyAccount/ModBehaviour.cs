@@ -9,11 +9,14 @@ namespace CaptainDestroyAccount;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     private const float CountdownSeconds = 10f;
+    private const float RepeatedDeletionIntervalSeconds = 5f;
     private const long DeductionAmount = 168L;
     private const int CashItemTypeId = 451;
 
     private bool _countdownActive;
     private float _countdownDeadline;
+    private bool _repeatedDeletionActive;
+    private float _nextDeletionTime;
     private int _lastBroadcastSecond = -1;
 
     protected override void OnAfterSetup()
@@ -36,37 +39,47 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private void Update()
     {
-        if (!_countdownActive || !LevelManager.LevelInited)
+        if (!LevelManager.LevelInited)
         {
             return;
         }
 
-        var remainingSeconds = Mathf.Max(0, Mathf.CeilToInt(_countdownDeadline - Time.time));
-        if (remainingSeconds != _lastBroadcastSecond)
+        if (_countdownActive)
         {
-            _lastBroadcastSecond = remainingSeconds;
-            NotificationText.Push($"由于舰长过期 毁号倒计时：{remainingSeconds} 秒");
+            var remainingSeconds = Mathf.Max(0, Mathf.CeilToInt(_countdownDeadline - Time.time));
+            if (remainingSeconds != _lastBroadcastSecond)
+            {
+                _lastBroadcastSecond = remainingSeconds;
+                NotificationText.Push($"由于舰长过期 毁号倒计时：{remainingSeconds} 秒");
+            }
+
+            if (Time.time >= _countdownDeadline)
+            {
+                _countdownActive = false;
+                ApplyCountdownOutcome();
+            }
         }
 
-        if (Time.time < _countdownDeadline)
+        if (!_repeatedDeletionActive || Time.time < _nextDeletionTime)
         {
             return;
         }
 
-        _countdownActive = false;
-        ApplyDeduction();
+        ApplyRepeatedDeletion();
     }
 
     private void OnLevelInitialized()
     {
         _countdownActive = true;
         _countdownDeadline = Time.time + CountdownSeconds;
+        _repeatedDeletionActive = false;
+        _nextDeletionTime = 0f;
         _lastBroadcastSecond = -1;
 
         NotificationText.Push($"由于舰长过期 毁号倒计时已启动，{CountdownSeconds:0} 秒后扣除 ${DeductionAmount}");
     }
 
-    private static void ApplyDeduction()
+    private void ApplyCountdownOutcome()
     {
         var storageInventory = PlayerStorage.Inventory;
         if (storageInventory == null)
@@ -83,15 +96,36 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        if (TryDeleteRandomStorageItem(storageInventory, out var deletedItemName))
+        _repeatedDeletionActive = true;
+        _nextDeletionTime = Time.time + RepeatedDeletionIntervalSeconds;
+        NotificationText.Push($"仓库现金不足，已进入持续毁号：每 {RepeatedDeletionIntervalSeconds:0} 秒随机删除一个物品");
+        Debug.Log($"[CaptainDestroyAccount] Storage cash insufficient. Repeated deletion started every {RepeatedDeletionIntervalSeconds:0} seconds.");
+    }
+
+    private void ApplyRepeatedDeletion()
+    {
+        var storageInventory = PlayerStorage.Inventory;
+        if (storageInventory == null)
         {
-            NotificationText.Push($"仓库现金不足，已随机删除：{deletedItemName}");
-            Debug.Log($"[CaptainDestroyAccount] Storage cash insufficient. Deleted random storage item: {deletedItemName}.");
+            _repeatedDeletionActive = false;
+            _nextDeletionTime = 0f;
+            NotificationText.Push("持续毁号已停止：仓库未就绪");
+            Debug.LogWarning("[CaptainDestroyAccount] PlayerStorage inventory missing during repeated deletion.");
             return;
         }
 
-        NotificationText.Push("仓库现金不足，且仓库中没有可删除的物品");
-        Debug.LogWarning("[CaptainDestroyAccount] Storage cash insufficient and no storage item could be deleted.");
+        if (TryDeleteRandomStorageItem(storageInventory, out var deletedItemName))
+        {
+            _nextDeletionTime = Time.time + RepeatedDeletionIntervalSeconds;
+            NotificationText.Push($"仓库现金不足，已随机删除：{deletedItemName}");
+            Debug.Log($"[CaptainDestroyAccount] Repeated deletion removed storage item: {deletedItemName}.");
+            return;
+        }
+
+        _repeatedDeletionActive = false;
+        _nextDeletionTime = 0f;
+        NotificationText.Push("持续毁号已停止：仓库中没有可删除的物品");
+        Debug.LogWarning("[CaptainDestroyAccount] Repeated deletion stopped because storage is empty.");
     }
 
     private static bool TryConsumeStorageCash(Inventory storageInventory, long amount)
@@ -165,6 +199,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         _countdownActive = false;
         _countdownDeadline = 0f;
+        _repeatedDeletionActive = false;
+        _nextDeletionTime = 0f;
         _lastBroadcastSecond = -1;
     }
 }
