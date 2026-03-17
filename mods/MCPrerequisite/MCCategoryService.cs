@@ -19,6 +19,7 @@ public static class MCCategoryService
     private static readonly int[] ManagedItemTypeIds =
     {
         900001,
+        900002,
         900011,
         900012
     };

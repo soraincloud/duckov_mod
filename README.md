@@ -29,3 +29,19 @@
 
 - `mods/` 是唯一“会经常改动”的目录；`sample/` 与 `game-src/` 更偏向参考。
 - 若计划把仓库同步到远端/公开，请自行评估 `game-src/` 是否适合纳入版本控制（体积与合规风险）。
+
+## MC 前置共享分类
+
+如果某个物品属于 MC 系列，并且希望在仓库或工作台里显示到 MC 前置提供的共享分类中，优先遵循现有前置的托管模式，不要在各个 Mod 里重复写轮询或高频兜底逻辑。
+
+要点：
+
+- 先在 [MOD_ITEM_ID_LIST.md](/Volumes/Kingston-1TB/github/duckov_mod/MOD_ITEM_ID_LIST.md) 登记该物品的自定义 ID。
+- 再把该物品的 TypeID 同步加入 [mods/MCPrerequisite/MCCategoryService.cs](/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/MCCategoryService.cs) 里的 `ManagedItemTypeIds`。
+- 物品所属 Mod 侧保持和现有 MC 系列 Mod 一样的简化约定：如果 `MCPrerequisite` 未加载，则移除共享分类 tag；如果已加载，则交给前置统一补挂 `ModWorkbench_Mystic` tag 与刷新动态元数据。
+- 不要在单个 Mod 里额外维护一套独立的共享分类注册、轮询补挂或仓库刷新逻辑，避免和前置的统一托管逻辑分叉。
+
+适用场景：
+
+- 需要进入 MC 分类的共享物品，例如 `900001`、`900002`、`900011`、`900012` 这一类 MC 系列物品。
+- 只是普通独立物品、不需要进入 MC 共享分类的 Mod，不需要接入这套前置托管逻辑。

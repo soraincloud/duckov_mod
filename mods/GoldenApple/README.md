@@ -22,7 +22,7 @@
 - 重复食用会刷新持续时间，不会无限叠层
 
 获取方式：
-- NPC 橘子处购买（装备商人 `Merchant_Equipment`）
+- NPC 橘子处购买（装备商人 `Merchant_Equipment`），售价 `6666`
 
 开发者：soraincloud  
 策划：吱吱歪

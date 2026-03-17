@@ -21,7 +21,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private const string DisplayNameKey = "Item_GoldenApple";
     private const string SharedCategoryTagName = "ModWorkbench_Mystic";
     private const string TargetMerchantId = "Merchant_Equipment";
-    private const int MerchantPrice = 1;
+    private const int MerchantPrice = 6666;
     private const int MerchantStock = 99;
     private const float GoldenAppleWeightKg = 0.35f;
     private const BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
@@ -42,6 +42,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ModLog.Initialize(info.path);
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
+        EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
         PatchExistingStockShops();
 
@@ -56,6 +57,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
         GoldenAppleBuffRegistry.Deinitialize();
+        GoldenAppleEnchantedIcon.Shutdown();
 
         if (_prefab != null)
         {
@@ -79,7 +81,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         try
         {
-            AttachSharedCategoryIfAvailable();
+            EnsureSharedCategoryDependsOnPrerequisite();
             AddToMerchantProfile();
             PatchExistingStockShops();
         }
@@ -115,7 +117,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ReflectionUtil.SetPrivateField(item, "typeID", GoldenAppleTypeId);
 
         item.DisplayNameRaw = DisplayNameKey;
-        item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreateGoldenAppleIcon();
+        var baseIcon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreateGoldenAppleIcon();
+        item.Icon = GoldenAppleEnchantedIcon.Create(baseIcon);
         item.MaxStackCount = 8;
         item.Value = 1;
         item.Quality = 3;
@@ -123,7 +126,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ReflectionUtil.SetPrivateField(item, "weight", GoldenAppleWeightKg);
 
         ConfigureUsage(item);
-        TryAttachSharedCategory(item);
         GoldenAppleBuffRegistry.Initialize(item.Icon);
 
         go.SetActive(true);
@@ -301,14 +303,36 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
     }
 
-    private static void AttachSharedCategoryIfAvailable()
+    private static void EnsureSharedCategoryDependsOnPrerequisite()
     {
-        if (_prefab == null)
+        if (IsPrerequisiteLoaded())
         {
             return;
         }
 
-        var changed = TryAttachSharedCategory(_prefab);
+        RemoveSharedCategoryFromManagedItems();
+    }
+
+    private static bool IsPrerequisiteLoaded()
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .Any(assembly => string.Equals(assembly.GetName().Name, "MCPrerequisite", StringComparison.Ordinal));
+    }
+
+    private static void RemoveSharedCategoryFromManagedItems()
+    {
+        var sharedTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, SharedCategoryTagName));
+        if (sharedTag == null)
+        {
+            return;
+        }
+
+        var changed = false;
+        if (_prefab != null)
+        {
+            changed |= TryDetachSharedCategory(_prefab, sharedTag);
+        }
+
         var liveItems = Resources.FindObjectsOfTypeAll<Item>();
         foreach (var item in liveItems)
         {
@@ -317,7 +341,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 continue;
             }
 
-            changed |= TryAttachSharedCategory(item);
+            changed |= TryDetachSharedCategory(item, sharedTag);
         }
 
         if (changed)
@@ -326,26 +350,21 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
     }
 
-    private static bool TryAttachSharedCategory(Item item)
+    private static bool TryDetachSharedCategory(Item item, Tag sharedTag)
     {
-        var sharedTag = ResolveSharedCategoryTag();
         if (item == null || sharedTag == null)
         {
             return false;
         }
 
-        if (item.Tags.Contains(sharedTag))
+        var tags = item.Tags;
+        if (tags == null || !tags.Contains(sharedTag))
         {
             return false;
         }
 
-        item.Tags.Add(sharedTag);
+        tags.Remove(sharedTag);
         return true;
-    }
-
-    private static Tag? ResolveSharedCategoryTag()
-    {
-        return GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, SharedCategoryTagName));
     }
 
     private static void RefreshDynamicMetaData()

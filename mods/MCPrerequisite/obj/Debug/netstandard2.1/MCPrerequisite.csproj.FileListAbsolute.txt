@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/bin/Debug/netstandard2.1/MCPrerequisite.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/bin/Debug/netstandard2.1/MCPrerequisite.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/bin/Debug/netstandard2.1/MCPrerequisite.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Debug/netstandard2.1/MCPrerequisite.pdb
