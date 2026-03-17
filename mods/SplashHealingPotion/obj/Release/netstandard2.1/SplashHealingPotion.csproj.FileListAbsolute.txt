@@ -9,3 +9,14 @@
 /Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Release/netstandard2.1/SplashHealingPotion.sourcelink.json
 /Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Release/netstandard2.1/SplashHealingPotion.dll
 /Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Release/netstandard2.1/SplashHealingPotion.pdb
+D:\project\duckov_mod\mods\SplashHealingPotion\bin\Release\netstandard2.1\SplashHealingPotion.deps.json
+D:\project\duckov_mod\mods\SplashHealingPotion\bin\Release\netstandard2.1\SplashHealingPotion.dll
+D:\project\duckov_mod\mods\SplashHealingPotion\bin\Release\netstandard2.1\SplashHealingPotion.pdb
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.csproj.AssemblyReference.cache
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.AssemblyInfoInputs.cache
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.AssemblyInfo.cs
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.csproj.CoreCompileInputs.cache
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.sourcelink.json
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.dll
+D:\project\duckov_mod\mods\SplashHealingPotion\obj\Release\netstandard2.1\SplashHealingPotion.pdb

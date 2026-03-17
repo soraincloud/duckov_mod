@@ -1,26 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/EnderPearl.csproj": {}
+    "D:\\project\\duckov_mod\\mods\\EnderPearl\\EnderPearl.csproj": {}
   },
   "projects": {
-    "/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/EnderPearl.csproj": {
+    "D:\\project\\duckov_mod\\mods\\EnderPearl\\EnderPearl.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/EnderPearl.csproj",
+        "projectUniqueName": "D:\\project\\duckov_mod\\mods\\EnderPearl\\EnderPearl.csproj",
         "projectName": "EnderPearl",
-        "projectPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/EnderPearl.csproj",
-        "packagesPath": "/Users/sric/.nuget/packages/",
-        "outputPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/",
+        "projectPath": "D:\\project\\duckov_mod\\mods\\EnderPearl\\EnderPearl.csproj",
+        "packagesPath": "C:\\Users\\soraincloud\\.nuget\\packages\\",
+        "outputPath": "D:\\project\\duckov_mod\\mods\\EnderPearl\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/sric/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\soraincloud\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.1"
         ],
         "sources": {
-          "/opt/homebrew/Cellar/dotnet/10.0.103/libexec/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,8 +37,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "netstandard2.1": {
@@ -55,18 +53,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "NETStandard.Library.Ref",
-              "version": "[2.1.0, 2.1.0]"
-            }
-          ],
           "frameworkReferences": {
             "NETStandard.Library": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/10.0.103/libexec/sdk/10.0.103/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419\\RuntimeIdentifierGraph.json"
         }
       }
     }

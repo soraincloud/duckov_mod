@@ -9,3 +9,14 @@
 /Volumes/Kingston-1TB/github/duckov_mod/mods/GoldenApple/bin/Release/netstandard2.1/GoldenApple.pdb
 /Volumes/Kingston-1TB/github/duckov_mod/mods/GoldenApple/obj/Release/netstandard2.1/GoldenApple.dll
 /Volumes/Kingston-1TB/github/duckov_mod/mods/GoldenApple/obj/Release/netstandard2.1/GoldenApple.pdb
+D:\project\duckov_mod\mods\GoldenApple\bin\Release\netstandard2.1\GoldenApple.deps.json
+D:\project\duckov_mod\mods\GoldenApple\bin\Release\netstandard2.1\GoldenApple.dll
+D:\project\duckov_mod\mods\GoldenApple\bin\Release\netstandard2.1\GoldenApple.pdb
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.csproj.AssemblyReference.cache
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.AssemblyInfoInputs.cache
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.AssemblyInfo.cs
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.csproj.CoreCompileInputs.cache
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.sourcelink.json
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.dll
+D:\project\duckov_mod\mods\GoldenApple\obj\Release\netstandard2.1\GoldenApple.pdb

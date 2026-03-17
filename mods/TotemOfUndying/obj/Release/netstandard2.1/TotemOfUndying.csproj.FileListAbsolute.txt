@@ -20,3 +20,14 @@
 /Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.sourcelink.json
 /Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.dll
 /Users/soraincloud/Documents/GitHub/duckov_mod/mods/TotemOfUndying/obj/Release/netstandard2.1/TotemOfUndying.pdb
+D:\project\duckov_mod\mods\TotemOfUndying\bin\Release\netstandard2.1\TotemOfUndying.deps.json
+D:\project\duckov_mod\mods\TotemOfUndying\bin\Release\netstandard2.1\TotemOfUndying.dll
+D:\project\duckov_mod\mods\TotemOfUndying\bin\Release\netstandard2.1\TotemOfUndying.pdb
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.csproj.AssemblyReference.cache
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.AssemblyInfoInputs.cache
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.AssemblyInfo.cs
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.csproj.CoreCompileInputs.cache
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.sourcelink.json
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.dll
+D:\project\duckov_mod\mods\TotemOfUndying\obj\Release\netstandard2.1\TotemOfUndying.pdb

@@ -9,3 +9,14 @@
 /Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Release/netstandard2.1/MCPrerequisite.sourcelink.json
 /Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Release/netstandard2.1/MCPrerequisite.dll
 /Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/Release/netstandard2.1/MCPrerequisite.pdb
+D:\project\duckov_mod\mods\MCPrerequisite\bin\Release\netstandard2.1\MCPrerequisite.deps.json
+D:\project\duckov_mod\mods\MCPrerequisite\bin\Release\netstandard2.1\MCPrerequisite.dll
+D:\project\duckov_mod\mods\MCPrerequisite\bin\Release\netstandard2.1\MCPrerequisite.pdb
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.csproj.AssemblyReference.cache
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.AssemblyInfoInputs.cache
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.AssemblyInfo.cs
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.csproj.CoreCompileInputs.cache
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.sourcelink.json
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.dll
+D:\project\duckov_mod\mods\MCPrerequisite\obj\Release\netstandard2.1\MCPrerequisite.pdb

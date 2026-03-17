@@ -1,8 +1,5 @@
 is_global = true
 build_property.RootNamespace = MCPrerequisite
-build_property.ProjectDir = /Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/
+build_property.ProjectDir = D:\project\duckov_mod\mods\MCPrerequisite\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.CsWinRTUseWindowsUIXamlProjections = false
-build_property.EffectiveAnalysisLevelStyle = 
-build_property.EnableCodeStyleSeverity = 

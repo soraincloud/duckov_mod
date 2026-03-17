@@ -15,6 +15,10 @@ public static class MCCategoryService
 {
     public const string SharedCategoryTagName = "ModWorkbench_Mystic";
     public const string SharedCategoryDisplayNameKey = "CraftFilter_ModMystic";
+    private const float RuntimeRefreshIntervalSeconds = 0.5f;
+    private const int StartupRefreshAttempts = 6;
+    private const int SceneRefreshAttempts = 8;
+    private const int StorageRefreshAttempts = 4;
 
     private static readonly int[] ManagedItemTypeIds =
     {
@@ -29,6 +33,9 @@ public static class MCCategoryService
     private static bool _initialized;
     private static string? _modPath;
     private static Tag? _sharedCategoryTag;
+    private static Sprite? _sharedCategoryIcon;
+    private static bool _runtimeRefreshPending;
+    private static int _remainingRuntimeRefreshAttempts;
     private static float _nextRuntimeRefreshTime;
 
     public static void Initialize(string? modPath)
@@ -43,11 +50,14 @@ public static class MCCategoryService
         }
 
         _initialized = true;
+        _runtimeRefreshPending = false;
+        _remainingRuntimeRefreshAttempts = 0;
         _nextRuntimeRefreshTime = 0f;
         PlayerStorage.OnLoadingFinished += OnPlayerStorageLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
         EnsureManagedItemsTagged();
         EnsureFiltersRegistered();
+        ScheduleRuntimeRefresh(StartupRefreshAttempts, RuntimeRefreshIntervalSeconds);
     }
 
     public static void Deinitialize()
@@ -61,7 +71,10 @@ public static class MCCategoryService
         _initialized = false;
         _modPath = null;
         _sharedCategoryTag = null;
+        _runtimeRefreshPending = false;
+        _remainingRuntimeRefreshAttempts = 0;
         _nextRuntimeRefreshTime = 0f;
+        DestroySharedCategoryIcon();
     }
 
     public static void UpdateRuntimeState()
@@ -71,12 +84,11 @@ public static class MCCategoryService
             return;
         }
 
-        if (Time.unscaledTime < _nextRuntimeRefreshTime)
+        if (!_runtimeRefreshPending || Time.unscaledTime < _nextRuntimeRefreshTime)
         {
             return;
         }
 
-        _nextRuntimeRefreshTime = Time.unscaledTime + 0.25f;
         try
         {
             EnsureManagedItemsTagged();
@@ -86,6 +98,16 @@ public static class MCCategoryService
         {
             Debug.LogWarning($"[MCPrerequisite] Failed to update runtime state: {e.Message}");
         }
+
+        _remainingRuntimeRefreshAttempts--;
+        if (_remainingRuntimeRefreshAttempts <= 0)
+        {
+            _runtimeRefreshPending = false;
+            _nextRuntimeRefreshTime = 0f;
+            return;
+        }
+
+        _nextRuntimeRefreshTime = Time.unscaledTime + RuntimeRefreshIntervalSeconds;
     }
 
     public static void EnsureFiltersRegistered()
@@ -111,6 +133,7 @@ public static class MCCategoryService
         {
             EnsureManagedItemsTagged();
             EnsureFiltersRegistered();
+            ScheduleRuntimeRefresh(SceneRefreshAttempts, RuntimeRefreshIntervalSeconds);
         }
         catch (Exception e)
         {
@@ -124,6 +147,7 @@ public static class MCCategoryService
         {
             EnsureManagedItemsTagged();
             EnsureStorageFilterRegistered();
+            ScheduleRuntimeRefresh(StorageRefreshAttempts, RuntimeRefreshIntervalSeconds);
         }
         catch (Exception e)
         {
@@ -190,6 +214,7 @@ public static class MCCategoryService
         var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
         var updatedFilters = filters.ToList();
         var index = updatedFilters.FindIndex(HasSharedCategoryFilter);
+        var changed = false;
         var filterInfo = new CraftView.FilterInfo
         {
             displayNameKey = SharedCategoryDisplayNameKey,
@@ -203,19 +228,33 @@ public static class MCCategoryService
             if (string.IsNullOrWhiteSpace(existing.displayNameKey))
             {
                 existing.displayNameKey = filterInfo.displayNameKey;
+                changed = true;
             }
 
             if (existing.icon == null && filterInfo.icon != null)
             {
                 existing.icon = filterInfo.icon;
+                changed = true;
             }
 
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
+            var mergedTags = MergeFilterTags(existing.requireTags, filterTag);
+            if (!ReferenceEquals(existing.requireTags, mergedTags))
+            {
+                existing.requireTags = mergedTags;
+                changed = true;
+            }
+
             updatedFilters[index] = existing;
         }
         else
         {
             updatedFilters.Add(filterInfo);
+            changed = true;
+        }
+
+        if (!changed)
+        {
+            return;
         }
 
         ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
@@ -249,6 +288,7 @@ public static class MCCategoryService
         var filters = provider.entries ?? Array.Empty<InventoryFilterProvider.FilterEntry>();
         var updatedFilters = filters.ToList();
         var index = updatedFilters.FindIndex(HasSharedStorageCategoryFilter);
+        var changed = false;
         var filterEntry = new InventoryFilterProvider.FilterEntry
         {
             name = SharedCategoryDisplayNameKey,
@@ -262,22 +302,34 @@ public static class MCCategoryService
             if (string.IsNullOrWhiteSpace(existing.name))
             {
                 existing.name = filterEntry.name;
+                changed = true;
             }
 
             if (existing.icon == null && filterEntry.icon != null)
             {
                 existing.icon = filterEntry.icon;
+                changed = true;
             }
 
-            existing.requireTags = MergeFilterTags(existing.requireTags, filterTag);
+            var mergedTags = MergeFilterTags(existing.requireTags, filterTag);
+            if (!ReferenceEquals(existing.requireTags, mergedTags))
+            {
+                existing.requireTags = mergedTags;
+                changed = true;
+            }
+
             updatedFilters[index] = existing;
         }
         else
         {
             updatedFilters.Add(filterEntry);
+            changed = true;
         }
 
-        provider.entries = updatedFilters.ToArray();
+        if (changed)
+        {
+            provider.entries = updatedFilters.ToArray();
+        }
     }
 
     private static bool HasSharedStorageCategoryFilter(InventoryFilterProvider.FilterEntry filter)
@@ -312,9 +364,10 @@ public static class MCCategoryService
         if (!merged.Any(existing => ReferenceEquals(existing, filterTag)))
         {
             merged.Add(filterTag);
+            return merged.ToArray();
         }
 
-        return merged.ToArray();
+        return existingTags ?? merged.ToArray();
     }
 
     private static void EnsureManagedItemsTagged()
@@ -372,10 +425,9 @@ public static class MCCategoryService
         var changed = TryAttachSharedCategory(prefab, sharedTag);
 
         var metaDataField = entryType.GetField("_metaData", AllBindings);
-        if (metaDataField != null)
+        if (changed && metaDataField != null)
         {
             metaDataField.SetValue(entry, new ItemMetaData(prefab));
-            changed = true;
         }
 
         return changed;
@@ -424,6 +476,11 @@ public static class MCCategoryService
 
     private static Sprite? TryLoadCraftCategoryIconSprite(string? modPath)
     {
+        if (_sharedCategoryIcon != null)
+        {
+            return _sharedCategoryIcon;
+        }
+
         if (string.IsNullOrWhiteSpace(modPath))
         {
             return null;
@@ -432,13 +489,48 @@ public static class MCCategoryService
         try
         {
             var iconPath = Path.Combine(modPath, "assets", "item-icons", "grass.png");
-            return TryLoadSpriteFromPngFile(iconPath, "MCPrerequisite_CraftCategory_Icon");
+            _sharedCategoryIcon = TryLoadSpriteFromPngFile(iconPath, "MCPrerequisite_CraftCategory_Icon");
+            return _sharedCategoryIcon;
         }
         catch (Exception e)
         {
             Debug.LogWarning($"[MCPrerequisite] Failed to load craft category icon: {e.Message}");
             return null;
         }
+    }
+
+    private static void ScheduleRuntimeRefresh(int attempts, float delaySeconds)
+    {
+        if (attempts <= 0)
+        {
+            return;
+        }
+
+        _runtimeRefreshPending = true;
+        _remainingRuntimeRefreshAttempts = Math.Max(_remainingRuntimeRefreshAttempts, attempts);
+
+        var scheduledTime = Time.unscaledTime + Math.Max(0f, delaySeconds);
+        if (_nextRuntimeRefreshTime <= 0f || scheduledTime < _nextRuntimeRefreshTime)
+        {
+            _nextRuntimeRefreshTime = scheduledTime;
+        }
+    }
+
+    private static void DestroySharedCategoryIcon()
+    {
+        if (_sharedCategoryIcon == null)
+        {
+            return;
+        }
+
+        var texture = _sharedCategoryIcon.texture;
+        UnityEngine.Object.Destroy(_sharedCategoryIcon);
+        if (texture != null)
+        {
+            UnityEngine.Object.Destroy(texture);
+        }
+
+        _sharedCategoryIcon = null;
     }
 
     private static Sprite? TryLoadSpriteFromPngFile(string path, string textureName)

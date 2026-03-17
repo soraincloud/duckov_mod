@@ -9,3 +9,14 @@
 /Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/bin/Release/netstandard2.1/EnderPearl.pdb
 /Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.dll
 /Volumes/Kingston-1TB/github/duckov_mod/mods/EnderPearl/obj/Release/netstandard2.1/EnderPearl.pdb
+D:\project\duckov_mod\mods\EnderPearl\bin\Release\netstandard2.1\EnderPearl.deps.json
+D:\project\duckov_mod\mods\EnderPearl\bin\Release\netstandard2.1\EnderPearl.dll
+D:\project\duckov_mod\mods\EnderPearl\bin\Release\netstandard2.1\EnderPearl.pdb
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.csproj.AssemblyReference.cache
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.AssemblyInfoInputs.cache
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.AssemblyInfo.cs
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.csproj.CoreCompileInputs.cache
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.sourcelink.json
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.dll
+D:\project\duckov_mod\mods\EnderPearl\obj\Release\netstandard2.1\EnderPearl.pdb
