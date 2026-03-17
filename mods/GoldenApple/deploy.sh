@@ -68,5 +68,15 @@ else
   echo "publishedFileId = $PFID" >> "$dest_info"
 fi
 
+tmp_src_info="${src_info}.tmp"
+if grep -qE "^publishedFileId[[:space:]]*=" "$src_info"; then
+  sed -E "s/^publishedFileId[[:space:]]*=.*/publishedFileId = $PFID/" "$src_info" > "$tmp_src_info"
+else
+  cat "$src_info" > "$tmp_src_info"
+  echo "" >> "$tmp_src_info"
+  echo "publishedFileId = $PFID" >> "$tmp_src_info"
+fi
+mv "$tmp_src_info" "$src_info"
+
 echo "Deployed to: $DEST"
 echo "publishedFileId = $PFID"
