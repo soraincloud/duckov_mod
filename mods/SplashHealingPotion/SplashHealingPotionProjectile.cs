@@ -179,6 +179,7 @@ public class EnderPearlProjectile : MonoBehaviour
             point = hit.point;
         }
 
+        ModSfx.PlayGlassBreak(point);
         SpawnSplashParticles(point + Vector3.up * 0.08f);
         HealCharactersInRange(point);
         Destroy(gameObject);

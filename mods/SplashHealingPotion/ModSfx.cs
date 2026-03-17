@@ -12,10 +12,12 @@ namespace SplashHealingPotion;
 internal static class ModSfx
 {
 	private const string ThrowWavName = "throw.wav";
+	private const string GlassBreakSearchPattern = "glassBreak*.wav";
 
 	private static string? _modPath;
 	private static Runner? _runner;
 	private static bool _verbose;
+	private static string[] _glassBreakWavPaths = Array.Empty<string>();
 
 	private static readonly Dictionary<string, Sound> FmodWavSounds = new Dictionary<string, Sound>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,6 +35,7 @@ internal static class ModSfx
 		_initialized = true;
 		_modPath = modPath;
 		_verbose = File.Exists(Path.Combine(modPath, "assets", "sfx", "verbose_sfx_log.txt"));
+		_glassBreakWavPaths = FindGlassBreakWavs(modPath);
 
 		if (_verbose) ModLog.Info($"[EnderPearl] ModSfx init. modPath='{modPath}'");
 
@@ -44,6 +47,7 @@ internal static class ModSfx
 		_initialized = false;
 		_modPath = null;
 		_verbose = false;
+		_glassBreakWavPaths = Array.Empty<string>();
 
 		TryReleaseFmodWavSounds();
 
@@ -64,6 +68,24 @@ internal static class ModSfx
 		}
 	}
 
+	internal static void PlayGlassBreak(Vector3 position)
+	{
+		if (!_initialized)
+		{
+			return;
+		}
+
+		var wavPath = GetRandomGlassBreakWavPath();
+		if (string.IsNullOrWhiteSpace(wavPath))
+		{
+			if (_verbose) ModLog.Warn($"[EnderPearl] No glassBreak wav found for impact at {position}");
+			return;
+		}
+
+		if (_verbose) ModLog.Info($"[EnderPearl] SFX glass break at {position} -> {Path.GetFileName(wavPath)}");
+		TryPlayFmodWav(wavPath, volume: 1f);
+	}
+
 	internal static void PlayThrow(Vector3 position)
 	{
 		if (!_initialized) return;
@@ -80,6 +102,41 @@ internal static class ModSfx
 	{
 		var basePath = _modPath ?? string.Empty;
 		return Path.Combine(new[] { basePath }.Concat(parts).ToArray());
+	}
+
+	private static string? GetRandomGlassBreakWavPath()
+	{
+		if (_glassBreakWavPaths.Length == 0)
+		{
+			return null;
+		}
+
+		var index = UnityEngine.Random.Range(0, _glassBreakWavPaths.Length);
+		return _glassBreakWavPaths[index];
+	}
+
+	private static string[] FindGlassBreakWavs(string modPath)
+	{
+		try
+		{
+			var sfxDir = Path.Combine(modPath, "assets", "sfx");
+			if (!Directory.Exists(sfxDir))
+			{
+				return Array.Empty<string>();
+			}
+
+			return Directory
+				.GetFiles(sfxDir)
+				.Where(path => string.Equals(Path.GetExtension(path), ".wav", StringComparison.OrdinalIgnoreCase))
+				.Where(path => Path.GetFileNameWithoutExtension(path).StartsWith("glassBreak", StringComparison.OrdinalIgnoreCase))
+				.OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+				.ToArray();
+		}
+		catch (Exception e)
+		{
+			ModLog.Warn($"[EnderPearl] Failed to enumerate glass break wavs: {e.GetType().Name}: {e.Message}");
+			return Array.Empty<string>();
+		}
 	}
 
 	private static bool TryPlayFmodWav(string wavPath, float volume)
