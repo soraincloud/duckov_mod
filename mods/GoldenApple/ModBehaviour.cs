@@ -16,7 +16,7 @@ namespace GoldenApple;
 
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
-    internal const int GoldenAppleTypeId = 900013;
+    internal const int GoldenAppleTypeId = 900002;
 
     private const string DisplayNameKey = "Item_GoldenApple";
     private const string SharedCategoryTagName = "ModWorkbench_Mystic";

@@ -55,4 +55,4 @@ bash mods/GoldenApple/deploy.sh
 
 ## TypeID
 
-当前固定为：`900013`。
+当前固定为：`900002`。
