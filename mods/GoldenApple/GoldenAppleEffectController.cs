@@ -14,6 +14,10 @@ public class GoldenAppleEffectController : MonoBehaviour
     private const float RegenerationDuration = 30f;
     private const float RegenerationInterval = 1f;
 
+    public const float MaxHealthDurationSeconds = MaxHealthDuration;
+    public const float ArmorDurationSeconds = ArmorDuration;
+    public const float RegenerationDurationSeconds = RegenerationDuration;
+
     private CharacterMainControl? _character;
     private Modifier? _maxHealthModifier;
     private Modifier? _headArmorModifier;

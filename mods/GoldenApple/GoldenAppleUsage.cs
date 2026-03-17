@@ -7,7 +7,7 @@ public class GoldenAppleUsage : UsageBehavior
     public override DisplaySettingsData DisplaySettings => new()
     {
         display = true,
-        description = "+20 生命上限 120秒 / 每秒回血5 持续30秒 / 头甲+1.5 身甲+1.5 持续300秒"
+        description = "+20 生命上限 120秒 / 每秒回血5 持续30秒 / 头甲+1.5 身甲+1.5 持续300秒\n左下角状态栏会显示增益与剩余时间"
     };
 
     public override bool CanBeUsed(Item item, object user)
@@ -22,6 +22,6 @@ public class GoldenAppleUsage : UsageBehavior
             return;
         }
 
-        GoldenAppleEffectController.ApplyTo(character);
+        GoldenAppleBuffRegistry.ApplyTo(character);
     }
 }

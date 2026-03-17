@@ -10,7 +10,7 @@ internal static class ReflectionUtil
         if (target == null) throw new ArgumentNullException(nameof(target));
 
         var type = target.GetType();
-        var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        var field = FindField(type, fieldName);
         if (field == null)
         {
             throw new MissingFieldException(type.FullName, fieldName);
@@ -24,12 +24,28 @@ internal static class ReflectionUtil
         if (target == null) throw new ArgumentNullException(nameof(target));
 
         var type = target.GetType();
-        var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        var field = FindField(type, fieldName);
         if (field == null)
         {
             return null;
         }
 
         return field.GetValue(target) as TField;
+    }
+
+    private static FieldInfo? FindField(Type? type, string fieldName)
+    {
+        while (type != null)
+        {
+            var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (field != null)
+            {
+                return field;
+            }
+
+            type = type.BaseType;
+        }
+
+        return null;
     }
 }
