@@ -3,8 +3,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>MC前置</AssemblyName>
-    <RootNamespace>MC前置</RootNamespace>
+    <AssemblyName>MCPrerequisite</AssemblyName>
+    <RootNamespace>MCPrerequisite</RootNamespace>
 
     <IsMac>false</IsMac>
     <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
@@ -18,7 +18,7 @@
     <SubPath Condition="'$(IsMac)' == 'true'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
 
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/MC前置</GameModDir>
+    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/MCPrerequisite</GameModDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,15 +37,15 @@
   </ItemGroup>
 
   <Target Name="CopyModDll" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/MC前置.dll" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/MCPrerequisite.dll" />
   </Target>
 
   <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
-    <Message Text="[MC前置] Syncing mod files to: $(GameModDir)" Importance="high" />
+    <Message Text="[MCPrerequisite] Syncing mod files to: $(GameModDir)" Importance="high" />
 
     <MakeDir Directories="$(GameModDir)/assets/item-icons" />
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/MC前置.dll" DestinationFolder="$(GameModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/MCPrerequisite.dll" DestinationFolder="$(GameModDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini;$(MSBuildProjectDirectory)/preview.png" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
 
     <ItemGroup>

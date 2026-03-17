@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/MC前置.csproj",
-      "projectName": "MC前置",
-      "projectPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/MC前置.csproj",
+      "projectUniqueName": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/MCPrerequisite.csproj",
+      "projectName": "MCPrerequisite",
+      "projectPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/MCPrerequisite.csproj",
       "packagesPath": "/Users/sric/.nuget/packages/",
-      "outputPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MC前置/obj/",
+      "outputPath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/MCPrerequisite/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/sric/.nuget/NuGet/NuGet.Config"

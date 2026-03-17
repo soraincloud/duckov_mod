@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MC前置;
+namespace MCPrerequisite;
 
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
@@ -15,7 +15,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         _initialized = true;
         MCCategoryService.Initialize(info.path);
-        Debug.Log("[MC前置] Loaded.");
+        Debug.Log("[MCPrerequisite] Loaded.");
     }
 
     protected override void OnBeforeDeactivate()
@@ -27,5 +27,13 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         MCCategoryService.Deinitialize();
         _initialized = false;
+    }
+
+    private void Update()
+    {
+        if (_initialized)
+        {
+            MCCategoryService.UpdateRuntimeState();
+        }
     }
 }

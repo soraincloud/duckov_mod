@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace MC前置;
+namespace MCPrerequisite;
 
 internal static class ReflectionUtil
 {

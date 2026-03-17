@@ -14,7 +14,6 @@ namespace SplashHealingPotion;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900012;
-    private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
     private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 2000;
@@ -34,7 +33,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static bool _initialized;
     private static Item? _prefab;
-    private static Tag? _sharedCraftCategoryTag;
 
     protected override void OnAfterSetup()
     {
@@ -120,8 +118,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         var visualHook = go.AddComponent<EnderPearlVisualHook>();
         visualHook.SetModPath(modPath);
-
-        EnsureRuntimeTag(item, SharedCraftCategoryTagName);
 
         go.SetActive(true);
         ItemAssetsCollection.AddDynamicEntry(item);
@@ -539,48 +535,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             possibility = 1f,
             lockInDemo = false
         };
-    }
-
-    private static void AddTagIfExists(Item item, Tag? tag)
-    {
-        if (item == null || tag == null)
-        {
-            return;
-        }
-
-        if (!item.Tags.Contains(tag))
-        {
-            item.Tags.Add(tag);
-        }
-    }
-
-    private static void EnsureRuntimeTag(Item item, string tagName)
-    {
-        if (item == null || string.IsNullOrWhiteSpace(tagName) || item.Tags.Contains(tagName))
-        {
-            return;
-        }
-
-        item.Tags.Add(GetOrCreateSharedCraftCategoryTag(tagName));
-    }
-
-    private static Tag GetOrCreateSharedCraftCategoryTag(string tagName)
-    {
-        if (_sharedCraftCategoryTag != null)
-        {
-            return _sharedCraftCategoryTag;
-        }
-
-        _sharedCraftCategoryTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, tagName));
-        if (_sharedCraftCategoryTag != null)
-        {
-            return _sharedCraftCategoryTag;
-        }
-
-        _sharedCraftCategoryTag = ScriptableObject.CreateInstance<Tag>();
-        _sharedCraftCategoryTag.name = tagName;
-        _sharedCraftCategoryTag.hideFlags = HideFlags.HideAndDontSave;
-        return _sharedCraftCategoryTag;
     }
 
 }

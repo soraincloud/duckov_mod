@@ -19,7 +19,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     internal const int TotemOfUndyingTypeId = 900011;
     private const int SoulCubeTypeId = 1165;
     private const string DisplayNameKey = "Item_TotemOfUndying";
-    private const string SharedCraftCategoryTagName = "ModWorkbench_Mystic";
     private const string FormulaId = "TotemOfUndying_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const float TotemWeightKg = 0.3f;
@@ -41,7 +40,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static bool _initialized;
     private static Item? _prefab;
     private static string? _modPath;
-    private static Tag? _sharedCraftCategoryTag;
 
     protected override void OnAfterSetup()
     {
@@ -137,7 +135,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         visualHook.SetModPath(modPath);
 
         AddTagIfExists(item, GameplayDataSettings.Tags.DontDropOnDeadInSlot);
-        EnsureRuntimeTag(item, SharedCraftCategoryTagName);
         EnsureTotemSlotCompatibility();
 
         ModLog.Info($"[TotemOfUndying] Item tags: {DescribeItemTags(item)}");
@@ -747,46 +744,6 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         var key = slotKey.ToLowerInvariant();
         return key == "totem" || key.Contains("totem") || key == "soulcube" || key.Contains("soulcube");
-    }
-
-    private static void EnsureRuntimeTag(Item item, string tagName)
-    {
-        if (item == null || string.IsNullOrWhiteSpace(tagName) || item.Tags.Contains(tagName))
-        {
-            return;
-        }
-
-        item.Tags.Add(GetOrCreateRuntimeTag(tagName));
-    }
-
-    private static Tag GetOrCreateRuntimeTag(string tagName)
-    {
-        if (string.Equals(tagName, SharedCraftCategoryTagName, StringComparison.Ordinal) && _sharedCraftCategoryTag != null)
-        {
-            return _sharedCraftCategoryTag;
-        }
-
-        var existingTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, tagName));
-        if (existingTag != null)
-        {
-            if (string.Equals(tagName, SharedCraftCategoryTagName, StringComparison.Ordinal))
-            {
-                _sharedCraftCategoryTag = existingTag;
-            }
-
-            return existingTag;
-        }
-
-        var runtimeTag = ScriptableObject.CreateInstance<Tag>();
-        runtimeTag.name = tagName;
-        runtimeTag.hideFlags = HideFlags.HideAndDontSave;
-
-        if (string.Equals(tagName, SharedCraftCategoryTagName, StringComparison.Ordinal))
-        {
-            _sharedCraftCategoryTag = runtimeTag;
-        }
-
-        return runtimeTag;
     }
 
     private static string DescribeItemTags(Item item)

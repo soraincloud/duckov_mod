@@ -2,7 +2,7 @@
 set -e
 
 MOD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MOD_NAME="MC前置"
+MOD_NAME="MCPrerequisite"
 
 if [[ -z "${DUCKOV_PATH:-}" ]]; then
   echo "DUCKOV_PATH is not set. Example:" >&2

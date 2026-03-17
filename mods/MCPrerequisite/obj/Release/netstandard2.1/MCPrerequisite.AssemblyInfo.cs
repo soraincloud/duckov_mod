@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("SplashHealingPotion")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("MCPrerequisite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec18229b98b3782bd6a38f9c2823b2e2b38f222b")]
-[assembly: System.Reflection.AssemblyProductAttribute("SplashHealingPotion")]
-[assembly: System.Reflection.AssemblyTitleAttribute("SplashHealingPotion")]
+[assembly: System.Reflection.AssemblyProductAttribute("MCPrerequisite")]
+[assembly: System.Reflection.AssemblyTitleAttribute("MCPrerequisite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。
