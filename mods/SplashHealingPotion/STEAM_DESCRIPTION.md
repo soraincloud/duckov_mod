@@ -3,10 +3,10 @@
 ## 中文介绍
 
 版本：v1.0.0
-更新日期：2026-03-11
+更新日期：2026-03-17
 更新内容：首个版本，新增可投掷的喷溅治疗药水。
 
-为游戏新增一个可投掷物品“喷溅治疗药水”。使用手感与 EnderPearl 一致，进入瞄准后会显示抛物线，松手即可投掷。药水首次碰撞落地时，会在落点周围一定范围内为角色恢复 `50%` 最大生命值，并爆开带发白高光感的莓果玫红粒子。
+新增可投掷道具“喷溅治疗药水”。整体手感沿用 EnderPearl 的抛投方式，瞄准时会显示抛物线预览，松手后即可抛出。药水在首次落地碰撞时会当场炸开，为落点周围范围内的角色恢复 `50%` 最大生命值，并触发带发白高光感的莓果玫红爆裂粒子与落地音效。
 
 ### 特色
 
@@ -19,7 +19,7 @@
 ### 获取方式
 
 - NPC 橘子处购买
-- 售价：`$1000`
+- 售价：`$2000`
 
 ### 开发信息
 
@@ -30,10 +30,10 @@
 ## English Description
 
 Version: v1.0.0
-Updated: 2026-03-11
+Updated: 2026-03-17
 Update Notes: Initial release with a throwable splash healing potion.
 
-Adds a new throwable item called Splash Healing Potion. It uses the same throw feel as EnderPearl, including the grenade arc preview while aiming. On first impact, the potion bursts at the landing point, heals characters in the area for `50%` of their max health, and spawns berry rose splash particles with soft pale highlights.
+Adds a new throwable item called Splash Healing Potion. It follows the same throw style as EnderPearl, including an arc preview while aiming. On its first ground impact, the potion bursts at the landing point, restores `50%` of max health to characters within range, and triggers berry-rose splash particles with soft pale highlights together with a landing sound effect.
 
 ### Features
 
@@ -46,7 +46,7 @@ Adds a new throwable item called Splash Healing Potion. It uses the same throw f
 ### How to Obtain
 
 - Purchase from the Orange NPC
-- Price: `$1000`
+- Price: `$2000`
 
 ### Credits
 

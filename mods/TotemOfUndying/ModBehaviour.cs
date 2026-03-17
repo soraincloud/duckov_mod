@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Duckov.Economy;
 using Duckov.Utilities;
 using Duckov.Modding;
@@ -24,6 +25,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private const float TotemWeightKg = 0.3f;
     private const int MerchantPrice = 8400;
     private const int MerchantStock = 99;
+    private const string SharedCategoryTagName = "ModWorkbench_Mystic";
+    private const BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
     private static readonly string[] WorkbenchFormulaTags =
     {
@@ -60,6 +63,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         ApplyLocalizationOverrides();
         CreateAndRegisterItemPrefab(info.path);
+        EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
         RegisterOrUpdateCraftingFormula();
         WorkbenchCraftSystem.Initialize();
@@ -464,6 +468,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         try
         {
             EnsureTotemSlotCompatibility();
+            EnsureSharedCategoryDependsOnPrerequisite();
             AddToMerchantProfile();
             PatchExistingStockShops();
             RegisterOrUpdateCraftingFormula();
@@ -479,11 +484,104 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         try
         {
             EnsureTotemSlotCompatibility();
+            EnsureSharedCategoryDependsOnPrerequisite();
         }
         catch (Exception e)
         {
             Debug.LogException(e);
         }
+    }
+
+    private static void EnsureSharedCategoryDependsOnPrerequisite()
+    {
+        if (IsPrerequisiteLoaded())
+        {
+            return;
+        }
+
+        RemoveSharedCategoryFromManagedItems();
+    }
+
+    private static bool IsPrerequisiteLoaded()
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .Any(assembly => string.Equals(assembly.GetName().Name, "MCPrerequisite", StringComparison.Ordinal));
+    }
+
+    private static void RemoveSharedCategoryFromManagedItems()
+    {
+        var sharedTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, SharedCategoryTagName));
+        if (sharedTag == null)
+        {
+            return;
+        }
+
+        if (_prefab != null)
+        {
+            TryDetachSharedCategory(_prefab, sharedTag);
+        }
+
+        var liveItems = Resources.FindObjectsOfTypeAll<Item>();
+        foreach (var item in liveItems)
+        {
+            if (item == null || item.TypeID != TotemOfUndyingTypeId)
+            {
+                continue;
+            }
+
+            TryDetachSharedCategory(item, sharedTag);
+        }
+
+        RefreshDynamicMetaData(sharedTag);
+    }
+
+    private static bool TryDetachSharedCategory(Item item, Tag sharedTag)
+    {
+        if (item == null || sharedTag == null)
+        {
+            return false;
+        }
+
+        var tags = item.Tags;
+        if (tags == null || !tags.Contains(sharedTag))
+        {
+            return false;
+        }
+
+        tags.Remove(sharedTag);
+        return true;
+    }
+
+    private static void RefreshDynamicMetaData(Tag sharedTag)
+    {
+        var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
+        if (dynamicEntriesField?.GetValue(null) is not System.Collections.IDictionary dynamicEntries)
+        {
+            return;
+        }
+
+        if (!dynamicEntries.Contains(TotemOfUndyingTypeId))
+        {
+            return;
+        }
+
+        var entry = dynamicEntries[TotemOfUndyingTypeId];
+        if (entry == null)
+        {
+            return;
+        }
+
+        var entryType = entry.GetType();
+        var prefabField = entryType.GetField("prefab", AllBindings);
+        if (prefabField?.GetValue(entry) is not Item prefab)
+        {
+            return;
+        }
+
+        TryDetachSharedCategory(prefab, sharedTag);
+
+        var metaDataField = entryType.GetField("_metaData", AllBindings);
+        metaDataField?.SetValue(entry, new ItemMetaData(prefab));
     }
 
     private static void PatchExistingStockShops()
