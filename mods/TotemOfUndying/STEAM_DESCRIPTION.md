@@ -3,8 +3,8 @@
 ## 中文介绍
 
 版本：v1.0.4
-更新日期：2026-03-10
-更新内容：增加了独特的物品分类，并修复模型冲突。
+更新日期：2026-03-17
+更新内容：修复退出并重新进入游戏后，放在图腾栏位中的不死图腾会消失的问题。
 
 为游戏新增物品“不死图腾”。将其放入图腾槽位后即可生效。当角色受到致命伤害时，会自动消耗 1 个图腾，免除本次死亡，恢复 30% 最大生命，并获得 5 秒无敌效果。
 
@@ -38,8 +38,8 @@
 ## English Description
 
 Version: v1.0.4
-Updated: 2026-03-10
-Update Notes: Added a unique item category and fixed model conflicts.
+Updated: 2026-03-17
+Update Notes: Fixed an issue where the Totem of Undying could disappear from the totem slot after leaving and re-entering the game.
 
 Adds a new item called the Totem of Undying. Once placed in the totem slot, it becomes active. When the player receives lethal damage, it automatically consumes 1 totem, prevents death, restores 30% of max HP, and grants 5 seconds of invulnerability.
 

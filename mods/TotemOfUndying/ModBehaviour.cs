@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using Duckov.Economy;
 using Duckov.Utilities;
 using Duckov.Modding;
 using ItemStatsSystem;
+using ItemStatsSystem.Data;
 using ItemStatsSystem.Items;
 using ItemStatsSystem.Stats;
 using SodaCraft.Localizations;
@@ -68,6 +70,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         RegisterOrUpdateCraftingFormula();
         WorkbenchCraftSystem.Initialize();
         TotemRescueSystem.Initialize(info.path);
+        ItemTreeData.OnItemLoaded += OnItemLoaded;
 
         PatchExistingStockShops();
 
@@ -81,6 +84,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         WorkbenchCraftSystem.Deinitialize();
         TotemRescueSystem.Deinitialize();
         TotemModelAssets.Deinitialize();
+        ItemTreeData.OnItemLoaded -= OnItemLoaded;
         PlayerStorage.OnLoadingFinished -= OnPlayerStorageLoaded;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
@@ -472,6 +476,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             AddToMerchantProfile();
             PatchExistingStockShops();
             RegisterOrUpdateCraftingFormula();
+            ScheduleAttemptRestoreTotemSlotFromLooseItems();
         }
         catch (Exception e)
         {
@@ -485,10 +490,113 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             EnsureTotemSlotCompatibility();
             EnsureSharedCategoryDependsOnPrerequisite();
+            ScheduleAttemptRestoreTotemSlotFromLooseItems();
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+        }
+    }
+
+    private static void OnItemLoaded(Item item)
+    {
+        if (item == null || item.TypeID != TotemOfUndyingTypeId)
+        {
+            return;
+        }
+
+        try
+        {
+            var compatibleTags = ResolveTotemSlotTags();
+            if (compatibleTags.Count == 0)
+            {
+                return;
+            }
+
+            ApplyCompatibilityTags(item, compatibleTags);
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[TotemOfUndying] Failed to patch loaded totem item before slot restore: {e.Message}");
+        }
+    }
+
+    private static void ScheduleAttemptRestoreTotemSlotFromLooseItems()
+    {
+        TotemSlotRestoreRunner.Schedule(AttemptRestoreTotemSlotFromLooseItemsSafely, "TotemOfUndying_SlotRestoreRunner");
+    }
+
+    private static void AttemptRestoreTotemSlotFromLooseItemsSafely()
+    {
+        try
+        {
+            AttemptRestoreTotemSlotFromLooseItems();
+        }
+        catch (Exception e)
+        {
+            ModLog.Warn($"[TotemOfUndying] Deferred totem-slot restore failed: {e.Message}");
+        }
+    }
+
+    private static void AttemptRestoreTotemSlotFromLooseItems()
+    {
+        var character = CharacterMainControl.Main;
+        var slots = character?.CharacterItem?.Slots;
+        if (slots == null)
+        {
+            return;
+        }
+
+        Slot? totemSlot = null;
+        foreach (Slot slot in slots)
+        {
+            if (slot != null && IsTotemSlotKey(slot.Key))
+            {
+                totemSlot = slot;
+                break;
+            }
+        }
+
+        if (totemSlot == null || totemSlot.Content != null)
+        {
+            return;
+        }
+
+        var candidates = Resources.FindObjectsOfTypeAll<Item>()
+            .Where(item => item != null
+                && item != _prefab
+                && item.TypeID == TotemOfUndyingTypeId
+                && item.PluggedIntoSlot == null
+                && item.InInventory == null
+                && item.gameObject.scene.isLoaded
+                && item.gameObject.activeInHierarchy
+                && item.GetComponentInParent<StockShop>() == null)
+            .OrderBy(item => item.transform.parent != null)
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var candidate in candidates)
+        {
+            if (!totemSlot.CanPlug(candidate))
+            {
+                ModLog.Warn($"[TotemOfUndying] Found loose totem candidate but slot still rejects it. slot='{totemSlot.Key}' slotTags=[{DescribeTags(totemSlot.requireTags)}] itemTags=[{DescribeItemTags(candidate)}] itemInstance={candidate.GetInstanceID()}");
+                continue;
+            }
+
+            if (totemSlot.Plug(candidate, out var unpluggedItem))
+            {
+                if (unpluggedItem != null)
+                {
+                    ModLog.Warn($"[TotemOfUndying] Unexpected unplugged item while restoring totem slot: {unpluggedItem.DisplayName} ({unpluggedItem.TypeID})");
+                }
+
+                ModLog.Info($"[TotemOfUndying] Restored loose totem instance {candidate.GetInstanceID()} back into slot '{totemSlot.Key}'. itemTags=[{DescribeItemTags(candidate)}]");
+                return;
+            }
         }
     }
 
@@ -729,10 +837,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             }
 
             var patchedCount = 0;
+            var prefabChanged = false;
 
             if (_prefab != null && ApplyCompatibilityTags(_prefab, compatibleTags))
             {
                 patchedCount++;
+                prefabChanged = true;
             }
 
             var liveItems = Resources.FindObjectsOfTypeAll<Item>();
@@ -751,6 +861,11 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
             if (patchedCount > 0)
             {
+                if (prefabChanged)
+                {
+                    RefreshTotemDynamicMetaData();
+                }
+
                 ModLog.Info($"[TotemOfUndying] Applied totem-slot compatibility tags to {patchedCount} totem instance(s). Tags: {string.Join(", ", compatibleTags.Select(tag => tag.name))}");
             }
         }
@@ -786,6 +901,25 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         if (soulCubePrefab != null)
         {
             AddTags(soulCubePrefab.Tags);
+        }
+
+        var defaultCharacterItemTypeId = GameplayDataSettings.ItemAssets?.DefaultCharacterItemTypeID ?? 0;
+        if (defaultCharacterItemTypeId > 0)
+        {
+            var defaultCharacterItemPrefab = ItemAssetsCollection.GetPrefab(defaultCharacterItemTypeId);
+            var defaultSlots = defaultCharacterItemPrefab?.Slots;
+            if (defaultSlots != null)
+            {
+                foreach (Slot slot in defaultSlots)
+                {
+                    if (slot == null || !IsTotemSlotKey(slot.Key))
+                    {
+                        continue;
+                    }
+
+                    AddTags(slot.requireTags);
+                }
+            }
         }
 
         var characters = Resources.FindObjectsOfTypeAll<CharacterMainControl>();
@@ -833,6 +967,30 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         return changed;
     }
 
+    private static void RefreshTotemDynamicMetaData()
+    {
+        var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
+        if (dynamicEntriesField?.GetValue(null) is not System.Collections.IDictionary dynamicEntries)
+        {
+            return;
+        }
+
+        if (!dynamicEntries.Contains(TotemOfUndyingTypeId))
+        {
+            return;
+        }
+
+        var entry = dynamicEntries[TotemOfUndyingTypeId];
+        if (entry == null || _prefab == null)
+        {
+            return;
+        }
+
+        var entryType = entry.GetType();
+        var metaDataField = entryType.GetField("_metaData", AllBindings);
+        metaDataField?.SetValue(entry, new ItemMetaData(_prefab));
+    }
+
     private static bool IsTotemSlotKey(string? slotKey)
     {
         if (string.IsNullOrWhiteSpace(slotKey))
@@ -847,6 +1005,44 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static string DescribeItemTags(Item item)
     {
         return string.Join(", ", item.Tags.Select(tag => tag != null ? tag.name : "<null>"));
+    }
+
+    private static string DescribeTags(IEnumerable<Tag>? tags)
+    {
+        if (tags == null)
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", tags.Select(tag => tag != null ? tag.name : "<null>"));
+    }
+
+    private sealed class TotemSlotRestoreRunner : MonoBehaviour
+    {
+        private Action? _action;
+
+        internal static void Schedule(Action action, string objectName)
+        {
+            if (action == null)
+            {
+                return;
+            }
+
+            var gameObject = new GameObject(objectName);
+            DontDestroyOnLoad(gameObject);
+            var runner = gameObject.AddComponent<TotemSlotRestoreRunner>();
+            runner._action = action;
+            runner.StartCoroutine(runner.Run());
+        }
+
+        private IEnumerator Run()
+        {
+            yield return null;
+            yield return null;
+
+            _action?.Invoke();
+            Destroy(gameObject);
+        }
     }
 
     private static Sprite? TryLoadIconSprite(string? modPath)
