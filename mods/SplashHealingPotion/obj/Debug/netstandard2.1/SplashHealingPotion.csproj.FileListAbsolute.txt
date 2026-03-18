@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/bin/Debug/netstandard2.1/SplashHealingPotion.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/bin/Debug/netstandard2.1/SplashHealingPotion.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/bin/Debug/netstandard2.1/SplashHealingPotion.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/SplashHealingPotion/obj/Debug/netstandard2.1/SplashHealingPotion.pdb

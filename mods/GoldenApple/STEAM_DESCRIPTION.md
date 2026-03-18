@@ -20,6 +20,7 @@
 
 - NPC 橘子处购买
 - 售价：`$6666`
+- 工作台制作：`8x 金锭` + `1x 苹果`
 
 ### 适用场景
 
@@ -53,6 +54,7 @@ Adds a new edible item called the Enchanted Golden Apple. Eating it immediately 
 
 - Purchase from the Orange NPC
 - Price: `$6666`
+- Craft at the workbench: `8x Gold Ingot` + `1x Apple`
 
 ### Best For
 

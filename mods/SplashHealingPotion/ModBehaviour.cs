@@ -15,7 +15,9 @@ namespace SplashHealingPotion;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900012;
+    private const int McGlassTypeId = 800001;
     private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
+    private const string SecondaryFormulaId = "SplashHealingPotion_Workbench_MCGlass";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 1000;
     private const int MerchantStock = 99;
@@ -192,7 +194,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
 
         formulaList.RemoveAll(existing =>
-            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal));
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
         formulaList.AddRange(builtFormulas);
 
         foreach (var formula in builtFormulas)
@@ -209,32 +212,56 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var bandageId = ResolveIngredientTypeId("止血绷带", "止血绷带", "Bandage", "Hemostatic Bandage", "HemostaticBandage");
         var firstAidKitId = ResolveIngredientTypeId("小急救箱", "小急救箱", "Small First Aid Kit", "First Aid Kit", "SmallFirstAidKit", "Small Medkit", "SmallMedkit");
         var recoveryShotId = ResolveIngredientTypeId("恢复针", "恢复针", "Recovery Shot", "Recovery Syringe", "Recovery Injection", "RecoveryShot", "RecoverySyringe", "RecoveryInjection");
-
-        if (bandageId < 0 || firstAidKitId < 0 || recoveryShotId < 0)
-        {
-            return false;
-        }
-
         var compatibleTags = BuildCompatibleFormulaTags(formulas);
 
-        builtFormulas.Add(new CraftingFormula
+        if (bandageId >= 0 && firstAidKitId >= 0 && recoveryShotId >= 0)
         {
-            id = PrimaryFormulaId,
-            result = new CraftingFormula.ItemEntry
+            builtFormulas.Add(new CraftingFormula
             {
-                id = EnderPearlTypeId,
-                amount = 2
-            },
-            tags = compatibleTags,
-            cost = new Cost(
-                (bandageId, 6L),
-                (firstAidKitId, 2L),
-                (recoveryShotId, 1L)),
-            unlockByDefault = true,
-            lockInDemo = false,
-            requirePerk = string.Empty,
-            hideInIndex = false
-        });
+                id = PrimaryFormulaId,
+                result = new CraftingFormula.ItemEntry
+                {
+                    id = EnderPearlTypeId,
+                    amount = 2
+                },
+                tags = compatibleTags,
+                cost = new Cost(
+                    (bandageId, 6L),
+                    (firstAidKitId, 2L),
+                    (recoveryShotId, 1L)),
+                unlockByDefault = true,
+                lockInDemo = false,
+                requirePerk = string.Empty,
+                hideInIndex = false
+            });
+        }
+
+        if (HasRegisteredItemType(McGlassTypeId) && recoveryShotId >= 0)
+        {
+            builtFormulas.Add(new CraftingFormula
+            {
+                id = SecondaryFormulaId,
+                result = new CraftingFormula.ItemEntry
+                {
+                    id = EnderPearlTypeId,
+                    amount = 2
+                },
+                tags = compatibleTags,
+                cost = new Cost(
+                    (McGlassTypeId, 3L),
+                    (recoveryShotId, 1L)),
+                unlockByDefault = true,
+                lockInDemo = false,
+                requirePerk = string.Empty,
+                hideInIndex = false
+            });
+        }
+
+        if (builtFormulas.Count == 0)
+        {
+            ModLog.Warn("[SplashHealingPotion] Failed to build any crafting formula because required ingredients are unavailable.");
+            return false;
+        }
 
         return true;
     }
@@ -270,7 +297,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var collection = ItemAssetsCollection.Instance;
         if (collection?.entries == null)
         {
-            ModLog.Warn($"[EnderPearl] ItemAssetsCollection not ready while resolving ingredient '{label}'.");
+            ModLog.Warn($"[SplashHealingPotion] ItemAssetsCollection not ready while resolving ingredient '{label}'.");
             return -1;
         }
 
@@ -302,13 +329,36 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
             if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: true))
             {
-                ModLog.Info($"[EnderPearl] Ingredient '{label}' matched fuzzily to '{entry.metaData.DisplayName}' ({entry.typeID}).");
+                ModLog.Info($"[SplashHealingPotion] Ingredient '{label}' matched fuzzily to '{entry.metaData.DisplayName}' ({entry.typeID}).");
                 return entry.typeID;
             }
         }
 
-        ModLog.Warn($"[EnderPearl] Failed to resolve ingredient '{label}'. Candidates: {string.Join(", ", candidates)}");
+        ModLog.Warn($"[SplashHealingPotion] Failed to resolve ingredient '{label}'. Candidates: {string.Join(", ", candidates)}");
         return -1;
+    }
+
+    private static bool HasRegisteredItemType(int typeId)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries != null)
+        {
+            foreach (var entry in collection.entries)
+            {
+                if (entry != null && entry.typeID == typeId && entry.metaData.id > 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
+        if (dynamicEntriesField?.GetValue(null) is not System.Collections.IDictionary dynamicEntries)
+        {
+            return false;
+        }
+
+        return dynamicEntries.Contains(typeId);
     }
 
     private static bool MatchesIngredient(ItemMetaData metaData, string[] normalizedCandidates, bool contains)
@@ -369,7 +419,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
         if (unlockedFormulaIds == null)
         {
-            ModLog.Warn("[EnderPearl] Failed to access unlocked formula list.");
+            ModLog.Warn("[SplashHealingPotion] Failed to access unlocked formula list.");
             return;
         }
 
@@ -387,13 +437,15 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var formulas = CraftingFormulaCollection.Instance;
         var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
         formulaList?.RemoveAll(existing =>
-            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal));
+            string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
+            string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
 
         if (CraftingManager.Instance != null)
         {
             var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
             unlockedFormulaIds?.RemoveAll(existing =>
-                string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal));
+                string.Equals(existing, PrimaryFormulaId, StringComparison.Ordinal) ||
+                string.Equals(existing, SecondaryFormulaId, StringComparison.Ordinal));
         }
     }
 

@@ -17,14 +17,28 @@ namespace GoldenApple;
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int GoldenAppleTypeId = 900002;
+    private const int McGoldIngotTypeId = 800003;
 
     private const string DisplayNameKey = "Item_GoldenApple";
+    private const string FormulaId = "GoldenApple_Workbench";
     private const string SharedCategoryTagName = "ModWorkbench_Mystic";
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 6666;
     private const int MerchantStock = 99;
     private const float GoldenAppleWeightKg = 0.35f;
     private const BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+    private static readonly string[] WorkbenchFormulaTags =
+    {
+        "Workbench",
+        "workbench",
+        "Craft",
+        "craft",
+        "Crafter",
+        "crafter",
+        "Crafting",
+        "crafting"
+    };
 
     private static bool _initialized;
     private static Item? _prefab;
@@ -44,6 +58,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         CreateAndRegisterItemPrefab(info.path);
         EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
+        RegisterOrUpdateCraftingFormula();
         PatchExistingStockShops();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -56,6 +71,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
+        UnregisterCraftingFormula();
         GoldenAppleBuffRegistry.Deinitialize();
         GoldenAppleEnchantedIcon.Shutdown();
 
@@ -83,6 +99,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         {
             EnsureSharedCategoryDependsOnPrerequisite();
             AddToMerchantProfile();
+            RegisterOrUpdateCraftingFormula();
             PatchExistingStockShops();
         }
         catch (Exception e)
@@ -176,6 +193,251 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
 
         profile.entries.Add(CreateMerchantItemEntry());
+    }
+
+    private static void RegisterOrUpdateCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        if (formulas == null)
+        {
+            ModLog.Warn("[GoldenApple] CraftingFormulaCollection.Instance is null. Will retry on scene load.");
+            return;
+        }
+
+        if (!TryBuildCraftingFormula(formulas, out var formula))
+        {
+            return;
+        }
+
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList == null)
+        {
+            ModLog.Warn("[GoldenApple] Failed to access crafting formula list.");
+            return;
+        }
+
+        formulaList.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+        formulaList.Add(formula);
+
+        EnsureFormulaUnlocked(FormulaId);
+        ModLog.Info($"[GoldenApple] Registered crafting formula '{FormulaId}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+    }
+
+    private static bool TryBuildCraftingFormula(CraftingFormulaCollection formulas, out CraftingFormula formula)
+    {
+        formula = default;
+
+        if (!HasRegisteredItemType(McGoldIngotTypeId))
+        {
+            ModLog.Warn("[GoldenApple] MC gold ingot is not registered. Crafting recipe will wait for MCPrerequisite.");
+            return false;
+        }
+
+        var appleId = ResolveIngredientTypeId("苹果", "苹果", "Apple", "Red Apple");
+        if (appleId < 0)
+        {
+            return false;
+        }
+
+        var formulaTags = BuildCompatibleFormulaTags(formulas);
+        formula = new CraftingFormula
+        {
+            id = FormulaId,
+            result = new CraftingFormula.ItemEntry
+            {
+                id = GoldenAppleTypeId,
+                amount = 1
+            },
+            tags = formulaTags,
+            cost = new Cost(
+                (McGoldIngotTypeId, 8L),
+                (appleId, 1L)),
+            unlockByDefault = true,
+            lockInDemo = false,
+            requirePerk = string.Empty,
+            hideInIndex = false
+        };
+
+        return true;
+    }
+
+    private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
+    {
+        var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
+        var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
+        if (formulaList != null)
+        {
+            foreach (var existing in formulaList)
+            {
+                if (existing.tags == null)
+                {
+                    continue;
+                }
+
+                foreach (var tag in existing.tags)
+                {
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        tags.Add(tag);
+                    }
+                }
+            }
+        }
+
+        return tags.OrderBy(value => value, StringComparer.Ordinal).ToArray();
+    }
+
+    private static int ResolveIngredientTypeId(string label, params string[] candidates)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries == null)
+        {
+            ModLog.Warn($"[GoldenApple] ItemAssetsCollection not ready while resolving ingredient '{label}'.");
+            return -1;
+        }
+
+        var normalizedCandidates = candidates
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: false))
+            {
+                return entry.typeID;
+            }
+        }
+
+        foreach (var entry in collection.entries)
+        {
+            if (entry == null || entry.metaData.id <= 0)
+            {
+                continue;
+            }
+
+            if (MatchesIngredient(entry.metaData, normalizedCandidates, contains: true))
+            {
+                ModLog.Info($"[GoldenApple] Ingredient '{label}' matched fuzzily to '{entry.metaData.DisplayName}' ({entry.typeID}).");
+                return entry.typeID;
+            }
+        }
+
+        ModLog.Warn($"[GoldenApple] Failed to resolve ingredient '{label}'. Candidates: {string.Join(", ", candidates)}");
+        return -1;
+    }
+
+    private static bool MatchesIngredient(ItemMetaData metaData, string[] normalizedCandidates, bool contains)
+    {
+        var names = new[]
+        {
+            metaData.Name,
+            metaData.DisplayName,
+            metaData.DisplayNameKey
+        }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(NormalizeLookupText)
+            .Distinct()
+            .ToArray();
+
+        foreach (var candidate in normalizedCandidates)
+        {
+            foreach (var name in names)
+            {
+                if (!contains && string.Equals(name, candidate, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (contains && (name.Contains(candidate, StringComparison.Ordinal) || candidate.Contains(name, StringComparison.Ordinal)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeLookupText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var chars = value
+            .Trim()
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray();
+
+        return new string(chars);
+    }
+
+    private static bool HasRegisteredItemType(int typeId)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries != null)
+        {
+            foreach (var entry in collection.entries)
+            {
+                if (entry != null && entry.typeID == typeId && entry.metaData.id > 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
+        if (dynamicEntriesField?.GetValue(null) is not System.Collections.IDictionary dynamicEntries)
+        {
+            return false;
+        }
+
+        return dynamicEntries.Contains(typeId);
+    }
+
+    private static void EnsureFormulaUnlocked(string formulaId)
+    {
+        if (CraftingManager.Instance == null)
+        {
+            return;
+        }
+
+        var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+        if (unlockedFormulaIds == null)
+        {
+            ModLog.Warn("[GoldenApple] Failed to access unlocked formula list.");
+            return;
+        }
+
+        if (unlockedFormulaIds.Contains(formulaId))
+        {
+            return;
+        }
+
+        unlockedFormulaIds.Add(formulaId);
+        unlockedFormulaIds.Sort(StringComparer.Ordinal);
+    }
+
+    private static void UnregisterCraftingFormula()
+    {
+        var formulas = CraftingFormulaCollection.Instance;
+        var formulaList = formulas != null ? ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list") : null;
+        formulaList?.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
+
+        if (CraftingManager.Instance != null)
+        {
+            var unlockedFormulaIds = ReflectionUtil.GetPrivateField<List<string>>(CraftingManager.Instance, "unlockedFormulaIDs");
+            unlockedFormulaIds?.RemoveAll(existing => string.Equals(existing, FormulaId, StringComparison.Ordinal));
+        }
     }
 
     private static void RemoveFromMerchantProfile()
