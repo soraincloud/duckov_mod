@@ -106,6 +106,6 @@ internal static class RuntimeIcon
 
         tex.Apply();
         var rect = new Rect(0, 0, size, size);
-        return Sprite.Create(tex, rect, new Vector2(0.5f, 0.5f), 100f);
+        return Sprite.Create(tex, rect, new Vector2(0.5f, 0.5f), 50f);
     }
 }

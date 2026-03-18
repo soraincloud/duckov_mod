@@ -66,6 +66,6 @@ internal static class ModAssets
         }
 
         var rect = new Rect(0f, 0f, texture.width, texture.height);
-        return Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), 100f);
+        return Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), 50f);
     }
 }

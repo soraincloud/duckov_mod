@@ -2,11 +2,11 @@
 
 ## 中文介绍
 
-版本：v1.0.0
-更新日期：2026-03-17
-更新内容：首个版本，新增可食用物品“附魔金苹果”。
+版本：v1.0.1
+更新日期：2026-03-18
+更新内容：提高生命上限与持续回血数值，并放大地面掉落贴图显示。
 
-为游戏新增可食用物品“附魔金苹果”。食用后会立即获得三段临时增益：生命上限 `+20` 持续 2 分钟，30 秒内每秒回复 `5` 点生命，以及头甲 `+1.5`、身甲 `+1.5` 持续 5 分钟。左下角状态栏会显示三段增益与各自剩余时间。
+为游戏新增可食用物品“附魔金苹果”。食用后会立即获得三段临时增益：生命上限 `+30` 持续 2 分钟，30 秒内每秒回复 `15` 点生命，以及头甲 `+1.5`、身甲 `+1.5` 持续 5 分钟。左下角状态栏会显示三段增益与各自剩余时间，地面掉落时的贴图显示也已放大一倍。
 
 ### 特色
 
@@ -35,11 +35,11 @@
 
 ## English Description
 
-Version: v1.0.0
-Updated: 2026-03-17
-Update Notes: Initial release with a new edible Enchanted Golden Apple.
+Version: v1.0.1
+Updated: 2026-03-18
+Update Notes: Increased max health and regeneration values, and enlarged the dropped world sprite.
 
-Adds a new edible item called the Enchanted Golden Apple. Eating it immediately grants three temporary buffs: `+20` max health for 2 minutes, `5` HP per second for 30 seconds, and `+1.5` head armor plus `+1.5` body armor for 5 minutes. All three effects are shown separately in the lower-left buff bar with their remaining durations.
+Adds a new edible item called the Enchanted Golden Apple. Eating it immediately grants three temporary buffs: `+30` max health for 2 minutes, `15` HP per second for 30 seconds, and `+1.5` head armor plus `+1.5` body armor for 5 minutes. All three effects are shown separately in the lower-left buff bar with their remaining durations, and the dropped world sprite is now twice as large.
 
 ### Features
 

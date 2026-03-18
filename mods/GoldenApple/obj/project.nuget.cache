@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "zY1ot7Lcd+g=",
+  "dgSpecHash": "+VnaCT0vHUU=",
   "success": true,
-  "projectFilePath": "D:\\project\\duckov_mod\\mods\\GoldenApple\\GoldenApple.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "/Volumes/Kingston-1TB/github/duckov_mod/mods/GoldenApple/GoldenApple.csproj",
+  "expectedPackageFiles": [
+    "/Users/sric/.nuget/packages/netstandard.library.ref/2.1.0/netstandard.library.ref.2.1.0.nupkg.sha512"
+  ],
   "logs": []
 }

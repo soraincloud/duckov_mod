@@ -6,9 +6,9 @@ namespace GoldenApple;
 
 public class GoldenAppleEffectController : MonoBehaviour
 {
-    private const float BonusMaxHealth = 20f;
+    private const float BonusMaxHealth = 30f;
     private const float BonusArmor = 1.5f;
-    private const float RegenerationPerTick = 5f;
+    private const float RegenerationPerTick = 15f;
     private const float MaxHealthDuration = 120f;
     private const float ArmorDuration = 300f;
     private const float RegenerationDuration = 30f;

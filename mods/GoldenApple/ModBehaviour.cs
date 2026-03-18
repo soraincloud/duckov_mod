@@ -96,13 +96,13 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         LocalizationManager.SetOverrideText(DisplayNameKey, "附魔金苹果");
         LocalizationManager.SetOverrideText(
             DisplayNameKey + "_Desc",
-            "食用后获得三段增益：\n- 生命上限 +20，持续 2 分钟\n- 每秒回复 5 点生命，持续 30 秒\n- 头甲 +1.5、身甲 +1.5，持续 5 分钟\n\n左下角状态栏会显示对应增益与剩余时间。额外生命上限会直接提高血量上限，但当前版本不会单独显示为黄色血条。兼容 MC 前置分类。"
+            "食用后获得三段增益：\n- 生命上限 +30，持续 2 分钟\n- 每秒回复 15 点生命，持续 30 秒\n- 头甲 +1.5、身甲 +1.5，持续 5 分钟\n\n左下角状态栏会显示对应增益与剩余时间。额外生命上限会直接提高血量上限，但当前版本不会单独显示为黄色血条。兼容 MC 前置分类。"
         );
 
         LocalizationManager.SetOverrideText("Buff_GoldenApple_MaxHealth", "附魔金苹果：生命上限");
-        LocalizationManager.SetOverrideText("Buff_GoldenApple_MaxHealth_Desc", "最大生命值 +20。剩余时间结束后自动移除。\n持续时间：120 秒");
+        LocalizationManager.SetOverrideText("Buff_GoldenApple_MaxHealth_Desc", "最大生命值 +30。剩余时间结束后自动移除。\n持续时间：120 秒");
         LocalizationManager.SetOverrideText("Buff_GoldenApple_Regeneration", "附魔金苹果：生命恢复");
-        LocalizationManager.SetOverrideText("Buff_GoldenApple_Regeneration_Desc", "每秒恢复 5 点生命值。\n持续时间：30 秒");
+        LocalizationManager.SetOverrideText("Buff_GoldenApple_Regeneration_Desc", "每秒恢复 15 点生命值。\n持续时间：30 秒");
         LocalizationManager.SetOverrideText("Buff_GoldenApple_Armor", "附魔金苹果：护甲强化");
         LocalizationManager.SetOverrideText("Buff_GoldenApple_Armor_Desc", "头甲 +1.5，身甲 +1.5。\n持续时间：300 秒");
     }
