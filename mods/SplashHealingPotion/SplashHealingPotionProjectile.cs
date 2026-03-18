@@ -181,11 +181,11 @@ public class EnderPearlProjectile : MonoBehaviour
 
         ModSfx.PlayGlassBreak(point);
         SpawnSplashParticles(point + Vector3.up * 0.08f);
-        HealCharactersInRange(point);
+        ApplyNegativeDamageHealingInRange(point);
         Destroy(gameObject);
     }
 
-    private static void HealCharactersInRange(Vector3 point)
+    private void ApplyNegativeDamageHealingInRange(Vector3 point)
     {
         var healths = Object.FindObjectsOfType<Health>();
         if (healths == null || healths.Length == 0)
@@ -201,34 +201,31 @@ public class EnderPearlProjectile : MonoBehaviour
             }
 
             var character = health.TryGetCharacter();
-            if (character == null)
-            {
-                continue;
-            }
-
-            if (Vector3.Distance(character.transform.position, point) > HealRadius)
+            var targetPosition = character != null ? character.transform.position : health.transform.position;
+            if (Vector3.Distance(targetPosition, point) > HealRadius)
             {
                 continue;
             }
 
             var isMainCharacter = character == CharacterMainControl.Main;
 
-            if (health.CurrentHealth >= health.MaxHealth)
+            var damageInfo = new DamageInfo(_owner)
             {
-                if (isMainCharacter)
-                {
-                    HealFlashFeedback.Trigger();
-                }
+                damageValue = -Mathf.Max(1f, health.MaxHealth * HealPercent),
+                isExplosion = true,
+                fromWeaponItemID = ModBehaviour.EnderPearlTypeId,
+                damagePoint = targetPosition,
+                damageNormal = (targetPosition - point).sqrMagnitude > 0.0001f
+                    ? (targetPosition - point).normalized
+                    : Vector3.up
+            };
 
-                continue;
-            }
-
-            health.AddHealth(Mathf.Max(1f, health.MaxHealth * HealPercent));
+            health.Hurt(damageInfo);
+            health.SetHealth(Mathf.Min(health.CurrentHealth, health.MaxHealth));
 
             if (isMainCharacter)
             {
                 HealFlashFeedback.Trigger();
-                character.PopText("治疗 +50%", 1.2f);
             }
         }
     }
