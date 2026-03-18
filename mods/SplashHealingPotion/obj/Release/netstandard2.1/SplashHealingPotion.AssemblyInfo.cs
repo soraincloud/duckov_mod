@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SplashHealingPotion")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b027c3b64611d7c6cc3a8f40c956d5291c34f06e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f93d1679b520fea6d218eeb9207a6dd8265327ad")]
 [assembly: System.Reflection.AssemblyProductAttribute("SplashHealingPotion")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SplashHealingPotion")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
