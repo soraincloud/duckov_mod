@@ -17,7 +17,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     internal const int EnderPearlTypeId = 900012;
     private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
     private const string TargetMerchantId = "Merchant_Equipment";
-    private const int MerchantPrice = 2000;
+    private const int MerchantPrice = 1000;
     private const int MerchantStock = 99;
     private const string SharedCategoryTagName = "ModWorkbench_Mystic";
     private const BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
@@ -223,7 +223,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             result = new CraftingFormula.ItemEntry
             {
                 id = EnderPearlTypeId,
-                amount = 1
+                amount = 2
             },
             tags = compatibleTags,
             cost = new Cost(

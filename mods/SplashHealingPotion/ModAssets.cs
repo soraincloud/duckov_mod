@@ -8,6 +8,8 @@ namespace SplashHealingPotion;
 
 internal static class ModAssets
 {
+    private const float ModelScaleMultiplier = 0.66f;
+
     internal static string? CurrentModPath { get; private set; }
 
     private const string IconFileName = "icon.png";
@@ -358,6 +360,7 @@ internal static class ModAssets
             instance.name = modelPrefab.name;
             instance.SetActive(true);
             instance.transform.localPosition = Vector3.zero;
+            instance.transform.localScale *= ModelScaleMultiplier;
 
             var targetLayer = ResolvePreferredRenderLayer(agent);
             SetLayerRecursively(instance, targetLayer);
@@ -505,7 +508,8 @@ internal static class ModAssets
             instance.name = modelPrefab.name;
             instance.SetActive(true);
             instance.transform.localPosition = Vector3.zero;
-            // Keep prefab-authored rotation/scale (do not override), so creators can tune it in Unity.
+            instance.transform.localScale *= ModelScaleMultiplier;
+            // Keep prefab-authored rotation and apply a consistent runtime scale reduction.
 
             // Important: imported visual prefabs may contain colliders/rigidbodies.
             // If kept on the projectile hierarchy, they join projectile physics and can
