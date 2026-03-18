@@ -50,6 +50,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         ModLog.Initialize(info.path);
         ModAssets.SetModPath(info.path);
         ModSfx.Initialize(info.path);
+        HealFlashFeedback.EnsureExists();
 
         Debug.Log("[SplashHealingPotion] Loaded.");
 

@@ -211,15 +211,23 @@ public class EnderPearlProjectile : MonoBehaviour
                 continue;
             }
 
+            var isMainCharacter = character == CharacterMainControl.Main;
+
             if (health.CurrentHealth >= health.MaxHealth)
             {
+                if (isMainCharacter)
+                {
+                    HealFlashFeedback.Trigger();
+                }
+
                 continue;
             }
 
             health.AddHealth(Mathf.Max(1f, health.MaxHealth * HealPercent));
 
-            if (character == CharacterMainControl.Main)
+            if (isMainCharacter)
             {
+                HealFlashFeedback.Trigger();
                 character.PopText("治疗 +50%", 1.2f);
             }
         }
