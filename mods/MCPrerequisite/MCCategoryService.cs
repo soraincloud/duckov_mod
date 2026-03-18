@@ -354,14 +354,14 @@ public static class MCCategoryService
         {
             foreach (var tag in existingTags)
             {
-                if (tag != null && !merged.Any(existing => ReferenceEquals(existing, tag)))
+                if (tag != null && !merged.Any(existing => existing != null && existing.Hash == tag.Hash))
                 {
                     merged.Add(tag);
                 }
             }
         }
 
-        if (!merged.Any(existing => ReferenceEquals(existing, filterTag)))
+        if (!merged.Any(existing => existing != null && existing.Hash == filterTag.Hash))
         {
             merged.Add(filterTag);
             return merged.ToArray();
