@@ -14,6 +14,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
 
         _initialized = true;
+        MaterialItemRegistry.Initialize(info.path);
         MCCategoryService.Initialize(info.path);
         Debug.Log("[MCPrerequisite] Loaded.");
     }
@@ -26,6 +27,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         }
 
         MCCategoryService.Deinitialize();
+        MaterialItemRegistry.Deinitialize();
         _initialized = false;
     }
 
