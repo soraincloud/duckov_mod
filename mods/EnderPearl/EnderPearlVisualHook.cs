@@ -38,9 +38,6 @@ internal sealed class EnderPearlVisualHook : MonoBehaviour
         // Attach models from bundle when agents are created
         item.AgentUtilities.onCreateAgent += OnCreateAgent;
 
-        // Also try agent-prefab injection (advanced) for this instance
-        ModAssets.TryInjectItemAgents(item, modPath);
-
         ModLog.Info($"[EnderPearl] VisualHook enabled. modPath='{modPath}' itemInstance={item.GetInstanceID()} typeID={item.TypeID}");
     }
 
