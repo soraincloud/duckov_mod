@@ -16,21 +16,33 @@ internal static class MaterialItemRegistry
     internal const int GlassTypeId = 800001;
     internal const int IronIngotTypeId = 800002;
     internal const int GoldIngotTypeId = 800003;
+    internal const int IronNuggetTypeId = 800004;
+    internal const int GoldNuggetTypeId = 800005;
+    internal const int IronBlockTypeId = 800006;
+    internal const int GoldBlockTypeId = 800007;
 
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 1;
     private const int MerchantStock = 99;
     private const float PickupScaleMultiplier = 3f;
     private const float PickupRefreshIntervalSeconds = 0.4f;
-    private const float LootBoxGlassChance = 0.18f;
-    private const float LootBoxIronChance = 0.10f;
-    private const float LootBoxGoldChance = 0.05f;
+    private const float LootBoxGlassChance = 0.16f;
+    private const float LootBoxIronNuggetChance = 0.10f;
+    private const float LootBoxIronIngotChance = 0.08f;
+    private const float LootBoxGoldNuggetChance = 0.07f;
+    private const float LootBoxGoldIngotChance = 0.05f;
+    private const float LootBoxIronBlockChance = 0.02f;
+    private const float LootBoxGoldBlockChance = 0.01f;
 
     private static readonly MaterialDefinition[] Definitions =
     {
         new(GlassTypeId, "Item_MCGlass", "玻璃", "常见的建筑材料。", "assets/item-icons/glass.png", "MCPrerequisite_Glass_Icon", "MCGlass_ItemPrefab"),
+        new(IronNuggetTypeId, "Item_MCIronNugget", "铁粒", "细碎的铁材料。", "assets/item-icons/ironNugget.png", "MCPrerequisite_IronNugget_Icon", "MCIronNugget_ItemPrefab"),
         new(IronIngotTypeId, "Item_MCIronIngot", "铁锭", "常见的金属材料。", "assets/item-icons/ironIngot.png", "MCPrerequisite_IronIngot_Icon", "MCIronIngot_ItemPrefab"),
-        new(GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "较为贵重的金属材料。", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab")
+        new(IronBlockTypeId, "Item_MCIronBlock", "铁块", "压实后的铁材料。", "assets/item-icons/ironBlock.png", "MCPrerequisite_IronBlock_Icon", "MCIronBlock_ItemPrefab"),
+        new(GoldNuggetTypeId, "Item_MCGoldNugget", "金粒", "细碎的贵重金属材料。", "assets/item-icons/goldNugget.png", "MCPrerequisite_GoldNugget_Icon", "MCGoldNugget_ItemPrefab"),
+        new(GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "较为贵重的金属材料。", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab"),
+        new(GoldBlockTypeId, "Item_MCGoldBlock", "金块", "压实后的贵重金属材料。", "assets/item-icons/goldBlock.png", "MCPrerequisite_GoldBlock_Icon", "MCGoldBlock_ItemPrefab")
     };
 
     private static readonly Dictionary<int, Item> Prefabs = new();
@@ -38,8 +50,12 @@ internal static class MaterialItemRegistry
     private static readonly HashSet<int> ManagedTypeIds = new()
     {
         GlassTypeId,
+        IronNuggetTypeId,
         IronIngotTypeId,
-        GoldIngotTypeId
+        IronBlockTypeId,
+        GoldNuggetTypeId,
+        GoldIngotTypeId,
+        GoldBlockTypeId
     };
 
     private static readonly BindingFlags InstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -171,9 +187,7 @@ internal static class MaterialItemRegistry
 
     private static bool ContainsManagedMaterial(Inventory inventory)
     {
-        return inventory.Find(GlassTypeId) != null
-            || inventory.Find(IronIngotTypeId) != null
-            || inventory.Find(GoldIngotTypeId) != null;
+        return ManagedTypeIds.Any(typeId => inventory.Find(typeId) != null);
     }
 
     private static int RollLootBoxMaterialTypeId()
@@ -185,15 +199,39 @@ internal static class MaterialItemRegistry
         }
 
         roll -= LootBoxGlassChance;
-        if (roll < LootBoxIronChance)
+        if (roll < LootBoxIronNuggetChance)
+        {
+            return IronNuggetTypeId;
+        }
+
+        roll -= LootBoxIronNuggetChance;
+        if (roll < LootBoxIronIngotChance)
         {
             return IronIngotTypeId;
         }
 
-        roll -= LootBoxIronChance;
-        if (roll < LootBoxGoldChance)
+        roll -= LootBoxIronIngotChance;
+        if (roll < LootBoxIronBlockChance)
+        {
+            return IronBlockTypeId;
+        }
+
+        roll -= LootBoxIronBlockChance;
+        if (roll < LootBoxGoldNuggetChance)
+        {
+            return GoldNuggetTypeId;
+        }
+
+        roll -= LootBoxGoldNuggetChance;
+        if (roll < LootBoxGoldIngotChance)
         {
             return GoldIngotTypeId;
+        }
+
+        roll -= LootBoxGoldIngotChance;
+        if (roll < LootBoxGoldBlockChance)
+        {
+            return GoldBlockTypeId;
         }
 
         return 0;

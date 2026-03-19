@@ -33,8 +33,12 @@ public static class MCCategoryService
     private static readonly int[] ManagedMaterialItemTypeIds =
     {
         MaterialItemRegistry.GlassTypeId,
+        MaterialItemRegistry.IronNuggetTypeId,
         MaterialItemRegistry.IronIngotTypeId,
-        MaterialItemRegistry.GoldIngotTypeId
+        MaterialItemRegistry.IronBlockTypeId,
+        MaterialItemRegistry.GoldNuggetTypeId,
+        MaterialItemRegistry.GoldIngotTypeId,
+        MaterialItemRegistry.GoldBlockTypeId
     };
 
     private static readonly BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
