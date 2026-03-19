@@ -288,6 +288,7 @@ internal static class MaterialItemRegistry
             return;
         }
 
+        EnsurePickupScaleEnforcer(newAgent.gameObject, PickupScaleMultiplier).Apply();
         EnsurePickupVisualScale(newAgent.gameObject, ResolvePickupSprite(newAgent.GetComponent<InteractablePickup>()), PickupScaleMultiplier);
     }
 
@@ -312,8 +313,21 @@ internal static class MaterialItemRegistry
                 continue;
             }
 
+            EnsurePickupScaleEnforcer(pickup.gameObject, PickupScaleMultiplier).Apply();
             EnsurePickupVisualScale(pickup.gameObject, ResolvePickupSprite(pickup), PickupScaleMultiplier);
         }
+    }
+
+    private static MCPickupScaleEnforcer EnsurePickupScaleEnforcer(GameObject root, float multiplier)
+    {
+        var enforcer = root.GetComponent<MCPickupScaleEnforcer>();
+        if (enforcer == null)
+        {
+            enforcer = root.AddComponent<MCPickupScaleEnforcer>();
+        }
+
+        enforcer.Multiplier = multiplier;
+        return enforcer;
     }
 
     private static void EnsurePickupVisualScale(GameObject root, SpriteRenderer? pickupSprite, float multiplier)
