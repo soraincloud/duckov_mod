@@ -26,13 +26,13 @@ internal static class MaterialItemRegistry
     private const int MerchantStock = 99;
     private const float PickupScaleMultiplier = 3f;
     private const float PickupRefreshIntervalSeconds = 0.4f;
-    private const float LootBoxGlassChance = 0.16f;
-    private const float LootBoxIronNuggetChance = 0.10f;
-    private const float LootBoxIronIngotChance = 0.08f;
-    private const float LootBoxGoldNuggetChance = 0.07f;
-    private const float LootBoxGoldIngotChance = 0.05f;
-    private const float LootBoxIronBlockChance = 0.02f;
-    private const float LootBoxGoldBlockChance = 0.01f;
+    private const float LootBoxGlassChance = 0.032f;
+    private const float LootBoxIronNuggetChance = 0.020f;
+    private const float LootBoxIronIngotChance = 0.016f;
+    private const float LootBoxGoldNuggetChance = 0.014f;
+    private const float LootBoxGoldIngotChance = 0.010f;
+    private const float LootBoxIronBlockChance = 0.004f;
+    private const float LootBoxGoldBlockChance = 0.002f;
 
     private static readonly MaterialDefinition[] Definitions =
     {

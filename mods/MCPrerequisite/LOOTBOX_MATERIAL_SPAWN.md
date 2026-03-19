@@ -57,30 +57,30 @@
 - `铁粒`、`金粒` 略高于对应的锭类材料
 - `铁块`、`金块` 明显低于粒和锭
 
-- `玻璃`: `16%`
-- `铁粒`: `10%`
-- `铁锭`: `8%`
-- `铁块`: `2%`
-- `金粒`: `7%`
-- `金锭`: `5%`
-- `金块`: `1%`
-- 未命中任何 MC 材料: `51%`
+- `玻璃`: `3.2%`
+- `铁粒`: `2.0%`
+- `铁锭`: `1.6%`
+- `铁块`: `0.4%`
+- `金粒`: `1.4%`
+- `金锭`: `1.0%`
+- `金块`: `0.2%`
+- 未命中任何 MC 材料: `90.2%`
 
 换句话说，单个容器触发额外 MC 材料补入的总概率为：
 
-`16% + 10% + 8% + 2% + 7% + 5% + 1% = 49%`
+`3.2% + 2.0% + 1.6% + 0.4% + 1.4% + 1.0% + 0.2% = 9.8%`
 
 ## 当前相关常量
 
 当前常量定义在 `MaterialItemRegistry.cs` 中：
 
-- `LootBoxGlassChance = 0.16f`
-- `LootBoxIronNuggetChance = 0.10f`
-- `LootBoxIronIngotChance = 0.08f`
-- `LootBoxIronBlockChance = 0.02f`
-- `LootBoxGoldNuggetChance = 0.07f`
-- `LootBoxGoldIngotChance = 0.05f`
-- `LootBoxGoldBlockChance = 0.01f`
+- `LootBoxGlassChance = 0.032f`
+- `LootBoxIronNuggetChance = 0.020f`
+- `LootBoxIronIngotChance = 0.016f`
+- `LootBoxIronBlockChance = 0.004f`
+- `LootBoxGoldNuggetChance = 0.014f`
+- `LootBoxGoldIngotChance = 0.010f`
+- `LootBoxGoldBlockChance = 0.002f`
 
 如果后续想调整刷新率，直接改这三个值即可。
 
