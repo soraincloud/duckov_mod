@@ -35,6 +35,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         if (_initialized)
         {
+            MaterialItemRegistry.UpdateRuntimeState();
             MCCategoryService.UpdateRuntimeState();
         }
     }

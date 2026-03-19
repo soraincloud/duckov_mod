@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Duckov.Economy;
 using ItemStatsSystem;
 using SodaCraft.Localizations;
@@ -18,15 +19,27 @@ internal static class MaterialItemRegistry
     private const string TargetMerchantId = "Merchant_Equipment";
     private const int MerchantPrice = 1;
     private const int MerchantStock = 99;
+    private const float PickupScaleMultiplier = 3f;
+    private const float PickupRefreshIntervalSeconds = 0.4f;
 
     private static readonly MaterialDefinition[] Definitions =
     {
-        new(MaterialItemRegistry.GlassTypeId, "Item_MCGlass", "玻璃", "常见的建筑材料。", "assets/item-icons/glass.png", "MCPrerequisite_Glass_Icon", "MCGlass_ItemPrefab"),
-        new(MaterialItemRegistry.IronIngotTypeId, "Item_MCIronIngot", "铁锭", "常见的金属材料。", "assets/item-icons/ironIngot.png", "MCPrerequisite_IronIngot_Icon", "MCIronIngot_ItemPrefab"),
-        new(MaterialItemRegistry.GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "较为贵重的金属材料。", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab")
+        new(GlassTypeId, "Item_MCGlass", "玻璃", "常见的建筑材料。", "assets/item-icons/glass.png", "MCPrerequisite_Glass_Icon", "MCGlass_ItemPrefab"),
+        new(IronIngotTypeId, "Item_MCIronIngot", "铁锭", "常见的金属材料。", "assets/item-icons/ironIngot.png", "MCPrerequisite_IronIngot_Icon", "MCIronIngot_ItemPrefab"),
+        new(GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "较为贵重的金属材料。", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab")
     };
 
     private static readonly Dictionary<int, Item> Prefabs = new();
+    private static readonly HashSet<int> ManagedTypeIds = new()
+    {
+        GlassTypeId,
+        IronIngotTypeId,
+        GoldIngotTypeId
+    };
+
+    private static readonly BindingFlags InstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+    private static float _nextPickupRefreshTime;
 
     public static void Initialize(string? modPath)
     {
@@ -50,6 +63,7 @@ internal static class MaterialItemRegistry
                 continue;
             }
 
+            prefab.AgentUtilities.onCreateAgent -= OnManagedItemCreateAgent;
             ItemAssetsCollection.RemoveDynamicEntry(prefab);
             try
             {
@@ -64,10 +78,22 @@ internal static class MaterialItemRegistry
         Prefabs.Clear();
     }
 
+    public static void UpdateRuntimeState()
+    {
+        if (Time.unscaledTime < _nextPickupRefreshTime)
+        {
+            return;
+        }
+
+        _nextPickupRefreshTime = Time.unscaledTime + PickupRefreshIntervalSeconds;
+        RefreshManagedPickupScales();
+    }
+
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         AddToMerchantProfile();
         PatchExistingStockShops();
+        _nextPickupRefreshTime = 0f;
     }
 
     private static void ApplyLocalizationOverrides()
@@ -101,11 +127,88 @@ internal static class MaterialItemRegistry
             item.Value = 1;
             item.Quality = 0;
             item.SetBool("IsSkill", false);
+            item.AgentUtilities.onCreateAgent += OnManagedItemCreateAgent;
 
             go.SetActive(true);
             ItemAssetsCollection.AddDynamicEntry(item);
             Prefabs[definition.TypeId] = item;
         }
+    }
+
+    private static void OnManagedItemCreateAgent(Item sourceItem, ItemAgent newAgent)
+    {
+        if (sourceItem == null || newAgent == null)
+        {
+            return;
+        }
+
+        if (!ManagedTypeIds.Contains(sourceItem.TypeID) || newAgent.AgentType != ItemAgent.AgentTypes.pickUp)
+        {
+            return;
+        }
+
+        EnsurePickupVisualScale(newAgent.gameObject, ResolvePickupSprite(newAgent.GetComponent<InteractablePickup>()), PickupScaleMultiplier);
+    }
+
+    private static void RefreshManagedPickupScales()
+    {
+        var pickups = UnityEngine.Object.FindObjectsOfType<InteractablePickup>();
+        if (pickups == null || pickups.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var pickup in pickups)
+        {
+            if (pickup == null)
+            {
+                continue;
+            }
+
+            var item = pickup.ItemAgent?.Item;
+            if (item == null || !ManagedTypeIds.Contains(item.TypeID))
+            {
+                continue;
+            }
+
+            EnsurePickupVisualScale(pickup.gameObject, ResolvePickupSprite(pickup), PickupScaleMultiplier);
+        }
+    }
+
+    private static void EnsurePickupVisualScale(GameObject root, SpriteRenderer? pickupSprite, float multiplier)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        var fixedScale = Vector3.one * multiplier;
+        if (pickupSprite != null)
+        {
+            pickupSprite.transform.localScale = fixedScale;
+        }
+
+        var spriteRenderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            if (spriteRenderer == null)
+            {
+                continue;
+            }
+
+            spriteRenderer.transform.localScale = fixedScale;
+        }
+    }
+
+    private static SpriteRenderer? ResolvePickupSprite(InteractablePickup? pickup)
+    {
+        if (pickup == null)
+        {
+            return null;
+        }
+
+        var field = pickup.GetType().GetField("sprite", InstanceBindingFlags);
+        return field?.GetValue(pickup) as SpriteRenderer;
     }
 
     private static void AddToMerchantProfile()
@@ -218,7 +321,6 @@ internal static class MaterialItemRegistry
             }
 
             shop.entries.RemoveAll(entry => entry != null && typeIds.Contains(entry.ItemTypeID));
-
             var instances = ReflectionUtil.GetPrivateField<Dictionary<int, Item>>(shop, "itemInstances");
             if (instances == null)
             {
@@ -302,4 +404,5 @@ internal static class MaterialItemRegistry
         public string TextureName { get; }
         public string PrefabName { get; }
     }
+
 }
