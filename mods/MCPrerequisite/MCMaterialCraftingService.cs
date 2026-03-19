@@ -45,6 +45,25 @@ internal static class MCMaterialCraftingService
     private const string FormulaLightBulb = "MCMaterial_Glass_To_LightBulb";
     private const string FormulaUltravioletLamp = "MCMaterial_Glass_To_UltravioletLamp";
     private const string FormulaEnergySavingLamp = "MCMaterial_Glass_To_EnergySavingLamp";
+    private const string FormulaMetalOilBarrel = "MCMaterial_IronIngot_To_MetalOilBarrel";
+    private const string FormulaMetalBucket = "MCMaterial_IronIngot_To_MetalBucket";
+    private const string FormulaPropane = "MCMaterial_IronIngot_To_Propane";
+    private const string FormulaGolfClub = "MCMaterial_IronIngot_To_GolfClub";
+    private const string FormulaPot = "MCMaterial_IronIngot_To_Pot";
+    private const string FormulaSledgeHammer = "MCMaterial_IronIngot_To_SledgeHammer";
+    private const string FormulaCrowbar = "MCMaterial_IronIngot_To_Crowbar";
+    private const string FormulaShovel = "MCMaterial_IronIngot_To_Shovel";
+    private const string FormulaTrap = "MCMaterial_IronIngot_To_Trap";
+    private const string FormulaWrench = "MCMaterial_IronIngot_To_Wrench";
+    private const string FormulaHammer = "MCMaterial_IronIngot_To_Hammer";
+    private const string FormulaFlatScrewdriver = "MCMaterial_IronNugget_To_FlatScrewdriver";
+    private const string FormulaAdvancedWeaponParts = "MCMaterial_IronNugget_To_AdvancedWeaponParts";
+    private const string FormulaMediumWeaponParts = "MCMaterial_IronNugget_To_MediumWeaponParts";
+    private const string FormulaWeaponParts = "MCMaterial_IronNugget_To_WeaponParts";
+    private const string FormulaNut = "MCMaterial_IronNugget_To_Nut";
+    private const string FormulaNail = "MCMaterial_IronNugget_To_Nail";
+    private const string FormulaBolt = "MCMaterial_IronNugget_To_Bolt";
+    private const string FormulaKeroseneLamp = "MCMaterial_GlassAndIron_To_KeroseneLamp";
 
     private static readonly string[] ManagedFormulaIds =
     {
@@ -80,7 +99,26 @@ internal static class MCMaterialCraftingService
         FormulaFlashLight,
         FormulaLightBulb,
         FormulaUltravioletLamp,
-        FormulaEnergySavingLamp
+        FormulaEnergySavingLamp,
+        FormulaMetalOilBarrel,
+        FormulaMetalBucket,
+        FormulaPropane,
+        FormulaGolfClub,
+        FormulaPot,
+        FormulaSledgeHammer,
+        FormulaCrowbar,
+        FormulaShovel,
+        FormulaTrap,
+        FormulaWrench,
+        FormulaHammer,
+        FormulaFlatScrewdriver,
+        FormulaAdvancedWeaponParts,
+        FormulaMediumWeaponParts,
+        FormulaWeaponParts,
+        FormulaNut,
+        FormulaNail,
+        FormulaBolt,
+        FormulaKeroseneLamp
     };
 
     private static readonly ExternalRecipeDefinition[] ExternalRecipes =
@@ -109,7 +147,26 @@ internal static class MCMaterialCraftingService
         new(FormulaFlashLight, "手电", new[] { (MaterialItemRegistry.GlassTypeId, 1L) }, "手电", "手电筒"),
         new(FormulaLightBulb, "灯泡", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "灯泡"),
         new(FormulaUltravioletLamp, "紫外灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "紫外灯"),
-        new(FormulaEnergySavingLamp, "节能灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "节能灯")
+        new(FormulaEnergySavingLamp, "节能灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "节能灯"),
+        new(FormulaMetalOilBarrel, "金属油桶", new[] { (MaterialItemRegistry.IronIngotTypeId, 3L) }, "金属油桶"),
+        new(FormulaMetalBucket, "金属桶", new[] { (MaterialItemRegistry.IronIngotTypeId, 3L) }, "金属桶"),
+        new(FormulaPropane, "丙烷", new[] { (MaterialItemRegistry.IronIngotTypeId, 2L) }, "丙烷"),
+        new(FormulaGolfClub, "高尔夫球棒", new[] { (MaterialItemRegistry.IronIngotTypeId, 2L) }, "高尔夫球棒"),
+        new(FormulaPot, "锅", new[] { (MaterialItemRegistry.IronIngotTypeId, 2L) }, "锅"),
+        new(FormulaSledgeHammer, "大锤子", new[] { (MaterialItemRegistry.IronIngotTypeId, 2L) }, "大锤子"),
+        new(FormulaCrowbar, "撬棍", new[] { (MaterialItemRegistry.IronIngotTypeId, 1L) }, "撬棍"),
+        new(FormulaShovel, "铲子", new[] { (MaterialItemRegistry.IronIngotTypeId, 1L) }, "铲子"),
+        new(FormulaTrap, "捕兽陷阱", new[] { (MaterialItemRegistry.IronIngotTypeId, 1L) }, "捕兽陷阱"),
+        new(FormulaWrench, "扳手", new[] { (MaterialItemRegistry.IronIngotTypeId, 1L) }, "扳手"),
+        new(FormulaHammer, "锤子", new[] { (MaterialItemRegistry.IronIngotTypeId, 1L) }, "锤子"),
+        new(FormulaFlatScrewdriver, "平头螺丝刀", new[] { (MaterialItemRegistry.IronNuggetTypeId, 7L) }, "平头螺丝刀"),
+        new(FormulaAdvancedWeaponParts, "高级武器零件", new[] { (MaterialItemRegistry.IronNuggetTypeId, 7L) }, "高级武器零件"),
+        new(FormulaMediumWeaponParts, "中级武器零件", new[] { (MaterialItemRegistry.IronNuggetTypeId, 7L) }, "中级武器零件"),
+        new(FormulaWeaponParts, "武器零件", new[] { (MaterialItemRegistry.IronNuggetTypeId, 7L) }, "武器零件"),
+        new(FormulaNut, "螺母", new[] { (MaterialItemRegistry.IronNuggetTypeId, 1L) }, "螺母"),
+        new(FormulaNail, "钉子", new[] { (MaterialItemRegistry.IronNuggetTypeId, 1L) }, "钉子"),
+        new(FormulaBolt, "螺栓", new[] { (MaterialItemRegistry.IronNuggetTypeId, 1L) }, "螺栓"),
+        new(FormulaKeroseneLamp, "煤油灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L), (MaterialItemRegistry.IronIngotTypeId, 1L) }, "煤油灯")
     };
 
     private static bool _initialized;
