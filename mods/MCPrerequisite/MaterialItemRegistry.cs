@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Duckov.Utilities;
 using Duckov.Economy;
 using ItemStatsSystem;
 using SodaCraft.Localizations;
@@ -21,6 +22,9 @@ internal static class MaterialItemRegistry
     private const int MerchantStock = 99;
     private const float PickupScaleMultiplier = 3f;
     private const float PickupRefreshIntervalSeconds = 0.4f;
+    private const float LootBoxGlassChance = 0.18f;
+    private const float LootBoxIronChance = 0.10f;
+    private const float LootBoxGoldChance = 0.05f;
 
     private static readonly MaterialDefinition[] Definitions =
     {
@@ -30,6 +34,7 @@ internal static class MaterialItemRegistry
     };
 
     private static readonly Dictionary<int, Item> Prefabs = new();
+    private static readonly HashSet<int> PatchedLootBoxIds = new();
     private static readonly HashSet<int> ManagedTypeIds = new()
     {
         GlassTypeId,
@@ -47,11 +52,13 @@ internal static class MaterialItemRegistry
         CreateAndRegisterItemPrefabs(modPath);
         AddToMerchantProfile();
         PatchExistingStockShops();
+        LevelManager.OnLevelInitialized += OnLevelInitialized;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public static void Deinitialize()
     {
+        LevelManager.OnLevelInitialized -= OnLevelInitialized;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         RemoveFromMerchantProfile();
         UnpatchExistingStockShops();
@@ -76,6 +83,7 @@ internal static class MaterialItemRegistry
         }
 
         Prefabs.Clear();
+        PatchedLootBoxIds.Clear();
     }
 
     public static void UpdateRuntimeState()
@@ -86,14 +94,109 @@ internal static class MaterialItemRegistry
         }
 
         _nextPickupRefreshTime = Time.unscaledTime + PickupRefreshIntervalSeconds;
+        InjectManagedMaterialsIntoLootBoxes();
         RefreshManagedPickupScales();
+    }
+
+    private static void OnLevelInitialized()
+    {
+        InjectManagedMaterialsIntoLootBoxes();
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         AddToMerchantProfile();
         PatchExistingStockShops();
+        PatchedLootBoxIds.Clear();
         _nextPickupRefreshTime = 0f;
+    }
+
+    private static void InjectManagedMaterialsIntoLootBoxes()
+    {
+        var loaders = UnityEngine.Object.FindObjectsOfType<LootBoxLoader>();
+        if (loaders == null || loaders.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var loader in loaders)
+        {
+            if (loader == null)
+            {
+                continue;
+            }
+
+            var loaderId = loader.GetInstanceID();
+            if (PatchedLootBoxIds.Contains(loaderId))
+            {
+                continue;
+            }
+
+            var lootBox = loader.GetComponent<InteractableLootbox>();
+            var inventory = lootBox?.Inventory;
+            if (lootBox == null || inventory == null || inventory.Loading)
+            {
+                continue;
+            }
+
+            if (ContainsManagedMaterial(inventory))
+            {
+                PatchedLootBoxIds.Add(loaderId);
+                continue;
+            }
+
+            var materialTypeId = RollLootBoxMaterialTypeId();
+            PatchedLootBoxIds.Add(loaderId);
+            if (materialTypeId == 0)
+            {
+                continue;
+            }
+
+            var item = ItemAssetsCollection.InstantiateSync(materialTypeId);
+            if (item == null)
+            {
+                continue;
+            }
+
+            if (!inventory.AddItem(item))
+            {
+                inventory.SetCapacity(inventory.Capacity + 1);
+                if (!inventory.AddItem(item))
+                {
+                    UnityEngine.Object.Destroy(item.gameObject);
+                }
+            }
+        }
+    }
+
+    private static bool ContainsManagedMaterial(Inventory inventory)
+    {
+        return inventory.Find(GlassTypeId) != null
+            || inventory.Find(IronIngotTypeId) != null
+            || inventory.Find(GoldIngotTypeId) != null;
+    }
+
+    private static int RollLootBoxMaterialTypeId()
+    {
+        var roll = UnityEngine.Random.Range(0f, 1f);
+        if (roll < LootBoxGlassChance)
+        {
+            return GlassTypeId;
+        }
+
+        roll -= LootBoxGlassChance;
+        if (roll < LootBoxIronChance)
+        {
+            return IronIngotTypeId;
+        }
+
+        roll -= LootBoxIronChance;
+        if (roll < LootBoxGoldChance)
+        {
+            return GoldIngotTypeId;
+        }
+
+        return 0;
     }
 
     private static void ApplyLocalizationOverrides()
