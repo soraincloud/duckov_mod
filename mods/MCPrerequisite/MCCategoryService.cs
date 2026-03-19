@@ -16,6 +16,7 @@ public static class MCCategoryService
     public const string SharedCategoryTagName = "ModWorkbench_Mystic";
     public const string SharedCategoryDisplayNameKey = "CraftFilter_ModMystic";
     public const string MaterialCategoryTagName = "InventoryFilter_MCMaterialTag";
+    public const string MaterialCraftOnlyTagName = "CraftFilter_MCMaterialOnlyTag";
     public const string MaterialCategoryDisplayNameKey = "InventoryFilter_MCMaterial";
     public const string MaterialCraftCategoryDisplayNameKey = "CraftFilter_MCMaterial";
     private const float RuntimeRefreshIntervalSeconds = 0.5f;
@@ -48,6 +49,7 @@ public static class MCCategoryService
     private static string? _modPath;
     private static Tag? _sharedCategoryTag;
     private static Tag? _materialCategoryTag;
+    private static Tag? _materialCraftOnlyTag;
     private static Sprite? _sharedCategoryIcon;
     private static Sprite? _materialCategoryIcon;
     private static bool _runtimeRefreshPending;
@@ -90,6 +92,7 @@ public static class MCCategoryService
         _modPath = null;
         _sharedCategoryTag = null;
         _materialCategoryTag = null;
+        _materialCraftOnlyTag = null;
         _runtimeRefreshPending = false;
         _remainingRuntimeRefreshAttempts = 0;
         _nextRuntimeRefreshTime = 0f;
@@ -182,6 +185,7 @@ public static class MCCategoryService
             var sharedFilterTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
             var sharedFilterIcon = TryLoadSharedCategoryIconSprite(_modPath);
             var materialFilterTag = GetOrCreateCategoryTag(MaterialCategoryTagName);
+            var materialCraftOnlyTag = GetOrCreateCategoryTag(MaterialCraftOnlyTagName);
             var materialFilterIcon = TryLoadMaterialCategoryIconSprite(_modPath);
             var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
             if (craftViews == null || craftViews.Length == 0)
@@ -198,6 +202,7 @@ public static class MCCategoryService
 
                 EnsureCraftViewHasCategoryFilter(craftView, sharedFilterTag, sharedFilterIcon, SharedCategoryDisplayNameKey, SharedCategoryTagName);
                 EnsureCraftViewHasCategoryFilter(craftView, materialFilterTag, materialFilterIcon, MaterialCraftCategoryDisplayNameKey, MaterialCategoryTagName);
+                EnsureCraftViewFilterIncludesTag(craftView, MaterialCategoryTagName, materialCraftOnlyTag);
             }
         }
         catch (Exception e)
@@ -308,6 +313,28 @@ public static class MCCategoryService
         }
 
         return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, tagName));
+    }
+
+    private static void EnsureCraftViewFilterIncludesTag(CraftView craftView, string tagName, Tag filterTag)
+    {
+        var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
+        var updatedFilters = filters.ToList();
+        var index = updatedFilters.FindIndex(filter => HasCraftCategoryFilter(filter, tagName));
+        if (index < 0)
+        {
+            return;
+        }
+
+        var existing = updatedFilters[index];
+        var mergedTags = MergeFilterTags(existing.requireTags, filterTag);
+        if (ReferenceEquals(existing.requireTags, mergedTags))
+        {
+            return;
+        }
+
+        existing.requireTags = mergedTags;
+        updatedFilters[index] = existing;
+        ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
     }
 
     private static void EnsureInventoryHasCategoryFilter(InventoryFilterProvider provider, Tag filterTag, Sprite? filterIcon, string displayNameKey, string tagName)
@@ -437,6 +464,80 @@ public static class MCCategoryService
         }
     }
 
+    public static void EnsureCraftOnlyCategoryTagged(IEnumerable<int> typeIds)
+    {
+        if (typeIds == null)
+        {
+            return;
+        }
+
+        var craftOnlyTag = GetOrCreateCategoryTag(MaterialCraftOnlyTagName);
+        foreach (var typeId in typeIds)
+        {
+            if (typeId <= 0)
+            {
+                continue;
+            }
+
+            if (TryPatchDynamicItem(typeId, craftOnlyTag))
+            {
+                continue;
+            }
+
+            TryPatchStaticItem(typeId, craftOnlyTag);
+        }
+
+        var liveItems = Resources.FindObjectsOfTypeAll<Item>();
+        if (liveItems == null || liveItems.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var item in liveItems)
+        {
+            if (item != null && typeIds.Contains(item.TypeID))
+            {
+                TryAttachCategoryTag(item, craftOnlyTag);
+            }
+        }
+    }
+
+    private static bool TryPatchStaticItem(int typeId, Tag tag)
+    {
+        var collection = ItemAssetsCollection.Instance;
+        if (collection?.entries == null)
+        {
+            return false;
+        }
+
+        var entry = collection.entries.FirstOrDefault(value => value != null && value.typeID == typeId);
+        if (entry == null)
+        {
+            return false;
+        }
+
+        var changed = false;
+        if (entry.prefab != null)
+        {
+            changed |= TryAttachCategoryTag(entry.prefab, tag);
+        }
+
+        if (entry.metaData.tags == null)
+        {
+            entry.metaData.tags = new[] { tag };
+            changed = true;
+        }
+        else if (!entry.metaData.tags.Any(existing => existing != null && existing.Hash == tag.Hash))
+        {
+            var tags = entry.metaData.tags.ToList();
+            tags.Add(tag);
+            entry.metaData.tags = tags.ToArray();
+            changed = true;
+        }
+
+        return changed;
+    }
+
     private static bool TryPatchDynamicItem(int typeId, Tag sharedTag)
     {
         var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
@@ -497,12 +598,22 @@ public static class MCCategoryService
             return _materialCategoryTag;
         }
 
+        if (string.Equals(tagName, MaterialCraftOnlyTagName, StringComparison.Ordinal) && _materialCraftOnlyTag != null)
+        {
+            return _materialCraftOnlyTag;
+        }
+
         var existingTag = GameplayDataSettings.Tags?.AllTags?.FirstOrDefault(tag => tag != null && Tag.Match(tag, tagName));
         if (existingTag != null)
         {
             if (string.Equals(tagName, MaterialCategoryTagName, StringComparison.Ordinal))
             {
                 _materialCategoryTag = existingTag;
+            }
+
+            if (string.Equals(tagName, MaterialCraftOnlyTagName, StringComparison.Ordinal))
+            {
+                _materialCraftOnlyTag = existingTag;
             }
 
             return existingTag;
@@ -515,6 +626,11 @@ public static class MCCategoryService
         if (string.Equals(tagName, MaterialCategoryTagName, StringComparison.Ordinal))
         {
             _materialCategoryTag = runtimeTag;
+        }
+
+        if (string.Equals(tagName, MaterialCraftOnlyTagName, StringComparison.Ordinal))
+        {
+            _materialCraftOnlyTag = runtimeTag;
         }
 
         return runtimeTag;
