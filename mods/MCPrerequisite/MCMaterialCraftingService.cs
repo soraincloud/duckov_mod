@@ -28,6 +28,23 @@ internal static class MCMaterialCraftingService
     private const string FormulaPointTwoBTC = "MCMaterial_GoldIngot_To_PointTwoBTC";
     private const string FormulaGoldenPentagram = "MCMaterial_GoldIngot_To_GoldenPentagram";
     private const string FormulaGoldRing = "MCMaterial_GoldIngot_To_GoldRing";
+    private const string FormulaBlackWhiteDisplay = "MCMaterial_Materials_To_BlackWhiteDisplay";
+    private const string FormulaWhiskey = "MCMaterial_Glass_To_Whiskey";
+    private const string FormulaThermite = "MCMaterial_Glass_To_Thermite";
+    private const string FormulaVodka = "MCMaterial_Glass_To_Vodka";
+    private const string FormulaKetchup = "MCMaterial_Glass_To_Ketchup";
+    private const string FormulaInk = "MCMaterial_Glass_To_Ink";
+    private const string FormulaTelescope = "MCMaterial_IronNugget_To_Telescope";
+    private const string FormulaShinyGlasses = "MCMaterial_IronNugget_To_ShinyGlasses";
+    private const string FormulaSunGlasses = "MCMaterial_IronNugget_To_SunGlasses";
+    private const string FormulaBlackGlasses = "MCMaterial_IronNugget_To_BlackGlasses";
+    private const string FormulaSkiGoggles = "MCMaterial_IronNugget_To_SkiGoggles";
+    private const string FormulaSyringe = "MCMaterial_Glass_To_Syringe";
+    private const string FormulaClock = "MCMaterial_Glass_To_Clock";
+    private const string FormulaFlashLight = "MCMaterial_Glass_To_FlashLight";
+    private const string FormulaLightBulb = "MCMaterial_Glass_To_LightBulb";
+    private const string FormulaUltravioletLamp = "MCMaterial_Glass_To_UltravioletLamp";
+    private const string FormulaEnergySavingLamp = "MCMaterial_Glass_To_EnergySavingLamp";
 
     private static readonly string[] ManagedFormulaIds =
     {
@@ -46,19 +63,53 @@ internal static class MCMaterialCraftingService
         FormulaAprilTrophy,
         FormulaPointTwoBTC,
         FormulaGoldenPentagram,
-        FormulaGoldRing
+        FormulaGoldRing,
+        FormulaBlackWhiteDisplay,
+        FormulaWhiskey,
+        FormulaThermite,
+        FormulaVodka,
+        FormulaKetchup,
+        FormulaInk,
+        FormulaTelescope,
+        FormulaShinyGlasses,
+        FormulaSunGlasses,
+        FormulaBlackGlasses,
+        FormulaSkiGoggles,
+        FormulaSyringe,
+        FormulaClock,
+        FormulaFlashLight,
+        FormulaLightBulb,
+        FormulaUltravioletLamp,
+        FormulaEnergySavingLamp
     };
 
-    private static readonly ExternalGoldRecipeDefinition[] ExternalGoldRecipes =
+    private static readonly ExternalRecipeDefinition[] ExternalRecipes =
     {
-        new(FormulaGoldenDumbbell, 16, "黄金哑铃", "黄金哑铃"),
-        new(FormulaGoldPoop, 8, "金粑粑", "金粑粑"),
-        new(FormulaPureGoldBadge, 6, "纯金徽章", "纯金徽章"),
-        new(FormulaPeaceStar, 6, "和平星", "和平星"),
-        new(FormulaAprilTrophy, 3, "奖杯四月", "奖杯四月", "奖杯 四月", "四月奖杯", "奖杯4月", "奖杯（四月）"),
-        new(FormulaPointTwoBTC, 3, "0.2BTC", "0.2BTC", "02BTC"),
-        new(FormulaGoldenPentagram, 2, "金色五角星", "金色五角星"),
-        new(FormulaGoldRing, 2, "金戒指", "金戒指")
+        new(FormulaGoldenDumbbell, "黄金哑铃", new[] { (MaterialItemRegistry.GoldIngotTypeId, 16L) }, "黄金哑铃"),
+        new(FormulaGoldPoop, "金粑粑", new[] { (MaterialItemRegistry.GoldIngotTypeId, 8L) }, "金粑粑"),
+        new(FormulaPureGoldBadge, "纯金徽章", new[] { (MaterialItemRegistry.GoldIngotTypeId, 6L) }, "纯金徽章"),
+        new(FormulaPeaceStar, "和平星", new[] { (MaterialItemRegistry.GoldIngotTypeId, 6L) }, "和平星"),
+        new(FormulaAprilTrophy, "奖杯四月", new[] { (MaterialItemRegistry.GoldIngotTypeId, 3L) }, "奖杯四月", "奖杯 四月", "四月奖杯", "奖杯4月", "奖杯（四月）"),
+        new(FormulaPointTwoBTC, "0.2BTC", new[] { (MaterialItemRegistry.GoldIngotTypeId, 3L) }, "0.2BTC", "02BTC"),
+        new(FormulaGoldenPentagram, "金色五角星", new[] { (MaterialItemRegistry.GoldIngotTypeId, 2L) }, "金色五角星"),
+        new(FormulaGoldRing, "金戒指", new[] { (MaterialItemRegistry.GoldIngotTypeId, 2L) }, "金戒指"),
+        new(FormulaBlackWhiteDisplay, "黑白显示器", new[] { (MaterialItemRegistry.GlassTypeId, 5L), (MaterialItemRegistry.IronIngotTypeId, 3L) }, "黑白显示器"),
+        new(FormulaWhiskey, "威士忌", new[] { (MaterialItemRegistry.GlassTypeId, 4L) }, "威士忌"),
+        new(FormulaThermite, "铝热剂", new[] { (MaterialItemRegistry.GlassTypeId, 4L) }, "铝热剂"),
+        new(FormulaVodka, "伏特加", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "伏特加"),
+        new(FormulaKetchup, "番茄酱", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "番茄酱"),
+        new(FormulaInk, "墨水", new[] { (MaterialItemRegistry.GlassTypeId, 2L) }, "墨水"),
+        new(FormulaTelescope, "望远镜", new[] { (MaterialItemRegistry.IronNuggetTypeId, 4L) }, "望远镜"),
+        new(FormulaShinyGlasses, "闪光的眼镜", new[] { (MaterialItemRegistry.IronNuggetTypeId, 4L) }, "闪光的眼镜", "闪光眼镜"),
+        new(FormulaSunGlasses, "太阳镜", new[] { (MaterialItemRegistry.IronNuggetTypeId, 4L) }, "太阳镜"),
+        new(FormulaBlackGlasses, "黑色眼镜", new[] { (MaterialItemRegistry.IronNuggetTypeId, 4L) }, "黑色眼镜"),
+        new(FormulaSkiGoggles, "滑雪镜", new[] { (MaterialItemRegistry.IronNuggetTypeId, 4L) }, "滑雪镜"),
+        new(FormulaSyringe, "注射器", new[] { (MaterialItemRegistry.GlassTypeId, 1L) }, "注射器"),
+        new(FormulaClock, "闹钟", new[] { (MaterialItemRegistry.GlassTypeId, 1L) }, "闹钟"),
+        new(FormulaFlashLight, "手电", new[] { (MaterialItemRegistry.GlassTypeId, 1L) }, "手电", "手电筒"),
+        new(FormulaLightBulb, "灯泡", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "灯泡"),
+        new(FormulaUltravioletLamp, "紫外灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "紫外灯"),
+        new(FormulaEnergySavingLamp, "节能灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L) }, "节能灯")
     };
 
     private static bool _initialized;
@@ -135,7 +186,7 @@ internal static class MCMaterialCraftingService
         yield return BuildFormula(FormulaIronIngotToNugget, MaterialItemRegistry.IronNuggetTypeId, 9, MaterialItemRegistry.IronIngotTypeId, 1, compatibleTags);
         yield return BuildFormula(FormulaIronBlockToIngot, MaterialItemRegistry.IronIngotTypeId, 9, MaterialItemRegistry.IronBlockTypeId, 1, compatibleTags);
 
-        foreach (var recipe in ExternalGoldRecipes)
+        foreach (var recipe in ExternalRecipes)
         {
             var resultTypeId = ResolveTypeId(recipe.Label, recipe.Candidates);
             if (resultTypeId < 0)
@@ -144,7 +195,7 @@ internal static class MCMaterialCraftingService
             }
 
             craftOnlyCategoryIds.Add(resultTypeId);
-            yield return BuildFormula(recipe.FormulaId, resultTypeId, 1, MaterialItemRegistry.GoldIngotTypeId, recipe.GoldIngotCost, compatibleTags);
+            yield return BuildFormula(recipe.FormulaId, resultTypeId, 1, recipe.Costs, compatibleTags);
         }
 
         if (craftOnlyCategoryIds.Count > 0)
@@ -155,6 +206,11 @@ internal static class MCMaterialCraftingService
 
     private static CraftingFormula BuildFormula(string formulaId, int resultId, int resultAmount, int ingredientId, long ingredientAmount, string[] compatibleTags)
     {
+        return BuildFormula(formulaId, resultId, resultAmount, new[] { (ingredientId, ingredientAmount) }, compatibleTags);
+    }
+
+    private static CraftingFormula BuildFormula(string formulaId, int resultId, int resultAmount, IReadOnlyList<(int itemTypeId, long amount)> costs, string[] compatibleTags)
+    {
         return new CraftingFormula
         {
             id = formulaId,
@@ -164,7 +220,7 @@ internal static class MCMaterialCraftingService
                 amount = resultAmount
             },
             tags = compatibleTags,
-            cost = new Cost((ingredientId, ingredientAmount)),
+            cost = new Cost(costs.Select(entry => (entry.itemTypeId, entry.amount)).ToArray()),
             unlockByDefault = true,
             lockInDemo = false,
             requirePerk = string.Empty,
@@ -315,19 +371,19 @@ internal static class MCMaterialCraftingService
         return new string(chars);
     }
 
-    private readonly struct ExternalGoldRecipeDefinition
+    private readonly struct ExternalRecipeDefinition
     {
-        public ExternalGoldRecipeDefinition(string formulaId, long goldIngotCost, string label, params string[] candidates)
+        public ExternalRecipeDefinition(string formulaId, string label, IReadOnlyList<(int itemTypeId, long amount)> costs, params string[] candidates)
         {
             FormulaId = formulaId;
-            GoldIngotCost = goldIngotCost;
             Label = label;
+            Costs = costs;
             Candidates = candidates;
         }
 
         public string FormulaId { get; }
-        public long GoldIngotCost { get; }
         public string Label { get; }
+        public IReadOnlyList<(int itemTypeId, long amount)> Costs { get; }
         public string[] Candidates { get; }
     }
 }
