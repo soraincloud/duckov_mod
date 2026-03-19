@@ -138,7 +138,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Icon = GoldenAppleEnchantedIcon.Create(baseIcon);
         item.MaxStackCount = 8;
         item.Value = 1;
-        item.Quality = 3;
+        item.Quality = 5;
         item.SetBool("IsSkill", false);
         ReflectionUtil.SetPrivateField(item, "weight", GoldenAppleWeightKg);
 

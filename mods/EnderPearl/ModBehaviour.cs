@@ -115,7 +115,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreatePearlIcon();
         item.MaxStackCount = 16;
         item.Value = 1;
-        item.Quality = 0;
+        item.Quality = 2;
 
         // 标记为“技能物品”：快捷栏会走 ChangeHoldItem（拿在手上），从而支持手雷式按住/松手
         item.SetBool("IsSkill", true);

@@ -114,7 +114,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreatePearlIcon();
         item.MaxStackCount = 8;
         item.Value = 1;
-        item.Quality = 0;
+        item.Quality = 2;
 
         item.SetBool("IsSkill", true);
 
