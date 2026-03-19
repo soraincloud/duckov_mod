@@ -112,7 +112,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static void ApplyLocalizationOverrides()
     {
         LocalizationManager.SetOverrideText(DisplayNameKey, "不死图腾");
-        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "放入图腾槽位后生效。\n当你受到致命伤害时：\n- 消耗 1 个图腾\n- 免除本次死亡\n- 恢复 30% 最大生命\n- 获得 5 秒无敌\n");
+        LocalizationManager.SetOverrideText(DisplayNameKey + "_Desc", "用最好的载体把各种灵魂能量杂糅在一起后产生的异界物品，居然可以达到起死回生的效果，但是仅仅只是一次起死回生就要消耗数不清鸭鸭的生命，这是否值得呢。在装备至图腾位置后，受到致命伤害时以损坏该物品为代价挽回你的生命，因为灵魂能量过于强大，在装备后你感觉到身体也轻飘飘的。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)

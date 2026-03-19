@@ -113,7 +113,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         LocalizationManager.SetOverrideText(DisplayNameKey, "附魔金苹果");
         LocalizationManager.SetOverrideText(
             DisplayNameKey + "_Desc",
-            "食用后获得三段增益：\n- 生命上限 +30，持续 2 分钟\n- 每秒回复 15 点生命，持续 30 秒\n- 头甲 +1.5、身甲 +1.5，持续 5 分钟\n\n左下角状态栏会显示对应增益与剩余时间。额外生命上限会直接提高血量上限，但当前版本不会单独显示为黄色血条。兼容 MC 前置分类。"
+            "鸭星的苹果意外的和异界的金属有很好的相性，把它们凑近以后就会产生反应，当这些金属达到一定量了之后便会完全包裹在苹果上，焕发梦幻一般的光泽，食用这个苹果的鸭鸭会感到自己的生命会变得前所未有的强劲，虽然不能提升自己的力量，但是可以把食用者肉体的强度短暂的提升到非常恐怖的程度。"
         );
 
         LocalizationManager.SetOverrideText("Buff_GoldenApple_MaxHealth", "附魔金苹果：生命上限");

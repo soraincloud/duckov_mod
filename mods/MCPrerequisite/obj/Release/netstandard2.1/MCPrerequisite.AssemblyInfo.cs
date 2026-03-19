@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MCPrerequisite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7dae609237cca8e7f17dae8875ab9591558382f9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d951cc9b77036eeadbd32ce92a5b7e80cc64af79")]
 [assembly: System.Reflection.AssemblyProductAttribute("MCPrerequisite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MCPrerequisite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

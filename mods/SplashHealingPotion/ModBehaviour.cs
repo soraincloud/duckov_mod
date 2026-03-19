@@ -94,7 +94,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static void ApplyLocalizationOverrides()
     {
         LocalizationManager.SetOverrideText("Item_SplashHealingPotion", "喷溅治疗药水");
-        LocalizationManager.SetOverrideText("Item_SplashHealingPotion_Desc", "手持后：按住显示投掷线，松手投掷。\n落地时在范围内对所有拥有生命值的目标施加 50% 最大生命值的负数伤害，也就是治疗效果，并爆开带发白高光感的莓果玫红粒子。");
+        LocalizationManager.SetOverrideText("Item_SplashHealingPotion_Desc", "把恢复针内的药液用来自异界的玻璃装满后居然可以更便捷的使用，虽然总治疗量有所降低，但是在应急方面比恢复针的效果好多了，使用后可以把药效扩散到一定范围内，让范围内的所有目标恢复50%最大生命值的血量。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)

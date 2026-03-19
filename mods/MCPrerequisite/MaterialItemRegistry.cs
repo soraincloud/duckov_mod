@@ -36,13 +36,13 @@ internal static class MaterialItemRegistry
 
     private static readonly MaterialDefinition[] Definitions =
     {
-        new(GlassTypeId, "Item_MCGlass", "玻璃", "常见的建筑材料。", "assets/item-icons/glass.png", "MCPrerequisite_Glass_Icon", "MCGlass_ItemPrefab"),
-        new(IronNuggetTypeId, "Item_MCIronNugget", "铁粒", "细碎的铁材料。", "assets/item-icons/ironNugget.png", "MCPrerequisite_IronNugget_Icon", "MCIronNugget_ItemPrefab"),
-        new(IronIngotTypeId, "Item_MCIronIngot", "铁锭", "常见的金属材料。", "assets/item-icons/ironIngot.png", "MCPrerequisite_IronIngot_Icon", "MCIronIngot_ItemPrefab"),
-        new(IronBlockTypeId, "Item_MCIronBlock", "铁块", "压实后的铁材料。", "assets/item-icons/ironBlock.png", "MCPrerequisite_IronBlock_Icon", "MCIronBlock_ItemPrefab"),
-        new(GoldNuggetTypeId, "Item_MCGoldNugget", "金粒", "细碎的贵重金属材料。", "assets/item-icons/goldNugget.png", "MCPrerequisite_GoldNugget_Icon", "MCGoldNugget_ItemPrefab"),
-        new(GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "较为贵重的金属材料。", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab"),
-        new(GoldBlockTypeId, "Item_MCGoldBlock", "金块", "压实后的贵重金属材料。", "assets/item-icons/goldBlock.png", "MCPrerequisite_GoldBlock_Icon", "MCGoldBlock_ItemPrefab")
+        new(GlassTypeId, "Item_MCGlass", "玻璃", "来自异界的玻璃，构成与鸭星的玻璃相似，但是具有很多充满魔力的“特性”", "assets/item-icons/glass.png", "MCPrerequisite_Glass_Icon", "MCGlass_ItemPrefab"),
+        new(IronNuggetTypeId, "Item_MCIronNugget", "铁粒", "小块来自异界的铁，以一定方式拼合后会自己融合成一块完整的铁锭", "assets/item-icons/ironNugget.png", "MCPrerequisite_IronNugget_Icon", "MCIronNugget_ItemPrefab"),
+        new(IronIngotTypeId, "Item_MCIronIngot", "铁锭", "来自异界的铁，作用与一般的铁没有什么区别，但是把它们以特定方式拼合后会融合成来自异界的装备", "assets/item-icons/ironIngot.png", "MCPrerequisite_IronIngot_Icon", "MCIronIngot_ItemPrefab"),
+        new(IronBlockTypeId, "Item_MCIronBlock", "铁块", "大块来自异界的铁，施加一定的外力就会被拆解成九块标准大小的铁锭，占用空间相比铁锭大大减少，很适合用于存储", "assets/item-icons/ironBlock.png", "MCPrerequisite_IronBlock_Icon", "MCIronBlock_ItemPrefab"),
+        new(GoldNuggetTypeId, "Item_MCGoldNugget", "金粒", "小块来自异界的金，以一定方式拼合后会自己融合成一块完整的金锭", "assets/item-icons/goldNugget.png", "MCPrerequisite_GoldNugget_Icon", "MCGoldNugget_ItemPrefab"),
+        new(GoldIngotTypeId, "Item_MCGoldIngot", "金锭", "来自异界的金，并不适合用来打造装备，具有一定的“魔力”，可以和许多其他物品融合让它们产生意想不到的效果", "assets/item-icons/goldIngot.png", "MCPrerequisite_GoldIngot_Icon", "MCGoldIngot_ItemPrefab"),
+        new(GoldBlockTypeId, "Item_MCGoldBlock", "金块", "大块来自异界的金，施加一定的外力就会被拆解成九块标准大小的金锭，占用空间相比金锭大大减少，很适合用于存储", "assets/item-icons/goldBlock.png", "MCPrerequisite_GoldBlock_Icon", "MCGoldBlock_ItemPrefab")
     };
 
     private static readonly Dictionary<int, Item> Prefabs = new();

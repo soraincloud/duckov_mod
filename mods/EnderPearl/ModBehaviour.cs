@@ -95,7 +95,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         // Item.DisplayNameRaw 是本地化 key（Items 表），Description key 是 DisplayNameRaw + "_Desc"
         LocalizationManager.SetOverrideText("Item_EnderPearl", "末影珍珠");
-        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "手持后：按住显示投掷线，松手投掷。\n落地瞬间将你传送到落点。");
+        LocalizationManager.SetOverrideText("Item_EnderPearl_Desc", "把风暴能量融合在一块后产生的异界物品，看起来就不是一个画风的，使用后可以把使用者传送到目标点位置，不知道为什么把塑料块拼装成一样的形状染上一样的颜色后也可以达到相同的效果，但是对形状标准与颜色选择有极高的要求。");
     }
 
     private static void CreateAndRegisterItemPrefab(string? modPath)
