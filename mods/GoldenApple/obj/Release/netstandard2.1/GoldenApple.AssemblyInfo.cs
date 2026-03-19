@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GoldenApple")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d951cc9b77036eeadbd32ce92a5b7e80cc64af79")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6de6ee73289379c3507532e7a9c901dbbf0d3d0e")]
 [assembly: System.Reflection.AssemblyProductAttribute("GoldenApple")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GoldenApple")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
