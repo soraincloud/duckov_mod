@@ -12,6 +12,7 @@
 ## 职责
 
 - 在工作台 `CraftView` 中注入 `MC` 分类过滤按钮
+- 在工作台 `CraftView` 中注入 `MC材料` 分类过滤按钮
 - 在仓库 `InventoryFilterProvider` 中注入 `MC` 分类过滤按钮
 - 在仓库 `InventoryFilterProvider` 中注入 `MC材料` 分类过滤按钮
 - 统一提供共享分类贴图资源（`grass.png`、`ironIngot.png`）
@@ -28,3 +29,4 @@
 ## 附加说明
 
 - 地图容器随机刷新中追加 `玻璃`、`铁粒`、`铁锭`、`铁块`、`金粒`、`金锭`、`金块` 的实现方式与概率说明见 `LOOTBOX_MATERIAL_SPAWN.md`
+- `MC材料` 工作台分类会显示共享材料互转配方，例如粒、锭、块之间的双向换算

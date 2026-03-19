@@ -17,6 +17,7 @@ public static class MCCategoryService
     public const string SharedCategoryDisplayNameKey = "CraftFilter_ModMystic";
     public const string MaterialCategoryTagName = "InventoryFilter_MCMaterialTag";
     public const string MaterialCategoryDisplayNameKey = "InventoryFilter_MCMaterial";
+    public const string MaterialCraftCategoryDisplayNameKey = "CraftFilter_MCMaterial";
     private const float RuntimeRefreshIntervalSeconds = 0.5f;
     private const int StartupRefreshAttempts = 6;
     private const int SceneRefreshAttempts = 8;
@@ -58,6 +59,7 @@ public static class MCCategoryService
         _modPath = modPath;
         LocalizationManager.SetOverrideText(SharedCategoryDisplayNameKey, "MC");
         LocalizationManager.SetOverrideText(MaterialCategoryDisplayNameKey, "MC材料");
+        LocalizationManager.SetOverrideText(MaterialCraftCategoryDisplayNameKey, "MC材料");
 
         if (_initialized)
         {
@@ -177,8 +179,10 @@ public static class MCCategoryService
     {
         try
         {
-            var filterTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
-            var filterIcon = TryLoadSharedCategoryIconSprite(_modPath);
+            var sharedFilterTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
+            var sharedFilterIcon = TryLoadSharedCategoryIconSprite(_modPath);
+            var materialFilterTag = GetOrCreateCategoryTag(MaterialCategoryTagName);
+            var materialFilterIcon = TryLoadMaterialCategoryIconSprite(_modPath);
             var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
             if (craftViews == null || craftViews.Length == 0)
             {
@@ -192,7 +196,8 @@ public static class MCCategoryService
                     continue;
                 }
 
-                EnsureCraftViewHasSharedCategoryFilter(craftView, filterTag, filterIcon);
+                EnsureCraftViewHasCategoryFilter(craftView, sharedFilterTag, sharedFilterIcon, SharedCategoryDisplayNameKey, SharedCategoryTagName);
+                EnsureCraftViewHasCategoryFilter(craftView, materialFilterTag, materialFilterIcon, MaterialCraftCategoryDisplayNameKey, MaterialCategoryTagName);
             }
         }
         catch (Exception e)
@@ -231,15 +236,15 @@ public static class MCCategoryService
         }
     }
 
-    private static void EnsureCraftViewHasSharedCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon)
+    private static void EnsureCraftViewHasCategoryFilter(CraftView craftView, Tag filterTag, Sprite? filterIcon, string displayNameKey, string tagName)
     {
         var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
         var updatedFilters = filters.ToList();
-        var index = updatedFilters.FindIndex(HasSharedCategoryFilter);
+        var index = updatedFilters.FindIndex(filter => HasCraftCategoryFilter(filter, tagName));
         var changed = false;
         var filterInfo = new CraftView.FilterInfo
         {
-            displayNameKey = SharedCategoryDisplayNameKey,
+            displayNameKey = displayNameKey,
             icon = filterIcon,
             requireTags = new[] { filterTag }
         };
@@ -295,14 +300,14 @@ public static class MCCategoryService
         }
     }
 
-    private static bool HasSharedCategoryFilter(CraftView.FilterInfo filter)
+    private static bool HasCraftCategoryFilter(CraftView.FilterInfo filter, string tagName)
     {
         if (filter.requireTags == null)
         {
             return false;
         }
 
-        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, SharedCategoryTagName));
+        return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, tagName));
     }
 
     private static void EnsureInventoryHasCategoryFilter(InventoryFilterProvider provider, Tag filterTag, Sprite? filterIcon, string displayNameKey, string tagName)
