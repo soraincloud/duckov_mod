@@ -9,6 +9,7 @@ public class EnderPearlProjectile : MonoBehaviour
 {
     private const float HealPercent = 0.5f;
     private const float HealRadius = 2.8f;
+    private const float HealArmorPiercing = 99f;
     private const float ArmDelaySeconds = 0.12f;
     private const int SplashFxPoolMax = 6;
 
@@ -212,6 +213,7 @@ public class EnderPearlProjectile : MonoBehaviour
             var damageInfo = new DamageInfo(_owner)
             {
                 damageValue = -Mathf.Max(1f, health.MaxHealth * HealPercent),
+                armorPiercing = HealArmorPiercing,
                 isExplosion = true,
                 fromWeaponItemID = ModBehaviour.EnderPearlTypeId,
                 damagePoint = targetPosition,
