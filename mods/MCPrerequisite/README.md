@@ -9,6 +9,8 @@
 - `GoldenApple`
 - `SplashHealingPotion`
 
+说明：以上 4 个 MC 系列物品模块当前已经统一收拢到顶层发布目录 `mods/MCItems/` 中，对外以单一 Mod 形式加载；这里只保留它们作为“逻辑接入项”的说明。
+
 ## 职责
 
 - 在工作台 `CraftView` 中注入 `MC` 分类过滤按钮

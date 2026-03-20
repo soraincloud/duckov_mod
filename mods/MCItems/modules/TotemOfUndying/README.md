@@ -1,0 +1,69 @@
+# 不死图腾（TotemOfUndying）
+
+版本号：v1.0.0  
+更新日期：2026-03-17
+更新内容：修复退出并重新进入游戏后，放在图腾栏位中的不死图腾会消失的问题。
+
+## Mod 简介
+
+功能介绍：
+- 新增物品「不死图腾」
+- 仅在图腾槽位生效（兼容 `Totem` / `SoulCube` 命名）
+- 角色受到致命伤害时自动触发保命效果
+- 工作台与仓库新增独立的 `MC` 物品分类
+- 修复物品掉落时可能引发的模型冲突问题
+
+触发效果：
+- 消耗 1 个图腾
+- 免除本次死亡
+- 恢复 30% 最大生命
+- 获得 5 秒无敌
+- 同时爆发黄色 + 绿色粒子
+
+额外属性：
+- 行走速度 +8%
+- 奔跑速度 +8%
+
+获取方式：
+- NPC 橘子处购买（装备商人 `Merchant_Equipment`），售价 `$8400`
+- 工作台可制作
+
+本次更新：
+- 修复退出并重新进入游戏后，放在图腾栏位中的不死图腾会消失的问题
+
+开发者：soraincloud  
+策划：吱吱歪
+
+声明：本 Mod 为开源项目，使用 AI 辅助开发。
+
+## 构建
+
+需要设置 Duckov 安装路径（包含 `Duckov.app` 的目录），例如：
+
+```bash
+export DUCKOV_PATH="/path/to/Escape from Duckov"
+dotnet build mods/TotemOfUndying/TotemOfUndying.csproj -c Release
+```
+
+构建完成后会自动把 `TotemOfUndying.dll` 复制到本目录（与 `info.ini` 同级）。
+
+## 一键部署（本地测试）
+
+```bash
+export DUCKOV_PATH="/path/to/Escape from Duckov"
+bash mods/TotemOfUndying/deploy.sh
+```
+
+## 贴图/模型说明
+
+你可以先不提供资源，功能不受影响：
+- 物品贴图：优先使用 `assets/item-icons/TotemOfUndying.png`，缺失时回退到 `icon.png`，再缺失则使用运行时占位图标
+- 3D 模型与预览图：可后续补齐
+
+注意（重要）：
+- 当前 TotemOfUndying 运行时会尝试从 `assets/bundles/models/`（以及若干候选路径）加载模型 AssetBundle。
+- 若 bundle 缺失或未找到 `TotemOfUndying_PickupModel` 预制体，将回退到运行时默认模型，保证触发时可见并旋转。
+
+## TypeID
+
+当前固定为：`900011`（如有冲突，可改 `ModBehaviour.cs` 中常量）。

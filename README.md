@@ -6,11 +6,13 @@
 
 - **sample/**：官方 Mod 示例与文档（主要参考来源）
 - **mods/**：你正在开发的各个 Mod（工作目录）
+- **archive/**：已被合并或替代的旧 Mod 目录（归档保留）
 - **game-src/**：解包的游戏文件（仅在需要确认类型/资源/签名时做参考）
 
 ## 入口链接
 
 - 开发工作目录：[`mods/`](mods/)（说明见 [`mods/README.md`](mods/README.md)）
+- 旧版本归档：[`archive/`](archive/)（说明见 [`archive/README.md`](archive/README.md)）
 - 官方示例与文档：[`sample/`](sample/)（说明见 [`sample/README.md`](sample/README.md)）
   - 官方示例主文档（中文）：[`sample/duckov_modding-main/README.md`](sample/duckov_modding-main/README.md)
   - 值得注意的 API（中文）：[`sample/duckov_modding-main/Documents/NotableAPIs_CN.md`](sample/duckov_modding-main/Documents/NotableAPIs_CN.md)
@@ -28,7 +30,14 @@
 ## 约定
 
 - `mods/` 是唯一“会经常改动”的目录；`sample/` 与 `game-src/` 更偏向参考。
+- 当前 MC 系列四个物品 Mod 已合并为单一目录 [`mods/MCItems/`](mods/MCItems/)，原独立目录已移动到 [`archive/`](archive/)。
 - 若计划把仓库同步到远端/公开，请自行评估 `game-src/` 是否适合纳入版本控制（体积与合规风险）。
+
+## 当前开发目录
+
+- [`mods/MCItems/`](mods/MCItems/)：合并版 MC 物品 Mod，统一包含 EnderPearl、GoldenApple、SplashHealingPotion、TotemOfUndying
+- [`mods/MCPrerequisite/`](mods/MCPrerequisite/)：MC 系列共用前置、分类与共享材料
+- [`mods/CaptainDestroyAccount/`](mods/CaptainDestroyAccount/)：其他独立开发中的 Mod
 
 ## MC 前置共享分类
 

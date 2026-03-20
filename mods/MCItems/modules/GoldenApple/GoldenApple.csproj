@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>GoldenApple</AssemblyName>
+    <RootNamespace>GoldenApple</RootNamespace>
+
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+
+    <DuckovPath>$(DUCKOV_PATH)</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">/Volumes/Kingston-1TB/SteamLibrary/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' == 'true'">$(HOME)/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(DuckovPath)' == '' and '$(IsMac)' != 'true'">E:\Program Files (x86)\Steam\steamapps\common\Escape from Duckov</DuckovPath>
+
+    <SubPath>\Duckov_Data\Managed\</SubPath>
+    <SubPath Condition="'$(IsMac)' == 'true'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GameModDir>$(DuckovPath)/Duckov.app/Contents/Mods/GoldenApple</GameModDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DuckovPath)$(SubPath)TeamSoda.*">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)ItemStatsSystem.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)SodaLocalization.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)FMODUnity.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Unity*">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyModDll" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MSBuildProjectDirectory)/GoldenApple.dll" />
+  </Target>
+
+  <Target Name="CopyToGameMods" AfterTargets="Build" Condition="Exists('$(GameModDir)')">
+    <Message Text="[GoldenApple] Syncing mod files to: $(GameModDir)" Importance="high" />
+
+    <MakeDir Directories="$(GameModDir)/assets/item-icons" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/GoldenApple.dll" DestinationFolder="$(GameModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/info.ini" DestinationFolder="$(GameModDir)" SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <IconFiles Include="$(MSBuildProjectDirectory)/assets/item-icons/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(IconFiles)" DestinationFolder="$(GameModDir)/assets/item-icons" SkipUnchangedFiles="true" Condition=" '@(IconFiles)' != '' " />
+  </Target>
+</Project>

@@ -1,0 +1,65 @@
+# 附魔金苹果（GoldenApple）
+
+版本号：v1.0.2  
+更新日期：2026-03-18
+
+## Mod 简介
+
+功能介绍：
+- 新增可食用物品「附魔金苹果」
+- 食用后获得三段临时增益
+- 兼容 MC 前置的共享分类 tag
+- 支持工作台配方：`8x 金锭` + `1x 苹果`
+- 不需要 3D 模型，当前使用运行时代码生成的附魔金苹果图标
+
+效果：
+- 生命上限 `+30`，持续 2 分钟
+- 30 秒内每秒回复 `15` 点生命
+- 头甲 `+1.5`、身甲 `+1.5`，持续 5 分钟
+- 左下角状态栏会显示三段增益与各自剩余时间
+- 地面掉落时的贴图显示放大一倍
+
+说明：
+- 当前版本会直接提高血量上限，但不会把新增上限单独绘制成黄色血条
+- 重复食用会刷新持续时间，不会无限叠层
+
+获取方式：
+- NPC 橘子处购买（装备商人 `Merchant_Equipment`），售价 `6666`
+- 工作台制作：`8x MC 金锭` + `1x 苹果`
+
+开发者：soraincloud  
+策划：吱吱歪
+
+声明：本 Mod 为开源项目，使用 AI 辅助开发。
+
+补充说明：
+- 工作台配方依赖 `MCPrerequisite` 注册的共享物品 `金锭`（TypeID `800003`）
+
+## 构建
+
+需要设置 Duckov 安装路径（包含 `Duckov.app` 的目录），例如：
+
+```bash
+export DUCKOV_PATH="/path/to/Escape from Duckov"
+dotnet build mods/GoldenApple/GoldenApple.csproj -c Release
+```
+
+构建完成后会自动把 `GoldenApple.dll` 复制到本目录。
+
+## 一键部署（本地测试）
+
+```bash
+export DUCKOV_PATH="/path/to/Escape from Duckov"
+bash mods/GoldenApple/deploy.sh
+```
+
+## 图标资源
+
+你可以先不提供外部美术资源，功能不受影响：
+- 优先加载 `assets/item-icons/GoldenApple.png`
+- 其次加载 `icon.png`
+- 都不存在时，回退到运行时代码生成的附魔金苹果图标
+
+## TypeID
+
+当前固定为：`900002`。

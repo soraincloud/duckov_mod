@@ -1,0 +1,11 @@
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/bin/Release/netstandard2.1/MCItems.deps.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/bin/Release/netstandard2.1/MCItems.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/bin/Release/netstandard2.1/MCItems.pdb
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.csproj.AssemblyReference.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.GeneratedMSBuildEditorConfig.editorconfig
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.AssemblyInfoInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.AssemblyInfo.cs
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.csproj.CoreCompileInputs.cache
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.sourcelink.json
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.dll
+/Volumes/Kingston-1TB/github/duckov_mod/mods/MCItems/obj/Release/netstandard2.1/MCItems.pdb

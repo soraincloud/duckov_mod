@@ -1,6 +1,8 @@
 # 编译并部署 Mod 到游戏目录（本地测试）
 
-本文以本仓库的示例 Mod `EnderPearl` 为例，说明如何在本地编译 `dll` 并放到游戏的 Mods 目录中。
+本文以当前实际使用的合并版 Mod `MCItems` 为例，说明如何在本地编译 `dll` 并放到游戏的 Mods 目录中。
+
+> 说明：原先的 `EnderPearl`、`GoldenApple`、`SplashHealingPotion`、`TotemOfUndying` 独立目录已归档到仓库根目录的 `archive/`，当前默认应以 `mods/MCItems/` 作为构建与部署入口。
 
 ## 你需要准备什么
 
@@ -21,9 +23,9 @@
 
 ## 一键构建 + 部署（推荐）
 
-本仓库的 `mods/EnderPearl/` 已提供脚本 `deploy.sh`，会：
+本仓库的 `mods/MCItems/` 已提供脚本 `deploy.sh`，会：
 
-- `dotnet build` 编译 `EnderPearl.csproj`
+- `dotnet build` 编译 `MCItems.csproj`
 - 同步运行时所需文件到游戏 Mods 目录
 - **保留目标目录里的 `publishedFileId`（用于 Workshop 更新同一条目）**
 
@@ -48,19 +50,19 @@ export DUCKOV_PATH="/c/Program Files (x86)/Steam/steamapps/common/Escape from Du
 在仓库根目录执行：
 
 ```bash
-bash mods/EnderPearl/deploy.sh
+bash mods/MCItems/deploy.sh
 ```
 
 脚本最后会打印类似：
 
-- `Deployed to: .../Duckov.app/Contents/Mods/EnderPearl`（mac）
-- 或 `Deployed to: .../Duckov_Data/Mods/EnderPearl`（win）
+- `Deployed to: .../Duckov.app/Contents/Mods/MCItems`（mac）
+- 或 `Deployed to: .../Duckov_Data/Mods/MCItems`（win）
 
 ### 3）确认部署结果
 
 目标目录里应至少有：
 
-- `EnderPearl.dll`
+- `MCItems.dll`
 - `info.ini`
 - `preview.png`（若该 Mod 提供）
 
@@ -71,14 +73,14 @@ bash mods/EnderPearl/deploy.sh
 如果你只想先确认能编过，不部署：
 
 ```bash
-dotnet build mods/EnderPearl/EnderPearl.csproj -c Release -v minimal
+dotnet build mods/MCItems/MCItems.csproj -c Release -v minimal
 ```
 
 成功后，构建产物通常在：
 
-- `mods/EnderPearl/bin/Release/netstandard2.1/EnderPearl.dll`
+- `mods/MCItems/bin/Release/netstandard2.1/MCItems.dll`
 
-要让游戏识别，你仍需要把 `EnderPearl.dll` 复制到对应的 Mods 目录，并配套 `info.ini`。
+要让游戏识别，你仍需要把 `MCItems.dll` 复制到对应的 Mods 目录，并配套 `info.ini`。
 
 ## 常见问题
 
@@ -87,11 +89,14 @@ dotnet build mods/EnderPearl/EnderPearl.csproj -c Release -v minimal
 优先检查目标文件夹是否同时包含：
 
 - `info.ini`
-- `*.dll`，且 dll 名称与 `info.ini` 里的 `name` 对得上（例如 `name = EnderPearl` → `EnderPearl.dll`）
+- `*.dll`，且 dll 名称与 `info.ini` 里的 `name` 对得上（例如 `name = MCItems` → `MCItems.dll`）
+
+如果这是一个合并版 Mod，还要确认实际入口类名也和 `name` 对应，例如 `MCItems.dll` 中存在 `MCItems.ModBehaviour`。
 
 ### 2）每次上传 Workshop 都变成“新条目”
 
 通常是 `info.ini` 里的 `publishedFileId` 变成了 `0`，上传器会当作新 Mod 创建。
 
 - 本仓库的 `mods/EnderPearl/deploy.sh` 会优先保留**游戏目录**下原本的非 0 `publishedFileId`，避免部署覆盖导致变回 0。
+- 本仓库的 `mods/MCItems/deploy.sh` 会优先保留**游戏目录**下原本的非 0 `publishedFileId`，避免部署覆盖导致变回 0。
 - 如果你要绑定到某个既有 Workshop 条目，确保你上传时使用的目录里 `info.ini` 的 `publishedFileId` 是正确的非 0 值。
