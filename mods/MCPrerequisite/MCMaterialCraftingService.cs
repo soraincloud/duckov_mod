@@ -29,6 +29,7 @@ internal static class MCMaterialCraftingService
     private const string FormulaGoldenPentagram = "MCMaterial_GoldIngot_To_GoldenPentagram";
     private const string FormulaGoldRing = "MCMaterial_GoldIngot_To_GoldRing";
     private const string FormulaBlackWhiteDisplay = "MCMaterial_Materials_To_BlackWhiteDisplay";
+    private const string FormulaBlackWhiteDisplayReverse = "MCMaterial_Materials_To_BlackWhiteDisplay_Reverse";
     private const string FormulaWhiskey = "MCMaterial_Glass_To_Whiskey";
     private const string FormulaThermite = "MCMaterial_Glass_To_Thermite";
     private const string FormulaVodka = "MCMaterial_Glass_To_Vodka";
@@ -64,62 +65,7 @@ internal static class MCMaterialCraftingService
     private const string FormulaNail = "MCMaterial_IronNugget_To_Nail";
     private const string FormulaBolt = "MCMaterial_IronNugget_To_Bolt";
     private const string FormulaKeroseneLamp = "MCMaterial_GlassAndIron_To_KeroseneLamp";
-
-    private static readonly string[] ManagedFormulaIds =
-    {
-        FormulaGoldNuggetToIngot,
-        FormulaGoldIngotToBlock,
-        FormulaIronNuggetToIngot,
-        FormulaIronIngotToBlock,
-        FormulaGoldIngotToNugget,
-        FormulaGoldBlockToIngot,
-        FormulaIronIngotToNugget,
-        FormulaIronBlockToIngot,
-        FormulaGoldenDumbbell,
-        FormulaGoldPoop,
-        FormulaPureGoldBadge,
-        FormulaPeaceStar,
-        FormulaAprilTrophy,
-        FormulaPointTwoBTC,
-        FormulaGoldenPentagram,
-        FormulaGoldRing,
-        FormulaBlackWhiteDisplay,
-        FormulaWhiskey,
-        FormulaThermite,
-        FormulaVodka,
-        FormulaKetchup,
-        FormulaInk,
-        FormulaTelescope,
-        FormulaShinyGlasses,
-        FormulaSunGlasses,
-        FormulaBlackGlasses,
-        FormulaSkiGoggles,
-        FormulaSyringe,
-        FormulaClock,
-        FormulaFlashLight,
-        FormulaLightBulb,
-        FormulaUltravioletLamp,
-        FormulaEnergySavingLamp,
-        FormulaMetalOilBarrel,
-        FormulaMetalBucket,
-        FormulaPropane,
-        FormulaGolfClub,
-        FormulaPot,
-        FormulaSledgeHammer,
-        FormulaCrowbar,
-        FormulaShovel,
-        FormulaTrap,
-        FormulaWrench,
-        FormulaHammer,
-        FormulaFlatScrewdriver,
-        FormulaAdvancedWeaponParts,
-        FormulaMediumWeaponParts,
-        FormulaWeaponParts,
-        FormulaNut,
-        FormulaNail,
-        FormulaBolt,
-        FormulaKeroseneLamp
-    };
+    private const string FormulaKeroseneLampReverse = "MCMaterial_GlassAndIron_To_KeroseneLamp_Reverse";
 
     private static readonly ExternalRecipeDefinition[] ExternalRecipes =
     {
@@ -168,6 +114,8 @@ internal static class MCMaterialCraftingService
         new(FormulaBolt, "螺栓", new[] { (MaterialItemRegistry.IronNuggetTypeId, 1L) }, "螺栓"),
         new(FormulaKeroseneLamp, "煤油灯", new[] { (MaterialItemRegistry.GlassTypeId, 3L), (MaterialItemRegistry.IronIngotTypeId, 1L) }, "煤油灯")
     };
+
+    private static readonly string[] ManagedFormulaIds = BuildManagedFormulaIds();
 
     private static bool _initialized;
 
@@ -252,7 +200,33 @@ internal static class MCMaterialCraftingService
             }
 
             craftOnlyCategoryIds.Add(resultTypeId);
-            yield return BuildFormula(recipe.FormulaId, resultTypeId, 1, recipe.Costs, compatibleTags);
+
+            if (recipe.Costs.Count == 1)
+            {
+                var reverseCost = recipe.Costs[0];
+                if (string.Equals(recipe.FormulaId, FormulaNut, StringComparison.Ordinal)
+                    || string.Equals(recipe.FormulaId, FormulaNail, StringComparison.Ordinal)
+                    || string.Equals(recipe.FormulaId, FormulaBolt, StringComparison.Ordinal))
+                {
+                    reverseCost = (reverseCost.itemTypeId, 3L);
+                }
+
+                yield return BuildFormula(GetReverseFormulaId(recipe.FormulaId), reverseCost.itemTypeId, (int)reverseCost.amount, resultTypeId, 1, compatibleTags);
+            }
+        }
+
+        var blackWhiteDisplayId = ResolveTypeId("黑白显示器", "黑白显示器");
+        if (blackWhiteDisplayId > 0)
+        {
+            craftOnlyCategoryIds.Add(blackWhiteDisplayId);
+            yield return BuildFormula(FormulaBlackWhiteDisplayReverse, MaterialItemRegistry.GlassTypeId, 6, blackWhiteDisplayId, 1, compatibleTags);
+        }
+
+        var keroseneLampId = ResolveTypeId("煤油灯", "煤油灯");
+        if (keroseneLampId > 0)
+        {
+            craftOnlyCategoryIds.Add(keroseneLampId);
+            yield return BuildFormula(FormulaKeroseneLampReverse, MaterialItemRegistry.GlassTypeId, 3, keroseneLampId, 1, compatibleTags);
         }
 
         if (craftOnlyCategoryIds.Count > 0)
@@ -426,6 +400,40 @@ internal static class MCMaterialCraftingService
 
         var chars = value.Trim().Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray();
         return new string(chars);
+    }
+
+    private static string[] BuildManagedFormulaIds()
+    {
+        var formulaIds = new List<string>
+        {
+            FormulaGoldNuggetToIngot,
+            FormulaGoldIngotToBlock,
+            FormulaIronNuggetToIngot,
+            FormulaIronIngotToBlock,
+            FormulaGoldIngotToNugget,
+            FormulaGoldBlockToIngot,
+            FormulaIronIngotToNugget,
+            FormulaIronBlockToIngot
+        };
+
+        foreach (var recipe in ExternalRecipes)
+        {
+            formulaIds.Add(recipe.FormulaId);
+            if (recipe.Costs.Count == 1)
+            {
+                formulaIds.Add(GetReverseFormulaId(recipe.FormulaId));
+            }
+        }
+
+        formulaIds.Add(FormulaBlackWhiteDisplayReverse);
+        formulaIds.Add(FormulaKeroseneLampReverse);
+
+        return formulaIds.ToArray();
+    }
+
+    private static string GetReverseFormulaId(string formulaId)
+    {
+        return formulaId + "_Reverse";
     }
 
     private readonly struct ExternalRecipeDefinition

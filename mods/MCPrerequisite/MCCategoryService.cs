@@ -185,7 +185,6 @@ public static class MCCategoryService
             var sharedFilterTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
             var sharedFilterIcon = TryLoadSharedCategoryIconSprite(_modPath);
             var materialFilterTag = GetOrCreateCategoryTag(MaterialCategoryTagName);
-            var materialCraftOnlyTag = GetOrCreateCategoryTag(MaterialCraftOnlyTagName);
             var materialFilterIcon = TryLoadMaterialCategoryIconSprite(_modPath);
             var craftViews = Resources.FindObjectsOfTypeAll<CraftView>();
             if (craftViews == null || craftViews.Length == 0)
@@ -202,7 +201,7 @@ public static class MCCategoryService
 
                 EnsureCraftViewHasCategoryFilter(craftView, sharedFilterTag, sharedFilterIcon, SharedCategoryDisplayNameKey, SharedCategoryTagName);
                 EnsureCraftViewHasCategoryFilter(craftView, materialFilterTag, materialFilterIcon, MaterialCraftCategoryDisplayNameKey, MaterialCategoryTagName);
-                EnsureCraftViewFilterIncludesTag(craftView, MaterialCategoryTagName, materialCraftOnlyTag);
+                EnsureCraftViewFilterExcludesTag(craftView, MaterialCategoryTagName, MaterialCraftOnlyTagName);
             }
         }
         catch (Exception e)
@@ -315,7 +314,7 @@ public static class MCCategoryService
         return filter.requireTags.Any(tag => tag != null && Tag.Match(tag, tagName));
     }
 
-    private static void EnsureCraftViewFilterIncludesTag(CraftView craftView, string tagName, Tag filterTag)
+    private static void EnsureCraftViewFilterExcludesTag(CraftView craftView, string tagName, string excludedTagName)
     {
         var filters = ReflectionUtil.GetPrivateField<CraftView.FilterInfo[]>(craftView, "filters") ?? Array.Empty<CraftView.FilterInfo>();
         var updatedFilters = filters.ToList();
@@ -326,13 +325,21 @@ public static class MCCategoryService
         }
 
         var existing = updatedFilters[index];
-        var mergedTags = MergeFilterTags(existing.requireTags, filterTag);
-        if (ReferenceEquals(existing.requireTags, mergedTags))
+        if (existing.requireTags == null || existing.requireTags.Length == 0)
         {
             return;
         }
 
-        existing.requireTags = mergedTags;
+        var filteredTags = existing.requireTags
+            .Where(tag => tag != null && !Tag.Match(tag, excludedTagName))
+            .ToArray();
+
+        if (filteredTags.Length == existing.requireTags.Length)
+        {
+            return;
+        }
+
+        existing.requireTags = filteredTags;
         updatedFilters[index] = existing;
         ReflectionUtil.SetPrivateField(craftView, "filters", updatedFilters.ToArray());
     }
