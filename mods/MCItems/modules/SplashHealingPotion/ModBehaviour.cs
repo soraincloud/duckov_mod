@@ -17,7 +17,7 @@ namespace SplashHealingPotion;
 /// </summary>
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
-    internal const int EnderPearlTypeId = 900012;
+    internal const int SplashHealingPotionTypeId = 900012;
     private const int McGlassTypeId = 800001;
     private const string PrimaryFormulaId = "SplashHealingPotion_Workbench";
     private const string SecondaryFormulaId = "SplashHealingPotion_Workbench_MCGlass";
@@ -112,22 +112,22 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var item = go.AddComponent<Item>();
 
         // TypeID 的 setter 是 internal，这里用反射直接写入私有字段
-        ReflectionUtil.SetPrivateField(item, "typeID", EnderPearlTypeId);
+        ReflectionUtil.SetPrivateField(item, "typeID", SplashHealingPotionTypeId);
 
         item.DisplayNameRaw = "Item_SplashHealingPotion";
-        item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreatePearlIcon();
+        item.Icon = ModAssets.TryLoadIconSprite(modPath) ?? RuntimeIcon.CreateSplashHealingPotionIcon();
         item.MaxStackCount = 8;
         item.Value = 1;
         item.Quality = 2;
 
         item.SetBool("IsSkill", true);
 
-        var skill = go.AddComponent<Skill_EnderPearlThrow>();
+        var skill = go.AddComponent<Skill_SplashHealingPotionThrow>();
         var skillSetting = go.AddComponent<ItemSetting_Skill>();
         skillSetting.Skill = skill;
         skillSetting.onRelease = ItemSetting_Skill.OnReleaseAction.none;
 
-        var visualHook = go.AddComponent<EnderPearlVisualHook>();
+        var visualHook = go.AddComponent<SplashHealingPotionVisualHook>();
         visualHook.SetModPath(modPath);
 
         go.SetActive(true);
@@ -135,7 +135,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         _prefab = item;
 
-        Debug.Log($"[SplashHealingPotion] Registered dynamic item. TypeID={EnderPearlTypeId}");
+        Debug.Log($"[SplashHealingPotion] Registered dynamic item. TypeID={SplashHealingPotionTypeId}");
     }
 
     private static void AddToMerchantProfile()
@@ -154,7 +154,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        var existing = profile.entries.Find(e => e != null && e.typeID == EnderPearlTypeId);
+        var existing = profile.entries.Find(e => e != null && e.typeID == SplashHealingPotionTypeId);
         if (existing != null)
         {
             existing.maxStock = MerchantStock;
@@ -173,7 +173,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private static void RemoveFromMerchantProfile()
     {
         var profile = StockShopDatabase.Instance?.GetMerchantProfile(TargetMerchantId);
-        profile?.entries.RemoveAll(entry => entry != null && entry.typeID == EnderPearlTypeId);
+        profile?.entries.RemoveAll(entry => entry != null && entry.typeID == SplashHealingPotionTypeId);
     }
 
     private static void RegisterOrUpdateCraftingFormulas()
@@ -181,7 +181,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var formulas = CraftingFormulaCollection.Instance;
         if (formulas == null)
         {
-            ModLog.Warn("[EnderPearl] CraftingFormulaCollection.Instance is null. Will retry on scene load.");
+            ModLog.Warn("[SplashHealingPotion] CraftingFormulaCollection.Instance is null. Will retry on scene load.");
             return;
         }
 
@@ -193,7 +193,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
         if (formulaList == null)
         {
-            ModLog.Warn("[EnderPearl] Failed to access crafting formula list.");
+            ModLog.Warn("[SplashHealingPotion] Failed to access crafting formula list.");
             return;
         }
 
@@ -206,7 +206,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         foreach (var formula in builtFormulas)
         {
             EnsureFormulaUnlocked(formula.id);
-            ModLog.Info($"[EnderPearl] Registered crafting formula '{formula.id}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
+            ModLog.Info($"[SplashHealingPotion] Registered crafting formula '{formula.id}' with tags: {string.Join(", ", formula.tags ?? Array.Empty<string>())}");
         }
     }
 
@@ -227,7 +227,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 id = PrimaryFormulaId,
                 result = new CraftingFormula.ItemEntry
                 {
-                    id = EnderPearlTypeId,
+                    id = SplashHealingPotionTypeId,
                     amount = 2
                 },
                 tags = compatibleTags,
@@ -249,7 +249,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 id = SecondaryFormulaId,
                 result = new CraftingFormula.ItemEntry
                 {
-                    id = EnderPearlTypeId,
+                    id = SplashHealingPotionTypeId,
                     amount = 2
                 },
                 tags = compatibleTags,
@@ -492,7 +492,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 continue;
             }
 
-            var existing = shop.entries.Find(e => e != null && e.ItemTypeID == EnderPearlTypeId);
+            var existing = shop.entries.Find(e => e != null && e.ItemTypeID == SplashHealingPotionTypeId);
             if (existing != null)
             {
                 existing.Show = true;
@@ -552,7 +552,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         var liveItems = Resources.FindObjectsOfTypeAll<Item>();
         foreach (var item in liveItems)
         {
-            if (item == null || item.TypeID != EnderPearlTypeId)
+            if (item == null || item.TypeID != SplashHealingPotionTypeId)
             {
                 continue;
             }
@@ -588,12 +588,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        if (!dynamicEntries.Contains(EnderPearlTypeId))
+        if (!dynamicEntries.Contains(SplashHealingPotionTypeId))
         {
             return;
         }
 
-        var entry = dynamicEntries[EnderPearlTypeId];
+        var entry = dynamicEntries[SplashHealingPotionTypeId];
         if (entry == null)
         {
             return;
@@ -627,12 +627,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 continue;
             }
 
-            shop.entries.RemoveAll(entry => entry != null && entry.ItemTypeID == EnderPearlTypeId);
+            shop.entries.RemoveAll(entry => entry != null && entry.ItemTypeID == SplashHealingPotionTypeId);
 
             var dict = ReflectionUtil.GetPrivateField<System.Collections.Generic.Dictionary<int, Item>>(shop, "itemInstances");
-            if (dict != null && dict.TryGetValue(EnderPearlTypeId, out var cachedItem))
+            if (dict != null && dict.TryGetValue(SplashHealingPotionTypeId, out var cachedItem))
             {
-                dict.Remove(EnderPearlTypeId);
+                dict.Remove(SplashHealingPotionTypeId);
                 if (cachedItem != null)
                 {
                     try
@@ -658,12 +658,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 return;
             }
 
-            if (dict.ContainsKey(EnderPearlTypeId) && dict[EnderPearlTypeId] != null)
+            if (dict.ContainsKey(SplashHealingPotionTypeId) && dict[SplashHealingPotionTypeId] != null)
             {
                 return;
             }
 
-            var item = ItemAssetsCollection.InstantiateSync(EnderPearlTypeId);
+            var item = ItemAssetsCollection.InstantiateSync(SplashHealingPotionTypeId);
             if (item == null)
             {
                 return;
@@ -672,7 +672,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             item.transform.SetParent(shop.transform);
             item.gameObject.SetActive(false);
 
-            dict[EnderPearlTypeId] = item;
+            dict[SplashHealingPotionTypeId] = item;
         }
         catch (Exception e)
         {
@@ -684,7 +684,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         return new StockShopDatabase.ItemEntry
         {
-            typeID = EnderPearlTypeId,
+            typeID = SplashHealingPotionTypeId,
             maxStock = MerchantStock,
             forceUnlock = true,
             priceFactor = MerchantPrice,

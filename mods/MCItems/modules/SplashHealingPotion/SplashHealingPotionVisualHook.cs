@@ -4,7 +4,7 @@ using ItemStatsSystem;
 
 namespace SplashHealingPotion;
 
-internal sealed class EnderPearlVisualHook : MonoBehaviour
+internal sealed class SplashHealingPotionVisualHook : MonoBehaviour
 {
     [SerializeField]
     private string? modPath;
@@ -41,7 +41,7 @@ internal sealed class EnderPearlVisualHook : MonoBehaviour
         // Also try agent-prefab injection (advanced) for this instance
         ModAssets.TryInjectItemAgents(item, modPath);
 
-        ModLog.Info($"[EnderPearl] VisualHook enabled. modPath='{modPath}' itemInstance={item.GetInstanceID()} typeID={item.TypeID}");
+        ModLog.Info($"[SplashHealingPotion] VisualHook enabled. modPath='{modPath}' itemInstance={item.GetInstanceID()} typeID={item.TypeID}");
     }
 
     private void OnDisable()
@@ -67,7 +67,7 @@ internal sealed class EnderPearlVisualHook : MonoBehaviour
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] OnCreateAgent failed: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] OnCreateAgent failed: {e.Message}");
         }
     }
 }

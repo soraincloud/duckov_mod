@@ -4,7 +4,7 @@ namespace SplashHealingPotion;
 
 internal static class RuntimeIcon
 {
-    public static Sprite CreatePearlIcon()
+    public static Sprite CreateSplashHealingPotionIcon()
     {
         const int size = 64;
         var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);

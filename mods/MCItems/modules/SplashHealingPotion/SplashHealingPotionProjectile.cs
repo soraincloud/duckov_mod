@@ -8,7 +8,7 @@ namespace SplashHealingPotion;
 /// <summary>
 /// 治疗药水抛体本体，负责碰撞爆开、范围治疗和飞溅粒子复用。
 /// </summary>
-public class EnderPearlProjectile : MonoBehaviour
+public class SplashHealingPotionProjectile : MonoBehaviour
 {
     private const float HealPercent = 0.5f;
     private const float HealRadius = 2.8f;
@@ -47,13 +47,13 @@ public class EnderPearlProjectile : MonoBehaviour
         rb.maxAngularVelocity = 50f;
         rb.angularVelocity = Random.onUnitSphere * 20f;
 
-        var proj = go.AddComponent<EnderPearlProjectile>();
+        var proj = go.AddComponent<SplashHealingPotionProjectile>();
         proj._owner = owner;
         proj._col = go.GetComponent<Collider>();
         proj._maxLifeSeconds = Mathf.Max(0.5f, maxLifeSeconds);
         proj._spawnTime = Time.time;
 
-    // 优先挂载 bundle 模型；缺失资源时回退到简单球体以保证逻辑仍可测试。
+        // 优先挂载 bundle 模型；缺失资源时回退到简单球体以保证逻辑仍可测试。
         var attached = ModAssets.TryAttachModelToProjectile(go);
         var renderer = go.GetComponent<Renderer>();
         if (renderer != null)
@@ -223,7 +223,7 @@ public class EnderPearlProjectile : MonoBehaviour
                 damageValue = -Mathf.Max(1f, health.MaxHealth * HealPercent),
                 armorPiercing = HealArmorPiercing,
                 isExplosion = true,
-                fromWeaponItemID = ModBehaviour.EnderPearlTypeId,
+                fromWeaponItemID = ModBehaviour.SplashHealingPotionTypeId,
                 damagePoint = targetPosition,
                 damageNormal = (targetPosition - point).sqrMagnitude > 0.0001f
                     ? (targetPosition - point).normalized

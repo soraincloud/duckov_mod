@@ -6,7 +6,7 @@ namespace SplashHealingPotion;
 /// <summary>
 /// 备用的即时投掷行为，不走技能瞄准，直接按当前朝向扔出治疗药水。
 /// </summary>
-public class ThrowEnderPearlUsage : UsageBehavior
+public class ThrowSplashHealingPotionUsage : UsageBehavior
 {
     [SerializeField]
     private float throwSpeed = 14f;
@@ -40,7 +40,7 @@ public class ThrowEnderPearlUsage : UsageBehavior
         }
         direction = direction.normalized;
 
-        var projectile = EnderPearlProjectile.Create(startPos, character, maxLifeSeconds);
+        var projectile = SplashHealingPotionProjectile.Create(startPos, character, maxLifeSeconds);
         var rb = projectile.GetComponent<Rigidbody>();
         if (rb != null)
         {

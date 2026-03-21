@@ -28,7 +28,7 @@ internal static class ModSfx
 		if (_initialized) return;
 		if (string.IsNullOrWhiteSpace(modPath))
 		{
-			ModLog.Warn("[EnderPearl] ModSfx.Initialize skipped: modPath is null/empty");
+			ModLog.Warn("[SplashHealingPotion] ModSfx.Initialize skipped: modPath is null/empty");
 			return;
 		}
 
@@ -37,7 +37,7 @@ internal static class ModSfx
 		_verbose = File.Exists(Path.Combine(modPath, "assets", "sfx", "verbose_sfx_log.txt"));
 		_glassBreakWavPaths = FindGlassBreakWavs(modPath);
 
-		if (_verbose) ModLog.Info($"[EnderPearl] ModSfx init. modPath='{modPath}'");
+		if (_verbose) ModLog.Info($"[SplashHealingPotion] ModSfx init. modPath='{modPath}'");
 
 		EnsureRunner();
 	}
@@ -78,18 +78,18 @@ internal static class ModSfx
 		var wavPath = GetRandomGlassBreakWavPath();
 		if (string.IsNullOrWhiteSpace(wavPath))
 		{
-			if (_verbose) ModLog.Warn($"[EnderPearl] No glassBreak wav found for impact at {position}");
+			if (_verbose) ModLog.Warn($"[SplashHealingPotion] No glassBreak wav found for impact at {position}");
 			return;
 		}
 
-		if (_verbose) ModLog.Info($"[EnderPearl] SFX glass break at {position} -> {Path.GetFileName(wavPath)}");
+		if (_verbose) ModLog.Info($"[SplashHealingPotion] SFX glass break at {position} -> {Path.GetFileName(wavPath)}");
 		TryPlayFmodWav(wavPath, volume: 1f);
 	}
 
 	internal static void PlayThrow(Vector3 position)
 	{
 		if (!_initialized) return;
-		if (_verbose) ModLog.Info($"[EnderPearl] SFX throw at {position}");
+		if (_verbose) ModLog.Info($"[SplashHealingPotion] SFX throw at {position}");
 
 		// Next best: FMOD core plays WAV directly (works even if Unity Audio is disabled in-game).
 		if (TryPlayFmodWav(ModAssetPath("assets", "sfx", ThrowWavName), volume: 1f))
@@ -134,7 +134,7 @@ internal static class ModSfx
 		}
 		catch (Exception e)
 		{
-			ModLog.Warn($"[EnderPearl] Failed to enumerate glass break wavs: {e.GetType().Name}: {e.Message}");
+			ModLog.Warn($"[SplashHealingPotion] Failed to enumerate glass break wavs: {e.GetType().Name}: {e.Message}");
 			return Array.Empty<string>();
 		}
 	}
@@ -165,17 +165,17 @@ internal static class ModSfx
 				var rCreate = core.createSound(wavPath, MODE._2D | MODE.LOOP_OFF, out sound);
 				if (rCreate != RESULT.OK)
 				{
-					ModLog.Warn($"[EnderPearl] FMOD createSound failed: {rCreate} ({Error.String(rCreate)}) path='{wavPath}'");
+					ModLog.Warn($"[SplashHealingPotion] FMOD createSound failed: {rCreate} ({Error.String(rCreate)}) path='{wavPath}'");
 					return false;
 				}
 				FmodWavSounds[wavPath] = sound;
-				ModLog.Info($"[EnderPearl] FMOD WAV loaded: {Path.GetFileName(wavPath)}");
+				ModLog.Info($"[SplashHealingPotion] FMOD WAV loaded: {Path.GetFileName(wavPath)}");
 			}
 
 			var rPlay = core.playSound(sound, default(ChannelGroup), true, out Channel channel);
 			if (rPlay != RESULT.OK)
 			{
-				ModLog.Warn($"[EnderPearl] FMOD playSound failed: {rPlay} ({Error.String(rPlay)})");
+				ModLog.Warn($"[SplashHealingPotion] FMOD playSound failed: {rPlay} ({Error.String(rPlay)})");
 				return false;
 			}
 
@@ -186,7 +186,7 @@ internal static class ModSfx
 		}
 		catch (Exception e)
 		{
-			ModLog.Warn($"[EnderPearl] FMOD WAV play exception: {e.GetType().Name}: {e.Message}");
+			ModLog.Warn($"[SplashHealingPotion] FMOD WAV play exception: {e.GetType().Name}: {e.Message}");
 			return false;
 		}
 	}
@@ -213,7 +213,7 @@ internal static class ModSfx
 		}
 		if (!RuntimeManager.IsInitialized)
 		{
-			if (_verbose) ModLog.Warn($"[EnderPearl] FMOD not initialized; skipped deferred WAV play: '{Path.GetFileName(wavPath)}'");
+			if (_verbose) ModLog.Warn($"[SplashHealingPotion] FMOD not initialized; skipped deferred WAV play: '{Path.GetFileName(wavPath)}'");
 			yield break;
 		}
 		TryPlayFmodWav(wavPath, volume);
@@ -252,7 +252,7 @@ internal static class ModSfx
 	{
 		if (_runner != null) return;
 
-		var go = new GameObject("EnderPearl_Sfx");
+		var go = new GameObject("SplashHealingPotion_Sfx");
 		UnityEngine.Object.DontDestroyOnLoad(go);
 		_runner = go.AddComponent<Runner>();
 	}

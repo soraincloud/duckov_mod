@@ -13,7 +13,7 @@ internal static class ModAssets
     internal static string? CurrentModPath { get; private set; }
 
     private const string IconFileName = "icon.png";
-    private const string EnderPearlIconRelativePath = "assets/item-icons/SplashHealingPotion.png";
+    private const string SplashHealingPotionIconRelativePath = "assets/item-icons/SplashHealingPotion.png";
     private const string ForceUnlitFlagFileName = "force_unlit.txt";
     private const string ForceLitFlagFileName = "force_lit.txt";
 
@@ -59,7 +59,7 @@ internal static class ModAssets
 
     private static bool ShouldForceUnlit(string? modPath)
     {
-        // Default behavior: force Unlit for EnderPearl models because URP/Lit path
+        // Default behavior: force Unlit for SplashHealingPotion models because URP/Lit path
         // is known to render incorrectly (blue) in this game runtime.
         if (_forceUnlit.HasValue) return _forceUnlit.Value;
 
@@ -88,7 +88,7 @@ internal static class ModAssets
         catch (Exception e)
         {
             // If anything goes wrong, prefer Unlit so the item stays visible.
-            ModLog.Warn($"[EnderPearl] Force-unlit decision failed: {e.GetType().Name}: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Force-unlit decision failed: {e.GetType().Name}: {e.Message}");
             _forceUnlit = true;
         }
 
@@ -114,7 +114,7 @@ internal static class ModAssets
 
         if (unlitShader == null)
         {
-            ModLog.Warn("[EnderPearl] Force-unlit: no Unlit shader found (URP/Unlit, Unlit/Texture, Unlit/Color)");
+            ModLog.Warn("[SplashHealingPotion] Force-unlit: no Unlit shader found (URP/Unlit, Unlit/Texture, Unlit/Color)");
             return;
         }
 
@@ -188,7 +188,7 @@ internal static class ModAssets
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] Force-unlit apply failed: {e.GetType().Name}: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Force-unlit apply failed: {e.GetType().Name}: {e.Message}");
         }
     }
 
@@ -217,10 +217,10 @@ internal static class ModAssets
             }
 
             // Preferred: load from assets/item-icons (project-shipped icon).
-            var itemIconPath = Path.Combine(modPath, EnderPearlIconRelativePath);
+            var itemIconPath = Path.Combine(modPath, SplashHealingPotionIconRelativePath);
             if (File.Exists(itemIconPath))
             {
-                var sprite = TryLoadSpriteFromPngFile(itemIconPath, "EnderPearl_Icon");
+                var sprite = TryLoadSpriteFromPngFile(itemIconPath, "SplashHealingPotion_Icon");
                 if (sprite != null) return sprite;
             }
 
@@ -230,11 +230,11 @@ internal static class ModAssets
                 return null;
             }
 
-            return TryLoadSpriteFromPngFile(iconPath, "EnderPearl_Icon");
+            return TryLoadSpriteFromPngFile(iconPath, "SplashHealingPotion_Icon");
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] Failed to load icon.png: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Failed to load icon.png: {e.Message}");
             return null;
         }
     }
@@ -307,7 +307,7 @@ internal static class ModAssets
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] Failed to inject item agents: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Failed to inject item agents: {e.Message}");
         }
     }
 
@@ -344,7 +344,7 @@ internal static class ModAssets
             var modelPrefab = LoadFirstAsset<GameObject>(bundle, modelNames);
             if (modelPrefab == null)
             {
-                ModLog.Warn($"[EnderPearl] Bundle loaded but none of these prefabs were found: {string.Join(", ", modelNames)}.");
+                ModLog.Warn($"[SplashHealingPotion] Bundle loaded but none of these prefabs were found: {string.Join(", ", modelNames)}.");
                 return;
             }
 
@@ -400,7 +400,7 @@ internal static class ModAssets
 
                 if (disabled > 0)
                 {
-                    ModLog.Info($"[EnderPearl] AgentType={agent.AgentType}: disabled {disabled} original renderer(s) to prevent double visuals.");
+                    ModLog.Info($"[SplashHealingPotion] AgentType={agent.AgentType}: disabled {disabled} original renderer(s) to prevent double visuals.");
                 }
 
                 // Some pickup pipelines place default icon renderers on parent/sibling nodes
@@ -411,7 +411,7 @@ internal static class ModAssets
                     var extraDisabled = DisableCompetingPickupRenderers(agent, instance.transform);
                     if (extraDisabled > 0)
                     {
-                        ModLog.Info($"[EnderPearl] Pickup extra dedupe: disabled {extraDisabled} container renderer(s).");
+                        ModLog.Info($"[SplashHealingPotion] Pickup extra dedupe: disabled {extraDisabled} container renderer(s).");
                     }
 
                     var suppressor = agent.GetComponent<PickupVisualSuppressor>();
@@ -423,11 +423,11 @@ internal static class ModAssets
                 }
             }
 
-            ModLog.Info($"[EnderPearl] Attached model '{modelPrefab.name}' to agentType={agent.AgentType} renderers={(renderers?.Length ?? 0)} layer={targetLayer} prefabLocalScale={prefabLocalScale} instanceLocalScale={instance.transform.localScale}");
+            ModLog.Info($"[SplashHealingPotion] Attached model '{modelPrefab.name}' to agentType={agent.AgentType} renderers={(renderers?.Length ?? 0)} layer={targetLayer} prefabLocalScale={prefabLocalScale} instanceLocalScale={instance.transform.localScale}");
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] Failed to attach model prefab: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Failed to attach model prefab: {e.Message}");
         }
     }
 
@@ -500,7 +500,7 @@ internal static class ModAssets
 
             if (modelPrefab == null)
             {
-                ModLog.Warn($"[EnderPearl] Projectile: no model prefab found (tried {string.Join(", ", FlyingModelPrefabNames)}).");
+                ModLog.Warn($"[SplashHealingPotion] Projectile: no model prefab found (tried {string.Join(", ", FlyingModelPrefabNames)}).");
                 return false;
             }
 
@@ -555,15 +555,15 @@ internal static class ModAssets
             // even when source mesh pivot/origin is off-center.
             if (TryCenterModelByRenderBounds(instance, projectileRoot.transform, out var appliedOffset))
             {
-                ModLog.Info($"[EnderPearl] Projectile model auto-centered by bounds. localOffset={appliedOffset}");
+                ModLog.Info($"[SplashHealingPotion] Projectile model auto-centered by bounds. localOffset={appliedOffset}");
             }
 
-            ModLog.Info($"[EnderPearl] Projectile model '{modelPrefab.name}' attached. renderers={(renderers?.Length ?? 0)} layer={projectileRoot.layer}");
+            ModLog.Info($"[SplashHealingPotion] Projectile model '{modelPrefab.name}' attached. renderers={(renderers?.Length ?? 0)} layer={projectileRoot.layer}");
             return true;
         }
         catch (Exception e)
         {
-            ModLog.Warn($"[EnderPearl] Projectile model attach failed: {e.Message}");
+            ModLog.Warn($"[SplashHealingPotion] Projectile model attach failed: {e.Message}");
             return false;
         }
     }
@@ -832,7 +832,7 @@ internal static class ModAssets
                     try
                     {
                         var fi = new FileInfo(bundlePath);
-                        ModLog.Info($"[EnderPearl] Loading AssetBundle file: path='{bundlePath}' bytes={fi.Length} lastWriteUtc={fi.LastWriteTimeUtc:O}");
+                        ModLog.Info($"[SplashHealingPotion] Loading AssetBundle file: path='{bundlePath}' bytes={fi.Length} lastWriteUtc={fi.LastWriteTimeUtc:O}");
                     }
                     catch
                     {
@@ -842,29 +842,29 @@ internal static class ModAssets
                     _bundle = AssetBundle.LoadFromFile(bundlePath);
                     if (_bundle != null)
                     {
-                        ModLog.Info($"[EnderPearl] Loaded AssetBundle: {bundlePath}");
+                        ModLog.Info($"[SplashHealingPotion] Loaded AssetBundle: {bundlePath}");
                         try
                         {
                             var assets = _bundle.GetAllAssetNames();
                             if (assets != null && assets.Length > 0)
                             {
-                                ModLog.Info($"[EnderPearl] Bundle assets ({assets.Length}):\n- {string.Join("\n- ", assets)}");
+                                ModLog.Info($"[SplashHealingPotion] Bundle assets ({assets.Length}):\n- {string.Join("\n- ", assets)}");
                             }
                             else
                             {
-                                ModLog.Warn("[EnderPearl] Bundle loaded but GetAllAssetNames returned empty.");
+                                ModLog.Warn("[SplashHealingPotion] Bundle loaded but GetAllAssetNames returned empty.");
                             }
                         }
                         catch (Exception e)
                         {
-                            ModLog.Warn($"[EnderPearl] Failed to list bundle assets: {e.Message}");
+                            ModLog.Warn($"[SplashHealingPotion] Failed to list bundle assets: {e.Message}");
                         }
                         return _bundle;
                     }
                 }
                 catch (Exception e)
                 {
-                    ModLog.Warn($"[EnderPearl] Failed to load AssetBundle '{bundlePath}': {e.Message}");
+                    ModLog.Warn($"[SplashHealingPotion] Failed to load AssetBundle '{bundlePath}': {e.Message}");
                 }
             }
         }
