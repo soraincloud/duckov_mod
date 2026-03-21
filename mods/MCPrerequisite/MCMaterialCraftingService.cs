@@ -9,6 +9,9 @@ using UnityEngine.SceneManagement;
 
 namespace MCPrerequisite;
 
+/// <summary>
+/// 注册 MC 材料的互转配方，以及用这些材料合成原版物品的额外工作台配方。
+/// </summary>
 internal static class MCMaterialCraftingService
 {
     private const string MaterialCraftCategoryDisplayNameKey = "CraftFilter_MCMaterial";
@@ -166,6 +169,7 @@ internal static class MCMaterialCraftingService
             return;
         }
 
+    // 每次重建前都先移除旧版本，避免场景切换后出现重复配方。
         formulaList.RemoveAll(existing => ManagedFormulaIds.Contains(existing.id, StringComparer.Ordinal));
 
         var compatibleTags = BuildCompatibleFormulaTags(formulas);
@@ -182,6 +186,7 @@ internal static class MCMaterialCraftingService
     {
         var craftOnlyCategoryIds = new List<int>();
 
+        // 先注册材料之间的九宫格互转，再补向原版物品延伸的额外配方。
         yield return BuildFormula(FormulaGoldNuggetToIngot, MaterialItemRegistry.GoldIngotTypeId, 1, MaterialItemRegistry.GoldNuggetTypeId, 9, compatibleTags);
         yield return BuildFormula(FormulaGoldIngotToBlock, MaterialItemRegistry.GoldBlockTypeId, 1, MaterialItemRegistry.GoldIngotTypeId, 9, compatibleTags);
         yield return BuildFormula(FormulaIronNuggetToIngot, MaterialItemRegistry.IronIngotTypeId, 1, MaterialItemRegistry.IronNuggetTypeId, 9, compatibleTags);
@@ -201,6 +206,7 @@ internal static class MCMaterialCraftingService
 
             craftOnlyCategoryIds.Add(resultTypeId);
 
+            // 单原料配方自动补一个反向拆解配方，保证材料体系可逆、便于玩家回收。
             if (recipe.Costs.Count == 1)
             {
                 var reverseCost = recipe.Costs[0];
@@ -231,6 +237,7 @@ internal static class MCMaterialCraftingService
 
         if (craftOnlyCategoryIds.Count > 0)
         {
+            // 这些合成结果不是真正的“材料”，只在配方视图里挂 craft-only 标签做分流。
             MCCategoryService.EnsureCraftOnlyCategoryTagged(craftOnlyCategoryIds);
         }
     }
@@ -261,6 +268,7 @@ internal static class MCMaterialCraftingService
 
     private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
     {
+        // 直接复用现有工作台 tag 集合，兼容不同版本或其他模组改动过的标签命名。
         var tags = new HashSet<string>(StringComparer.Ordinal);
         var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
         if (formulaList != null)
@@ -329,6 +337,7 @@ internal static class MCMaterialCraftingService
             .Distinct()
             .ToArray();
 
+    // 先做精确匹配，失败后再做 contains 匹配，尽量减少命中错误物品的风险。
         foreach (var entry in collection.entries)
         {
             if (entry == null || entry.metaData.id <= 0)
@@ -404,6 +413,7 @@ internal static class MCMaterialCraftingService
 
     private static string[] BuildManagedFormulaIds()
     {
+        // 卸载模组时需要精确删除自己注入的公式，所以单独维护完整 ID 清单。
         var formulaIds = new List<string>
         {
             FormulaGoldNuggetToIngot,

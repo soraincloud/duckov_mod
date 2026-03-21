@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace GoldenApple;
 
+/// <summary>
+/// 维护附魔金苹果三个 Buff 的预制体，并在食用时统一发放给角色。
+/// </summary>
 internal static class GoldenAppleBuffRegistry
 {
     private const int MaxHealthBuffId = 990021;
@@ -22,6 +25,7 @@ internal static class GoldenAppleBuffRegistry
 
     public static void Initialize(Sprite? icon)
     {
+        // Buff prefab 会跨场景复用，所以只在首次初始化时创建一次。
         var resolvedIcon = icon ?? RuntimeIcon.CreateGoldenAppleIcon();
 
         _maxHealthBuffPrefab ??= CreateBuffPrefab(
@@ -68,6 +72,7 @@ internal static class GoldenAppleBuffRegistry
             Initialize(null);
         }
 
+        // 先确保控制器在角色身上刷新计时，再让 UI Buff 栏出现对应条目。
         GoldenAppleEffectController.ApplyTo(character);
 
         if (_maxHealthBuffPrefab != null)
@@ -88,6 +93,7 @@ internal static class GoldenAppleBuffRegistry
 
     private static Buff CreateBuffPrefab(string objectName, int buffId, string displayNameKey, string descriptionKey, float totalLifeTime, Sprite icon)
     {
+        // 这里构造的是纯展示 Buff，实际数值增益由 GoldenAppleEffectController 负责施加。
         var gameObject = new GameObject(objectName);
         UnityEngine.Object.DontDestroyOnLoad(gameObject);
 

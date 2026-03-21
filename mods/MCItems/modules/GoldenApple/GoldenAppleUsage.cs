@@ -2,6 +2,9 @@ using ItemStatsSystem;
 
 namespace GoldenApple;
 
+/// <summary>
+/// 金苹果的使用行为，只负责把效果交给 BuffRegistry，具体数值逻辑不放在物品层。
+/// </summary>
 public class GoldenAppleUsage : UsageBehavior
 {
     public override DisplaySettingsData DisplaySettings => new()

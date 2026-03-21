@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace EnderPearl;
 
+/// <summary>
+/// 备用的直接使用行为，不走技能瞄准 HUD，而是按角色朝向立刻投掷。
+/// </summary>
 public class ThrowEnderPearlUsage : UsageBehavior
 {
     [SerializeField]
@@ -26,6 +29,7 @@ public class ThrowEnderPearlUsage : UsageBehavior
             return;
         }
 
+        // 当没有有效瞄准向量时回退到角色朝前方向，避免速度向量归零。
         var aimSocket = character.CurrentUsingAimSocket;
         var startPos = aimSocket != null ? aimSocket.position : character.transform.position + Vector3.up * 1.2f;
 

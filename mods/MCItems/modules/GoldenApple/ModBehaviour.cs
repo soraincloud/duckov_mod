@@ -14,6 +14,9 @@ using UnityEngine.SceneManagement;
 
 namespace GoldenApple;
 
+/// <summary>
+/// 附魔金苹果模块入口，负责物品注册、Buff 预制体准备以及商店和配方接入。
+/// </summary>
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int GoldenAppleTypeId = 900002;
@@ -130,6 +133,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         go.SetActive(false);
         UnityEngine.Object.DontDestroyOnLoad(go);
 
+        // 图标先取静态底图，再交给运行时特效层生成“附魔闪光”的最终 icon。
         var item = go.AddComponent<Item>();
         ReflectionUtil.SetPrivateField(item, "typeID", GoldenAppleTypeId);
 
@@ -155,6 +159,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void ConfigureUsage(Item item)
     {
+        // 这里直接挂 UsageUtilities，而不是技能系统，因为金苹果属于长按食用型道具。
         var usageUtilities = item.gameObject.AddComponent<UsageUtilities>();
         usageUtilities.hasSound = false;
         usageUtilities.useDurability = false;
@@ -216,6 +221,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
+        // 同名公式先删后加，确保修改配方成本后不会在列表中保留旧版本。
         formulaList.RemoveAll(existing => string.Equals(existing.id, FormulaId, StringComparison.Ordinal));
         formulaList.Add(formula);
 
@@ -227,6 +233,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         formula = default;
 
+        // 金苹果依赖 MC 前置提供的金锭，因此这里先检查材料物品是否已经注册。
         if (!HasRegisteredItemType(McGoldIngotTypeId))
         {
             ModLog.Warn("[GoldenApple] MC gold ingot is not registered. Crafting recipe will wait for MCPrerequisite.");
@@ -263,6 +270,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
     {
+        // 读取现有配方里的 tag，兼容游戏本体或其他模组对工作台分类的扩展。
         var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
         var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
         if (formulaList != null)

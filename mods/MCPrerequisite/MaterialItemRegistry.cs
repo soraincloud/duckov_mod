@@ -11,6 +11,9 @@ using UnityEngine.SceneManagement;
 
 namespace MCPrerequisite;
 
+/// <summary>
+/// 负责创建 MC 材料动态物品，并把它们接入商店、战利品箱和世界拾取物表现。
+/// </summary>
 internal static class MaterialItemRegistry
 {
     internal const int GlassTypeId = 800001;
@@ -65,6 +68,7 @@ internal static class MaterialItemRegistry
     public static void Initialize(string? modPath)
     {
         ApplyLocalizationOverrides();
+        // 注册顺序很关键：先让 ItemAssetsCollection 认识这些物品，后续商店和掉落逻辑才能拿到实例。
         CreateAndRegisterItemPrefabs(modPath);
         AddToMerchantProfile();
         PatchExistingStockShops();
@@ -109,6 +113,7 @@ internal static class MaterialItemRegistry
             return;
         }
 
+        // 箱子生成器和拾取物可能在关卡流程中延迟出现，因此这里按固定频率兜底刷新。
         _nextPickupRefreshTime = Time.unscaledTime + PickupRefreshIntervalSeconds;
         InjectManagedMaterialsIntoLootBoxes();
         RefreshManagedPickupScales();
@@ -129,6 +134,7 @@ internal static class MaterialItemRegistry
 
     private static void InjectManagedMaterialsIntoLootBoxes()
     {
+        // 每个 LootBoxLoader 只补一次，避免同一个箱子被重复塞入材料。
         var loaders = UnityEngine.Object.FindObjectsOfType<LootBoxLoader>();
         if (loaders == null || loaders.Length == 0)
         {
@@ -192,6 +198,7 @@ internal static class MaterialItemRegistry
 
     private static int RollLootBoxMaterialTypeId()
     {
+        // 用递减权重表做一次随机抽取，返回 0 表示这次箱子不额外掉 MC 材料。
         var roll = UnityEngine.Random.Range(0f, 1f);
         if (roll < LootBoxGlassChance)
         {
@@ -259,6 +266,7 @@ internal static class MaterialItemRegistry
             go.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(go);
 
+            // 这些材料没有复杂行为，只需要最基础的 Item prefab 和图标数据。
             var item = go.AddComponent<Item>();
             ReflectionUtil.SetPrivateField(item, "typeID", definition.TypeId);
 
@@ -288,6 +296,7 @@ internal static class MaterialItemRegistry
             return;
         }
 
+        // 游戏默认会把自定义小物品缩得很小，这里在 pickup 代理创建时统一放大到可见尺寸。
         EnsurePickupScaleEnforcer(newAgent.gameObject, PickupScaleMultiplier).Apply();
         EnsurePickupVisualScale(newAgent.gameObject, ResolvePickupSprite(newAgent.GetComponent<InteractablePickup>()), PickupScaleMultiplier);
     }
@@ -374,6 +383,7 @@ internal static class MaterialItemRegistry
             return;
         }
 
+    // 商人配置和场景内 StockShop.entry 是两套数据，都需要分别补齐。
         foreach (var definition in Definitions)
         {
             var existing = profile.entries.Find(entry => entry != null && entry.typeID == definition.TypeId);
@@ -511,6 +521,7 @@ internal static class MaterialItemRegistry
     {
         try
         {
+            // StockShop 购买流程依赖私有缓存 itemInstances，没有缓存时条目会显示但无法购买。
             var instances = ReflectionUtil.GetPrivateField<Dictionary<int, Item>>(shop, "itemInstances");
             if (instances == null)
             {

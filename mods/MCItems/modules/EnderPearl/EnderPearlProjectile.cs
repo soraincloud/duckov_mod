@@ -3,6 +3,9 @@ using UnityEngine.Rendering;
 
 namespace EnderPearl;
 
+/// <summary>
+/// 末影珍珠抛体本体，负责飞行、碰撞判定、传送落点修正和特效池复用。
+/// </summary>
 public class EnderPearlProjectile : MonoBehaviour
 {
     private CharacterMainControl? _owner;
@@ -50,7 +53,7 @@ public class EnderPearlProjectile : MonoBehaviour
         proj._maxLifeSeconds = Mathf.Max(0.5f, maxLifeSeconds);
         proj._spawnTime = Time.time;
 
-        // Prefer bundle model for flight; fallback to colored sphere if not available.
+        // 飞行阶段优先使用 bundle 模型；没有模型时才回退到简单球体，方便调试和容错。
         var attached = ModAssets.TryAttachModelToProjectile(go);
         var renderer = go.GetComponent<Renderer>();
         if (renderer != null)
@@ -101,6 +104,7 @@ public class EnderPearlProjectile : MonoBehaviour
             projectileCols = new[] { _col };
         }
 
+        // 刚生成时先临时忽略持有者碰撞，避免抛体出生在角色碰撞盒内直接炸开。
         foreach (var ownerCol in ownerCols)
         {
             if (ownerCol == null)
@@ -157,7 +161,7 @@ public class EnderPearlProjectile : MonoBehaviour
             }
         }
 
-        // Small arm delay to avoid immediate spawn overlap causing instant teleport.
+        // 小段起爆延迟用于规避出生点与地面或角色身体重叠造成的瞬移误触发。
         if (Time.time - _spawnTime < ArmDelaySeconds)
         {
             return;
@@ -183,7 +187,7 @@ public class EnderPearlProjectile : MonoBehaviour
             point = transform.position;
         }
 
-        // 尽量把落点贴到地面上（不依赖游戏层配置，使用默认层掩码）
+        // 再向地面做一次短射线，把瞬移点压回可站立高度，减少卡进斜坡或道具的概率。
         if (Physics.Raycast(point + Vector3.up * 1.0f, Vector3.down, out var hit, 3.0f, Physics.DefaultRaycastLayers))
         {
             point = hit.point;
@@ -248,6 +252,7 @@ public class EnderPearlProjectile : MonoBehaviour
 
         if (_teleportFxCreated >= TeleportFxPoolMax)
         {
+            // 粒子对象上限固定，超出时宁可不播，也不在战斗中继续分配新对象制造卡顿。
             // If pool is exhausted, do nothing rather than creating more and risking spikes.
             return null;
         }
@@ -341,7 +346,7 @@ public class EnderPearlProjectile : MonoBehaviour
                 return;
             }
 
-            // Recycle when finished.
+            // 播放结束后回收到池里，下次瞬移直接复用同一粒子系统。
             if (!_ps.IsAlive(withChildren: true))
             {
                 gameObject.SetActive(false);
@@ -352,6 +357,7 @@ public class EnderPearlProjectile : MonoBehaviour
 
     private static Material? TryCreateTeleportParticleMaterial()
     {
+        // 优先找不受场景光照影响的粒子 shader，保证紫色瞬移效果在不同地图下都足够稳定。
         // Prefer unlit particle shaders so the purple stays vivid under different lighting.
         // Prefer additive for a "glow" look, but keep the effect cheap (low particle count + pooling).
         // Avoid HDR intensity > 1 elsewhere to reduce bloom-related spikes on some Windows setups.

@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 namespace TotemOfUndying;
 
+/// <summary>
+/// 给原版工作台界面额外挂一个定制面板，专门处理不死图腾的材料展示和制作按钮。
+/// </summary>
 internal sealed class WorkbenchCraftSystem : MonoBehaviour
 {
     private static WorkbenchCraftSystem? _instance;
@@ -50,6 +53,7 @@ internal sealed class WorkbenchCraftSystem : MonoBehaviour
             return;
         }
 
+        // ItemCustomizeSelectionView 可能在场景内重建，所以发现实例变化时要重新绑定一遍。
         if (_boundView != view)
         {
             BindView(view);
@@ -83,6 +87,7 @@ internal sealed class WorkbenchCraftSystem : MonoBehaviour
             return;
         }
 
+        // 整个面板运行时动态创建，避免直接改原版 prefab 或依赖额外 UI 资源。
         _panelRoot = new GameObject("TotemOfUndying_WorkbenchPanel", typeof(RectTransform), typeof(Image));
         var panelRect = (RectTransform)_panelRoot.transform;
         panelRect.SetParent(parent, false);
@@ -163,6 +168,7 @@ internal sealed class WorkbenchCraftSystem : MonoBehaviour
             ModLog.Info("[TotemOfUndying] Custom workbench panel is visible.");
         }
 
+        // 面板按钮状态实时绑定 Cost.Enough，这样玩家开着面板整理材料时按钮会立即刷新。
         if (!ModBehaviour.TryBuildTotemCraftCost(out var cost))
         {
             if (_recipeText != null)
@@ -196,6 +202,7 @@ internal sealed class WorkbenchCraftSystem : MonoBehaviour
 
     private void CraftTotem()
     {
+        // 这里和正式配方逻辑共用同一套 Cost 解析与支付流程，避免 UI 制作走出“特殊规则”。
         if (!ModBehaviour.TryBuildTotemCraftCost(out var cost))
         {
             NotificationText.Push("不死图腾材料解析失败");

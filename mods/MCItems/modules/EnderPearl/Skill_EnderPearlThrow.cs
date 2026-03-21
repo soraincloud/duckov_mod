@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace EnderPearl;
 
+/// <summary>
+/// 末影珍珠的技能入口，负责把瞄准点转换为抛体初速度并在释放时消耗物品。
+/// </summary>
 public class Skill_EnderPearlThrow : SkillBase
 {
     [SerializeField]
@@ -68,6 +71,7 @@ public class Skill_EnderPearlThrow : SkillBase
         Vector3 target = startPos + dir * distance;
         target.y = targetY;
 
+        // 使用 releasePoint 作为目标落点，再按当前重力反推一个可飞到该点的抛射速度。
         Vector3 velocity = CalculateVelocity(startPos, target, skillContext.grenageVerticleSpeed);
 
         var go = EnderPearlProjectile.Create(startPos, fromCharacter, maxLifeSeconds);
@@ -105,6 +109,7 @@ public class Skill_EnderPearlThrow : SkillBase
 
     private static Vector3 CalculateVelocity(Vector3 start, Vector3 target, float verticleSpeed)
     {
+        // 固定给定竖直初速度，再根据总飞行时间反算水平方向速度，保证手感稳定。
         float g = Physics.gravity.magnitude;
         if (g <= 0f)
         {

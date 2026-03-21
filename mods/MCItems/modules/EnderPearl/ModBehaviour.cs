@@ -12,6 +12,9 @@ using UnityEngine.SceneManagement;
 
 namespace EnderPearl;
 
+/// <summary>
+/// 末影珍珠模块入口，负责注册物品 prefab、商店条目和多套兼容配方。
+/// </summary>
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900001;
@@ -57,6 +60,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         Debug.Log("[EnderPearl] Loaded.");
 
         ApplyLocalizationOverrides();
+        // 先注册动态物品，后续商店缓存和配方结果才能正确引用 TypeID。
         CreateAndRegisterItemPrefab(info.path);
         EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
@@ -201,6 +205,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
+        // 每次都重建并覆盖旧公式，避免多次进入场景后重复插入同 ID 配方。
         formulaList.RemoveAll(existing =>
             string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
             string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal) ||
@@ -219,6 +224,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         builtFormulas = new List<CraftingFormula>();
 
+        // 这里保留多组候选名，兼容不同汉化或版本下原版物品名称差异。
         var stormEyeId = ResolveIngredientTypeId("风暴眼", "风暴眼", "Storm Eye", "StormEye");
         var coldCoreFragmentId = ResolveIngredientTypeId("冷核碎片", "冷核碎片", "Cold Core Fragment", "Cold Core Fragments", "ColdCoreFragment", "ColdCoreFragments", "Cold Core Shard", "ColdCoreShard");
         var polyethyleneSheetId = ResolveIngredientTypeId("聚乙烯片", "聚乙烯片", "Polyethylene Sheet", "Polyethylene Sheets", "Polyethylene", "PESheet", "PESheets");
@@ -233,6 +239,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         var compatibleTags = BuildCompatibleFormulaTags(formulas);
 
+        // 同时提供多套配方，让玩家既能走异界材料路线，也能走塑料片/墨水的替代路线。
         builtFormulas.Add(new CraftingFormula
         {
             id = PrimaryFormulaId,
@@ -308,6 +315,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
     {
+        // 复用现有工作台 tag，确保配方会出现在各种大小写和版本变体的工作台筛选里。
         var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
         var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
         if (formulaList != null)

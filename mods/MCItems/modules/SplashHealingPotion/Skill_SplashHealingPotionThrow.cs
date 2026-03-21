@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace SplashHealingPotion;
 
+/// <summary>
+/// 治疗药水的技能入口，复用手雷式瞄准和抛射模型，但把效果范围改成治疗半径。
+/// </summary>
 public class Skill_EnderPearlThrow : SkillBase
 {
     private const float HealRadius = 2.8f;
@@ -69,6 +72,7 @@ public class Skill_EnderPearlThrow : SkillBase
         Vector3 target = startPos + dir * distance;
         target.y = targetY;
 
+        // 根据瞄准点反算抛射速度，让药瓶沿抛物线稳定落到目标区域。
         Vector3 velocity = CalculateVelocity(startPos, target, skillContext.grenageVerticleSpeed);
 
         var go = EnderPearlProjectile.Create(startPos, fromCharacter, maxLifeSeconds);
@@ -104,6 +108,7 @@ public class Skill_EnderPearlThrow : SkillBase
 
     private static Vector3 CalculateVelocity(Vector3 start, Vector3 target, float verticleSpeed)
     {
+        // 与末影珍珠一致，固定竖直速度，横向速度按总飞行时间推导。
         float g = Physics.gravity.magnitude;
         if (g <= 0f)
         {

@@ -5,6 +5,9 @@ using UnityEngine.Rendering;
 
 namespace SplashHealingPotion;
 
+/// <summary>
+/// 治疗药水抛体本体，负责碰撞爆开、范围治疗和飞溅粒子复用。
+/// </summary>
 public class EnderPearlProjectile : MonoBehaviour
 {
     private const float HealPercent = 0.5f;
@@ -50,6 +53,7 @@ public class EnderPearlProjectile : MonoBehaviour
         proj._maxLifeSeconds = Mathf.Max(0.5f, maxLifeSeconds);
         proj._spawnTime = Time.time;
 
+    // 优先挂载 bundle 模型；缺失资源时回退到简单球体以保证逻辑仍可测试。
         var attached = ModAssets.TryAttachModelToProjectile(go);
         var renderer = go.GetComponent<Renderer>();
         if (renderer != null)
@@ -158,6 +162,7 @@ public class EnderPearlProjectile : MonoBehaviour
             }
         }
 
+        // 起爆延迟用于忽略刚出手时与角色或近地面的无效碰撞。
         if (Time.time - _spawnTime < ArmDelaySeconds)
         {
             return;
@@ -182,12 +187,14 @@ public class EnderPearlProjectile : MonoBehaviour
 
         ModSfx.PlayGlassBreak(point);
         SpawnSplashParticles(point + Vector3.up * 0.08f);
+        // 游戏现有 Hurt 流程已经处理了大部分受击联动，因此这里用“负伤害”统一走回血逻辑。
         ApplyNegativeDamageHealingInRange(point);
         Destroy(gameObject);
     }
 
     private void ApplyNegativeDamageHealingInRange(Vector3 point)
     {
+        // 直接遍历场景里的 Health，既能治疗玩家，也能治疗同范围内的其他有效目标。
         var healths = Object.FindObjectsOfType<Health>();
         if (healths == null || healths.Length == 0)
         {
@@ -210,6 +217,7 @@ public class EnderPearlProjectile : MonoBehaviour
 
             var isMainCharacter = character == CharacterMainControl.Main;
 
+            // armorPiercing 提高到极高值，确保回血不会被护甲系统再次折损。
             var damageInfo = new DamageInfo(_owner)
             {
                 damageValue = -Mathf.Max(1f, health.MaxHealth * HealPercent),
@@ -272,6 +280,7 @@ public class EnderPearlProjectile : MonoBehaviour
 
         if (_splashFxCreated >= SplashFxPoolMax)
         {
+            // 粒子池打满后直接跳过新特效，优先保证战斗时不卡顿。
             return null;
         }
 

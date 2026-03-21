@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace TotemOfUndying;
 
+/// <summary>
+/// 监听致命伤害事件，检测图腾槽位并在触发时执行保命、特效和模型演出。
+/// </summary>
 internal sealed class TotemRescueSystem : MonoBehaviour
 {
     private const float InvincibleSeconds = 5f;
@@ -89,6 +92,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
             return;
         }
 
+        // 只有在真正进入致死状态后才尝试救援，避免普通受伤时误消耗图腾。
         if (health.CurrentHealth > 0f)
         {
             return;
@@ -99,6 +103,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
             return;
         }
 
+        // 一旦确认救援，就立刻消耗图腾，避免后续事件链重复触发同一件装备。
         ConsumeTotem(totemItem);
 
         var healTarget = Mathf.Max(1f, health.MaxHealth * HealPercent);
@@ -121,6 +126,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
     {
         item = null!;
 
+        // 兼容不同存档或模组把图腾槽命名成 totem / soulcube 等近似键名的情况。
         var character = health.TryGetCharacter();
         if (character == null || character.CharacterItem == null || character.CharacterItem.Slots == null)
         {
@@ -178,6 +184,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(InvincibleSeconds);
 
+        // 如果目标原本就处于无敌状态，图腾只临时接管，不负责强行关闭外部系统的无敌。
         if (health == null || wasInvincible)
         {
             yield break;
@@ -256,6 +263,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
             return;
         }
 
+        // 优先使用资源包里的正式模型；缺资源时退回运行时拼出的简化模型，保证演出不中断。
         var prefab = TotemModelAssets.TryLoadPickupModelPrefab(_modPath);
         GameObject go;
         var modelSource = "runtime-fallback";
@@ -332,6 +340,7 @@ internal sealed class TotemRescueSystem : MonoBehaviour
             yield break;
         }
 
+        // 演出拆成放大、减速悬停、缩回三段，避免图腾特效出现得过于生硬。
         var elapsed = 0f;
         var totalDuration = RescueModelScaleInSeconds + RescueModelSlowDownSeconds + RescueModelScaleOutSeconds;
 

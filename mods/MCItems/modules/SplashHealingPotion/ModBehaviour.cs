@@ -12,6 +12,9 @@ using UnityEngine.SceneManagement;
 
 namespace SplashHealingPotion;
 
+/// <summary>
+/// 喷溅治疗药水模块入口，负责注册投掷道具、商店条目和兼容 MC 玻璃的配方。
+/// </summary>
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int EnderPearlTypeId = 900012;
@@ -57,6 +60,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         Debug.Log("[SplashHealingPotion] Loaded.");
 
         ApplyLocalizationOverrides();
+        // 先把动态物品接入 ItemAssetsCollection，再去补商店和配方引用。
         CreateAndRegisterItemPrefab(info.path);
         EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
@@ -193,6 +197,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
+        // 场景切换时会反复走这里，所以先删除旧公式，保证列表里始终只有最新版本。
         formulaList.RemoveAll(existing =>
             string.Equals(existing.id, PrimaryFormulaId, StringComparison.Ordinal) ||
             string.Equals(existing.id, SecondaryFormulaId, StringComparison.Ordinal));
@@ -209,6 +214,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         builtFormulas = new List<CraftingFormula>();
 
+        // 第一套走原版医疗物资路线，第二套在 MCPrerequisite 存在时允许用 MC 玻璃替代部分成本。
         var bandageId = ResolveIngredientTypeId("止血绷带", "止血绷带", "Bandage", "Hemostatic Bandage", "HemostaticBandage");
         var firstAidKitId = ResolveIngredientTypeId("小急救箱", "小急救箱", "Small First Aid Kit", "First Aid Kit", "SmallFirstAidKit", "Small Medkit", "SmallMedkit");
         var recoveryShotId = ResolveIngredientTypeId("恢复针", "恢复针", "Recovery Shot", "Recovery Syringe", "Recovery Injection", "RecoveryShot", "RecoverySyringe", "RecoveryInjection");
@@ -268,6 +274,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static string[] BuildCompatibleFormulaTags(CraftingFormulaCollection formulas)
     {
+        // 直接吸收现有配方里的 tag，兼容不同工作台实现对标签命名的差异。
         var tags = new HashSet<string>(WorkbenchFormulaTags, StringComparer.Ordinal);
         var formulaList = ReflectionUtil.GetPrivateField<List<CraftingFormula>>(formulas, "list");
         if (formulaList != null)
@@ -479,7 +486,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 continue;
             }
 
-            // 仅注入到“橘子”（装备商人）对应的 merchantID
+            // 仅注入到“橘子”（装备商人）对应的 merchantID。
             if (!string.Equals(shop.MerchantID, TargetMerchantId, StringComparison.OrdinalIgnoreCase))
             {
                 continue;

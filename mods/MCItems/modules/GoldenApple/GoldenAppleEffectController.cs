@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace GoldenApple;
 
+/// <summary>
+/// 挂在角色身上的实际效果控制器，负责刷新持续时间、应用属性修饰器和定时回血。
+/// </summary>
 public class GoldenAppleEffectController : MonoBehaviour
 {
     private const float BonusMaxHealth = 30f;
@@ -51,6 +54,7 @@ public class GoldenAppleEffectController : MonoBehaviour
         _character = character;
         CacheStats();
 
+        // 重复食用时直接刷新三个效果的到期时间，而不是叠加多个控制器。
         var now = Time.time;
         _maxHealthExpireTime = now + MaxHealthDuration;
         _armorExpireTime = now + ArmorDuration;
@@ -74,6 +78,7 @@ public class GoldenAppleEffectController : MonoBehaviour
 
         var now = Time.time;
 
+        // 每帧都重新确认修饰器是否仍挂在角色属性上，防止外部系统移除后增益提前失效。
         if (now < _maxHealthExpireTime)
         {
             EnsureMaxHealthModifierActive();
@@ -110,6 +115,7 @@ public class GoldenAppleEffectController : MonoBehaviour
 
     private void CacheStats()
     {
+        // Stat 和 Modifier 只缓存一次，后续重复食用只刷新计时，避免频繁分配对象。
         var characterItem = _character?.CharacterItem;
         if (characterItem == null)
         {
@@ -158,6 +164,7 @@ public class GoldenAppleEffectController : MonoBehaviour
             _maxHealthStat.RemoveModifier(_maxHealthModifier);
         }
 
+        // 生命上限回退后要把当前血量钳回新的 MaxHealth，避免出现超出上限的残留数值。
         if (_character?.Health != null)
         {
             _character.Health.CurrentHealth = Mathf.Min(_character.Health.CurrentHealth, _character.Health.MaxHealth);

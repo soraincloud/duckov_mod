@@ -11,6 +11,9 @@ using UnityEngine.SceneManagement;
 
 namespace MCPrerequisite;
 
+/// <summary>
+/// 统一给 MC 相关物品补分类标签，并把对应过滤按钮注入工作台和仓库界面。
+/// </summary>
 public static class MCCategoryService
 {
     public const string SharedCategoryTagName = "ModWorkbench_Mystic";
@@ -59,6 +62,7 @@ public static class MCCategoryService
     public static void Initialize(string? modPath)
     {
         _modPath = modPath;
+        // 过滤按钮直接复用本地化覆盖文本，避免依赖额外语言表资源。
         LocalizationManager.SetOverrideText(SharedCategoryDisplayNameKey, "MC");
         LocalizationManager.SetOverrideText(MaterialCategoryDisplayNameKey, "MC材料");
         LocalizationManager.SetOverrideText(MaterialCraftCategoryDisplayNameKey, "MC材料");
@@ -114,6 +118,7 @@ public static class MCCategoryService
 
         try
         {
+            // 某些界面和运行时物品会在初始化后延迟创建，这里按短周期重试补标签和过滤器。
             EnsureManagedItemsTagged();
             EnsureFiltersRegistered();
         }
@@ -182,6 +187,7 @@ public static class MCCategoryService
     {
         try
         {
+            // CraftView 的 filters 是私有字段，只能通过反射补充自定义分类按钮。
             var sharedFilterTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
             var sharedFilterIcon = TryLoadSharedCategoryIconSprite(_modPath);
             var materialFilterTag = GetOrCreateCategoryTag(MaterialCategoryTagName);
@@ -214,6 +220,7 @@ public static class MCCategoryService
     {
         try
         {
+            // 仓库过滤器挂在 InventoryFilterProvider.entries 上，和工作台是两套独立 UI 数据源。
             var inventory = PlayerStorage.Inventory;
             if (inventory == null)
             {
@@ -433,6 +440,7 @@ public static class MCCategoryService
 
     private static void EnsureManagedItemsTagged()
     {
+        // 既补动态 prefab 的标签，也补当前场景里已实例化出来的 Item，避免过滤器漏识别。
         var sharedTag = GetOrCreateSharedCategoryTag(SharedCategoryTagName);
         var materialTag = GetOrCreateCategoryTag(MaterialCategoryTagName);
 
@@ -478,6 +486,7 @@ public static class MCCategoryService
             return;
         }
 
+        // 这类物品只需要出现在 MC 材料配方视图里，不应污染普通材料筛选按钮。
         var craftOnlyTag = GetOrCreateCategoryTag(MaterialCraftOnlyTagName);
         foreach (var typeId in typeIds)
         {
@@ -547,6 +556,7 @@ public static class MCCategoryService
 
     private static bool TryPatchDynamicItem(int typeId, Tag sharedTag)
     {
+        // 动态物品不在普通 entries 列表里，需要直接改 ItemAssetsCollection 的动态字典。
         var dynamicEntriesField = typeof(ItemAssetsCollection).GetField("dynamicDic", AllBindings);
         if (dynamicEntriesField?.GetValue(null) is not System.Collections.IDictionary dynamicEntries)
         {
@@ -728,6 +738,7 @@ public static class MCCategoryService
             return;
         }
 
+        // 多个事件可能同时要求刷新，这里只保留更早的调度时间，并累积重试次数。
         _runtimeRefreshPending = true;
         _remainingRuntimeRefreshAttempts = Math.Max(_remainingRuntimeRefreshAttempts, attempts);
 

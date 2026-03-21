@@ -17,6 +17,9 @@ using UnityEngine.SceneManagement;
 
 namespace TotemOfUndying;
 
+/// <summary>
+/// 不死图腾模块入口，负责物品注册、图腾槽兼容、救援系统和自定义工作台 UI。
+/// </summary>
 public class ModBehaviour : Duckov.Modding.ModBehaviour
 {
     internal const int TotemOfUndyingTypeId = 900011;
@@ -64,6 +67,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         Debug.Log("[TotemOfUndying] Loaded.");
 
         ApplyLocalizationOverrides();
+        // 先把图腾物品本身注册好，后续救援系统、商店和工作台才能正确引用它。
         CreateAndRegisterItemPrefab(info.path);
         EnsureSharedCategoryDependsOnPrerequisite();
         AddToMerchantProfile();
@@ -123,6 +127,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         go.SetActive(false);
         UnityEngine.Object.DontDestroyOnLoad(go);
 
+    // 图腾属于常驻装备，不是技能道具，因此只挂被动属性和模型，不接技能系统。
         var item = go.AddComponent<Item>();
 
         ReflectionUtil.SetPrivateField(item, "typeID", TotemOfUndyingTypeId);
@@ -158,6 +163,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void AttachCharacterModifiers(Item item)
     {
+        // 装备图腾时给角色少量移速加成，营造“灵魂能量让身体变轻”的反馈。
         item.CreateModifiersComponent();
 
         if (item.Modifiers == null)
@@ -316,6 +322,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         cost = default;
 
+        // 工作台 UI 和正式配方共用同一份材料解析逻辑，避免两边成本不一致。
         var featherId = ResolveIngredientTypeId("羽毛", "羽毛", "Feather");
         var blueBlockId = ResolveIngredientTypeId("蓝色方块", "蓝色方块", "Blue Block", "Blue Cube", "BlueBlock", "BlueCube");
         var dogTagId = ResolveIngredientTypeId("狗牌", "狗牌", "Dog Tag", "DogTag");
@@ -540,6 +547,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void AttemptRestoreTotemSlotFromLooseItems()
     {
+        // 某些读档顺序下图腾会先作为散落物实例化，再晚一点才恢复槽位，这里做一次兜底回插。
         var character = CharacterMainControl.Main;
         var slots = character?.CharacterItem?.Slots;
         if (slots == null)
@@ -694,6 +702,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void PatchExistingStockShops()
     {
+        // 既要改商人 profile，也要改场景里已经打开的 StockShop，避免当局不刷新库存。
         var shops = UnityEngine.Object.FindObjectsOfType<StockShop>();
         if (shops == null || shops.Length == 0)
         {
