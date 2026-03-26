@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MCItems")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6413774560654dc5e428c9ece95358b9295e6c50")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06bc30158e81b077946f48977dd715fe7a871d04")]
 [assembly: System.Reflection.AssemblyProductAttribute("MCItems")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MCItems")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

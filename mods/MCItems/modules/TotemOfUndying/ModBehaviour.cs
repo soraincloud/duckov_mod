@@ -32,6 +32,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
     private const int MerchantStock = 99;
     private const string SharedCategoryTagName = "ModWorkbench_Mystic";
     private const BindingFlags AllBindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+    private const int TotemSlotRestoreMaxAttempts = 12;
 
     private static readonly string[] WorkbenchFormulaTags =
     {
@@ -547,13 +548,15 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
     private static void AttemptRestoreTotemSlotFromLooseItems()
     {
-        // 某些读档顺序下图腾会先作为散落物实例化，再晚一点才恢复槽位，这里做一次兜底回插。
+        // 某些读档顺序下图腾不会立刻回到图腾槽，Windows 上也可能先回到角色物品树里，这里统一做兜底回插。
         var character = CharacterMainControl.Main;
-        var slots = character?.CharacterItem?.Slots;
-        if (slots == null)
+        if (character?.CharacterItem == null)
         {
             return;
         }
+
+        var characterItem = character.CharacterItem;
+        var slots = characterItem.Slots;
 
         Slot? totemSlot = null;
         foreach (Slot slot in slots)
@@ -570,16 +573,13 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
             return;
         }
 
-        var candidates = Resources.FindObjectsOfTypeAll<Item>()
-            .Where(item => item != null
-                && item != _prefab
-                && item.TypeID == TotemOfUndyingTypeId
-                && item.PluggedIntoSlot == null
-                && item.InInventory == null
-                && item.gameObject.scene.isLoaded
-                && item.gameObject.activeInHierarchy
-                && item.GetComponentInParent<StockShop>() == null)
-            .OrderBy(item => item.transform.parent != null)
+        var compatibleTags = ResolveTotemSlotTags();
+        var characterInventory = characterItem?.Inventory;
+
+        var candidates = CollectTotemSlotRestoreCandidates(character)
+            .OrderByDescending(item => IsOwnedByCharacterTree(item, characterItem))
+            .ThenByDescending(item => item.InInventory == characterInventory)
+            .ThenBy(item => item.transform.parent != null)
             .ToList();
 
         if (candidates.Count == 0)
@@ -589,6 +589,8 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         foreach (var candidate in candidates)
         {
+            ApplyCompatibilityTags(candidate, compatibleTags);
+
             if (!totemSlot.CanPlug(candidate))
             {
                 ModLog.Warn($"[TotemOfUndying] Found loose totem candidate but slot still rejects it. slot='{totemSlot.Key}' slotTags=[{DescribeTags(totemSlot.requireTags)}] itemTags=[{DescribeItemTags(candidate)}] itemInstance={candidate.GetInstanceID()}");
@@ -606,6 +608,59 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
                 return;
             }
         }
+    }
+
+    private static IEnumerable<Item> CollectTotemSlotRestoreCandidates(CharacterMainControl? character)
+    {
+        var seen = new HashSet<int>();
+        var characterItem = character?.CharacterItem;
+        if (characterItem != null)
+        {
+            foreach (var item in characterItem.GetAllChildren())
+            {
+                if (IsValidTotemSlotRestoreCandidate(item) && seen.Add(item.GetInstanceID()))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        foreach (var item in Resources.FindObjectsOfTypeAll<Item>())
+        {
+            if (!IsValidLooseTotemSlotRestoreCandidate(item) || !seen.Add(item.GetInstanceID()))
+            {
+                continue;
+            }
+
+            yield return item;
+        }
+    }
+
+    private static bool IsValidTotemSlotRestoreCandidate(Item? item)
+    {
+        return item != null
+            && item != _prefab
+            && item.TypeID == TotemOfUndyingTypeId
+            && item.PluggedIntoSlot == null
+            && item.GetComponentInParent<StockShop>() == null;
+    }
+
+    private static bool IsValidLooseTotemSlotRestoreCandidate(Item? item)
+    {
+        return IsValidTotemSlotRestoreCandidate(item)
+            && item!.InInventory == null
+            && item.gameObject.scene.isLoaded
+            && item.gameObject.activeInHierarchy;
+    }
+
+    private static bool IsOwnedByCharacterTree(Item item, Item? characterItem)
+    {
+        if (item == null || characterItem == null)
+        {
+            return false;
+        }
+
+        return item == characterItem || item.GetAllParents().Contains(characterItem);
     }
 
     private static void EnsureSharedCategoryDependsOnPrerequisite()
@@ -1046,10 +1101,12 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
 
         private IEnumerator Run()
         {
-            yield return null;
-            yield return null;
+            for (var attempt = 0; attempt < TotemSlotRestoreMaxAttempts; attempt++)
+            {
+                yield return null;
+                _action?.Invoke();
+            }
 
-            _action?.Invoke();
             Destroy(gameObject);
         }
     }
