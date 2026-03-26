@@ -18,6 +18,7 @@ public class ModBehaviour : Duckov.Modding.ModBehaviour
         InitializeModule<global::EnderPearl.ModBehaviour>("EnderPearl", "末影珍珠");
         InitializeModule<global::GoldenApple.ModBehaviour>("GoldenApple", "金苹果");
         InitializeModule<global::SplashHealingPotion.ModBehaviour>("SplashHealingPotion", "治疗药水");
+        InitializeModule<global::SplashSwiftnessPotion.ModBehaviour>("SplashSwiftnessPotion", "迅捷药水");
         InitializeModule<global::TotemOfUndying.ModBehaviour>("TotemOfUndying", "图腾");
     }
 

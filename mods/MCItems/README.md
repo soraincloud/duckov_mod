@@ -5,6 +5,7 @@
 - 末影珍珠 `EnderPearl`
 - 附魔金苹果 `GoldenApple`
 - 喷溅治疗药水 `SplashHealingPotion`
+- 喷溅迅捷药水 `SplashSwiftnessPotion`
 - 不死图腾 `TotemOfUndying`
 
 ## 合并说明
